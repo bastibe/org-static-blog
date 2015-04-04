@@ -60,9 +60,10 @@
 
 (defun org-static-blog-publish-file (post-filename)
   (with-find-file post-filename
-   (org-export-to-file 'html
+   ;; This should really call a derived backend
+   (org-export-to-file 'org-static-blog-post
        (org-static-blog-matching-publish-filename post-filename)
-     nil nil nil t nil)))
+     nil nil nil nil nil)))
 
 (defun org-static-blog-create-index ()
   (let ((posts (directory-files
@@ -101,3 +102,69 @@
        ,@body
       (unless buffer-existed
         (kill-buffer buffer)))))
+
+(org-export-define-derived-backend 'org-static-blog-post 'html
+  :translate-alist '((template . org-static-blog-post-template)))
+
+(defun org-static-blog-post-template (contents info)
+  "Return complete document string after blog post conversion.
+CONTENTS is the transcoded contents string.  INFO is a plist used
+as a communication channel."
+  (let ((title (org-export-data (plist-get info :title) info)))
+    (concat
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
+\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
+<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
+<head>
+<title>" title "</title>
+<meta  http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
+<meta  name=\"author\" content=\"Bastian Bechtold\" />
+<link rel=\"alternate\" type=\"appliation/rss+xml\"
+                href=\"http://bastibe.de/rss.xml\"
+                title=\"RSS feed for bastibe.de\">
+          <link href='http://fonts.googleapis.com/css?family=Roboto&subset=latin' rel='stylesheet' type='text/css'>
+          <link href='http://fonts.googleapis.com/css?family=Ubuntu+Mono' rel='stylesheet' type='text/css'>
+          <link href= \"static/style.css\" rel=\"stylesheet\" type=\"text/css\" />
+          <link rel=\"icon\" href=\"static/favicon.ico\">
+          <link rel=\"apple-touch-icon-precomposed\" href=\"static/favicon-152.png\">
+          <link rel=\"msapplication-TitleImage\" href=\"static/favicon-144.png\">
+          <link rel=\"msapplication-TitleColor\" href=\"#0141ff\">
+          <title>Basti's Scratchpad on the Internet</title>
+          <meta http-equiv=\"content-type\" content=\"application/xhtml+xml; charset=UTF-8\" />
+          <meta name=\"viewport\" content=\"initial-scale=1,width=device-width,minimum-scale=1\">
+</head>
+<body>
+<div id=\"preamble\" class=\"status\">
+<div class=\"header\">
+              <a href=\"http://bastibe.de\">Basti's Scratchpad on the Internet</a>
+              <div class=\"sitelinks\">
+                  <a href=\"http://alpha.app.net/bastibe\">alpha.app.net</a>  | <a href=\"http://github.com/bastibe\">Github</a>
+              </div>
+          </div>
+</div>
+<div id=\"content\">
+<h1 class=\"title\">" title "</h1>\n"
+contents
+"</div>
+<div id=\"postamble\" class=\"status\">
+<div id=\"archive\"><a href=\"archive.html\">Other posts</a></div>
+              <div id=\"disqus_thread\"></div>
+              <script type=\"text/javascript\">
+              var disqus_shortname = 'bastibe';
+              (function() {
+                var dsq = document.createElement('script');
+                dsq.type = 'text/javascript';
+                dsq.async = true;
+                dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                  })();
+              </script>
+              <noscript>Please enable JavaScript to view the
+                  <a href=\"http://disqus.com/?ref_noscript\">comments powered by Disqus.</a></noscript>
+              <a href=\"http://disqus.com\" class=\"dsq-brlink\">comments powered by <span class=\"logo-disqus\">Disqus</span></a>
+<center><a rel=\"license\" href=\"http://creativecommons.org/licenses/by-sa/3.0/\"><img alt=\"Creative Commons License\" style=\"border-width:0\" src=\"http://i.creativecommons.org/l/by-sa/3.0/88x31.png\" /></a><br /><span xmlns:dct=\"http://purl.org/dc/terms/\" href=\"http://purl.org/dc/dcmitype/Text\" property=\"dct:title\" rel=\"dct:type\">bastibe.de</span> by <a xmlns:cc=\"http://creativecommons.org/ns#\" href=\"http://bastibe.de\" property=\"cc:attributionName\" rel=\"cc:attributionURL\">Bastian Bechtold</a> is licensed under a <a rel=\"license\" href=\"http://creativecommons.org/licenses/by-sa/3.0/\">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.</center>
+</div>
+</body>
+</html>"
+    )))
