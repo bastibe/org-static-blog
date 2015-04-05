@@ -79,6 +79,29 @@
           (file-name-base post-filename)
           ".html"))
 
+(defun org-static-blog-get-date (post-filename)
+  (let ((date nil))
+    (with-find-file
+     post-filename
+     (beginning-of-buffer)
+     (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
+     (setq date (date-to-time (match-string 1))))
+    date))
+
+(defun org-static-blog-get-title (post-filename)
+  (let ((title nil))
+    (with-find-file
+     post-filename
+     (beginning-of-buffer)
+     (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$")
+     (setq title (match-string 1)))
+    title))
+
+(defun org-static-blog-get-url (post-filename)
+  (concat org-static-blog-publish-url
+          (file-name-nondirectory
+           (org-static-blog-matching-publish-filename post-filename))))
+
 (defun org-static-blog-publish-file (post-filename)
   (with-find-file post-filename
    ;; This should really call a derived backend
@@ -104,9 +127,7 @@
     (dolist (file posts)
       (with-find-file
        file
-       (beginning-of-buffer)
-       (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
-       (let ((rss-date (date-to-time (match-string 1)))
+       (let ((rss-date (org-static-blog-get-date file))
              (rss-text (org-export-as 'org-static-blog-rss nil nil nil nil)))
        (add-to-list 'rss-entries (cons rss-date rss-text)))))
     (with-find-file
@@ -115,8 +136,8 @@
      (insert "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <rss version=\"2.0\">
 <channel>
-  <title>Bastibe</title>
-  <description>" org-static-blog-title "</description>
+  <title>" org-static-blog-publish-title "</title>
+  <description>" org-static-blog-publish-title "</description>
   <link>" org-static-blog-publish-url "</link>
   <lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n")
      (dolist (entry (sort rss-entries (lambda (x y) (time-less-p (car y) (car x)))))
@@ -132,16 +153,10 @@
     (dolist (file posts)
       (with-find-file
        file
-       (beginning-of-buffer)
-       (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
-       (let ((date (date-to-time (match-string 1)))
-             (url (concat org-static-blog-publish-url
-                     (file-name-nondirectory
-                      (org-static-blog-matching-publish-filename file)))))
-         (beginning-of-buffer)
-         (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$")
-         (let ((title (match-string 1)))
-           (add-to-list 'archive-entries (list date title url))))))
+       (let ((date (org-static-blog-get-date file))
+             (title (org-static-blog-get-title file))
+             (url (org-static-blog-get-url file)))
+           (add-to-list 'archive-entries (list date title url)))))
     (with-find-file
      archive-file
      (erase-buffer)
