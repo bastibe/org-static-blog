@@ -112,12 +112,49 @@
 (defun org-static-blog-create-index ()
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
-        (index nil))
+        (index-file (concat org-static-blog-publish-directory org-static-blog-index-file))
+        (index-entries nil))
     (dolist (file posts)
       (with-find-file
        file
-       ;; not sure yet
-       ))))
+       (let ((date (org-static-blog-get-date file))
+             (title (org-static-blog-get-title file))
+             (content (org-export-as 'org-static-blog-post nil nil t nil))
+             (url (org-static-blog-get-url file)))
+           (add-to-list 'index-entries (list date title url content)))))
+    (with-find-file
+     index-file
+     (erase-buffer)
+     (insert
+      (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
+\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
+<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
+<head>
+<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
+<link rel=\"alternate\"
+      type=\"appliation/rss+xml\"
+      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"
+      title=\"RSS feed for " org-static-blog-publish-url "\">
+<title>" org-static-blog-publish-title "</title>"
+org-static-blog-page-header
+"</head>
+<body>
+<div id=\"preamble\" class=\"status\">"
+org-static-blog-page-preamble
+"</div>
+<div id=\"content\">"))
+     (setq index-entries (sort index-entries (lambda (x y) (time-less-p (nth 0 y) (nth 0 x)))))
+     (dolist (idx (number-sequence 0 (1- org-static-blog-index-length)))
+       (let ((entry (nth idx index-entries)))
+         (insert
+          (concat "<div class=\"post-date\">" (format-time-string "%d %b %Y" (nth 0 entry)) "</div>"
+                  "<h1 class=\"post-title\">"
+                  "<a href=\"" (nth 2 entry) "\">" (nth 1 entry) "</a>"
+                  "</h1>\n"
+                  (nth 3 entry)))))
+     (insert "</div>
+</body>"))))
 
 (defun org-static-blog-create-rss ()
   (let ((posts (directory-files
@@ -183,9 +220,10 @@ org-static-blog-page-preamble
        (dolist (entry (sort archive-entries (lambda (x y) (time-less-p (car y) (car x)))))
          (insert
           (concat
-           "<h2 class=\"archive-title\">"
+           "<div class=\"post-date\">" (format-time-string "%d %b %Y" (nth 0 entry)) "</div>"
+           "<h2 class=\"post-title\">"
            "<a href=\"" (nth 2 entry) "\">" (nth 1 entry) "</a>"
-           " (" (format-time-string "%d %b %Y" (nth 0 entry)) ")</h2>\n")))
+           "</h2>\n")))
        (insert "</body>\n </html>"))))
 
 (defmacro with-find-file (file &rest body)
@@ -256,6 +294,7 @@ as a communication channel."
   <pubDate>" (org-timestamp-format (car (plist-get info :date)) "%a, %d %b %Y %H:%M:%S %z") "</pubDate>
 </item>\n")))
 
+(setq org-static-blog-publish-title "Bastibe.de")
 (setq org-static-blog-publish-url "http://bastibe.de/")
 (setq org-static-blog-publish-directory "~/blog/")
 (setq org-static-blog-posts-directory "~/Projects/blog/posts/")
