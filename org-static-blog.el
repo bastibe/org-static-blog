@@ -119,7 +119,7 @@
        file
        (let ((date (org-static-blog-get-date file))
              (title (org-static-blog-get-title file))
-             (content (org-export-as 'org-static-blog-post nil nil t nil))
+             (content (org-export-as 'org-static-blog-post-bare nil nil nil nil))
              (url (org-static-blog-get-url file)))
            (add-to-list 'index-entries (list date title url content)))))
     (with-find-file
@@ -153,7 +153,11 @@ org-static-blog-page-preamble
                   "<a href=\"" (nth 2 entry) "\">" (nth 1 entry) "</a>"
                   "</h1>\n"
                   (nth 3 entry)))))
-     (insert "</div>
+     (insert
+"<div id=\"archive\">
+  <a href=\"archive.html\">Older posts</a>
+</div>
+</div>
 </body>"))))
 
 (defun org-static-blog-create-rss ()
@@ -243,7 +247,8 @@ org-static-blog-page-preamble
   "Return complete document string after blog post conversion.
 CONTENTS is the transcoded contents string.  INFO is a plist used
 as a communication channel."
-  (let ((title (org-export-data (plist-get info :title) info)))
+  (let ((title (org-export-data (plist-get info :title) info))
+        (date (org-timestamp-format (car (plist-get info :date)) "%d %b %Y")))
     (concat
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
@@ -263,7 +268,8 @@ org-static-blog-page-header
 org-static-blog-page-preamble
 "</div>
 <div id=\"content\">
-<h1 class=\"title\">" title "</h1>\n"
+<div class=\"post-date\">" date "</div>
+<h1 class=\"post-title\">" title "</h1>\n"
 contents
 "</div>
 <div id=\"postamble\" class=\"status\">"
@@ -271,6 +277,15 @@ org-static-blog-page-postamble
 "</div>
 </body>
 </html>")))
+
+(org-export-define-derived-backend 'org-static-blog-post-bare 'html
+  :translate-alist '((template . org-static-blog-post-bare-template)))
+
+(defun org-static-blog-post-bare-template (contents info)
+  "Return complete document string after blog post conversion.
+CONTENTS is the transcoded contents string.  INFO is a plist used
+as a communication channel."
+contents)
 
 (org-export-define-derived-backend 'org-static-blog-rss 'html
   :translate-alist '((template . org-static-blog-rss-template)
@@ -296,9 +311,11 @@ as a communication channel."
 
 (setq org-static-blog-publish-title "Bastibe.de")
 (setq org-static-blog-publish-url "http://bastibe.de/")
-(setq org-static-blog-publish-directory "~/blog/")
+(setq org-static-blog-publish-directory "~/Projects/blog/")
 (setq org-static-blog-posts-directory "~/Projects/blog/posts/")
 (setq org-static-blog-drafts-directory "~/Projects/blog/drafts/")
+(setq org-export-with-toc nil)
+(setq org-export-with-section-numbers nil)
 
 (setq org-static-blog-page-header
 "<meta  name=\"author\" content=\"Bastian Bechtold\" />
