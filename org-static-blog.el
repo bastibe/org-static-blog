@@ -3,6 +3,10 @@
   "Settings for a static blog generator using org-mode"
   :group 'applications)
 
+(defcustom org-static-blog-publish-url "http://bastibe.de/"
+  "URL of the blog"
+  :group 'org-static-blog)
+
 (defcustom org-static-blog-publish-directory "~/blog/"
   "Directory where published HTML files are stored"
   :group 'org-static-blog)
@@ -75,20 +79,38 @@
        ;; not sure yet
        ))))
 
+(defun org-static-blog-create-rss ()
+  (let ((posts (directory-files
+                org-static-blog-posts-directory t ".*\\.org$" nil))
+        (rss-file (concat org-static-blog-publish-directory org-static-blog-rss-file))
+        (rss-entries nil))
+    (dolist (file posts)
+      (with-find-file
+       file
+       (beginning-of-buffer)
+       (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
+       (let ((rss-date (date-to-time (match-string 1)))
+             (rss-text (org-export-as 'org-static-blog-rss nil nil nil nil)))
+       (add-to-list 'rss-entries (cons rss-date rss-text)))))
+    (with-find-file
+     rss-file
+     (erase-buffer)
+     (insert "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<rss version=\"2.0\">
+<channel>
+  <title>Bastibe</title>
+  <description>Basti's Scratchpad on the Internet</description>
+  <link>http://bastibe.de</link>
+  <lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n")
+     (dolist (entry (sort rss-entries (lambda (x y) (time-less-p (car y) (car x)))))
+       (insert (cdr entry)))
+     (insert "</channel>
+</rss>"))))
+
 (defun org-static-blog-create-archive ()
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
         (archive nil))
-    (dolist (file posts)
-      (with-find-file
-       file
-       ;; not sure yet
-       ))))
-
-(defun org-static-blog-create-rss ()
-  (let ((posts (directory-files
-                org-static-blog-posts-directory t ".*\\.org$" nil))
-        (rss nil))
     (dolist (file posts)
       (with-find-file
        file
@@ -100,6 +122,8 @@
      (let ((buffer-existed (get-buffer (file-name-nondirectory ,file)))
            (buffer (find-file ,file)))
        ,@body
+       (switch-to-buffer buffer)
+       (save-buffer)
       (unless buffer-existed
         (kill-buffer buffer)))))
 
@@ -166,5 +190,26 @@ contents
 <center><a rel=\"license\" href=\"http://creativecommons.org/licenses/by-sa/3.0/\"><img alt=\"Creative Commons License\" style=\"border-width:0\" src=\"http://i.creativecommons.org/l/by-sa/3.0/88x31.png\" /></a><br /><span xmlns:dct=\"http://purl.org/dc/terms/\" href=\"http://purl.org/dc/dcmitype/Text\" property=\"dct:title\" rel=\"dct:type\">bastibe.de</span> by <a xmlns:cc=\"http://creativecommons.org/ns#\" href=\"http://bastibe.de\" property=\"cc:attributionName\" rel=\"cc:attributionURL\">Bastian Bechtold</a> is licensed under a <a rel=\"license\" href=\"http://creativecommons.org/licenses/by-sa/3.0/\">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.</center>
 </div>
 </body>
-</html>"
-    )))
+</html>")))
+
+(org-export-define-derived-backend 'org-static-blog-rss 'html
+  :translate-alist '((template . org-static-blog-rss-template)
+                     (timestamp . (lambda (&rest args) ""))))
+
+(defun org-static-blog-rss-template (contents info)
+  "Return complete document string after rss entry conversion.
+CONTENTS is the transcoded contents string.  INFO is a plist used
+as a communication channel."
+  (let ((url (concat org-static-blog-publish-url
+                     (file-name-nondirectory
+                      (org-static-blog-matching-publish-filename
+                       (plist-get info :input-buffer))))))
+    (concat
+"<item>
+  <title>" (org-export-data (plist-get info :title) info) "</title>
+  <description><![CDATA["
+  contents
+  "]]></description>
+  <link>" url "</link>
+  <pubDate>" (org-timestamp-format (car (plist-get info :date)) "%a, %d %b %Y %H:%M:%S %z") "</pubDate>
+</item>\n")))
