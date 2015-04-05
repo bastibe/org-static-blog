@@ -5,6 +5,6 @@ ORG-STATIC-BLOG
   - TODO: create next/previous links
 - DONE: add preamble and postamble to posts
 - TODO: create index page
-- TODO: create archive page
+- DONE: create archive page
 - DONE: create rss page
   - TODO: times are still using GMT as default

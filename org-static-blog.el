@@ -127,12 +127,51 @@
 (defun org-static-blog-create-archive ()
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
-        (archive nil))
+        (archive-file (concat org-static-blog-publish-directory org-static-blog-archive-file))
+        (archive-entries nil))
     (dolist (file posts)
       (with-find-file
        file
-       ;; not sure yet
-       ))))
+       (beginning-of-buffer)
+       (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
+       (let ((date (date-to-time (match-string 1)))
+             (url (concat org-static-blog-publish-url
+                     (file-name-nondirectory
+                      (org-static-blog-matching-publish-filename file)))))
+         (beginning-of-buffer)
+         (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$")
+         (let ((title (match-string 1)))
+           (add-to-list 'archive-entries (list date title url))))))
+    (with-find-file
+     archive-file
+     (erase-buffer)
+     (insert (concat
+              "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
+\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
+<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
+<head>
+<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
+<link rel=\"alternate\"
+      type=\"appliation/rss+xml\"
+      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"
+      title=\"RSS feed for " org-static-blog-publish-url "\">
+<title>" org-static-blog-publish-title "</title>"
+org-static-blog-page-header
+"</head>
+<body>
+<div id=\"preamble\" class=\"status\">"
+org-static-blog-page-preamble
+"</div>
+<div id=\"content\">
+<h1 class=\"title\">Archive</h1>\n"))
+       (dolist (entry (sort archive-entries (lambda (x y) (time-less-p (car y) (car x)))))
+         (insert
+          (concat
+           "<h2 class=\"archive-title\">"
+           "<a href=\"" (nth 2 entry) "\">" (nth 1 entry) "</a>"
+           " (" (format-time-string "%d %b %Y" (nth 0 entry)) ")</h2>\n")))
+       (insert "</body>\n </html>"))))
 
 (defmacro with-find-file (file &rest body)
   `(save-excursion
