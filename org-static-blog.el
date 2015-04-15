@@ -104,7 +104,6 @@
 
 (defun org-static-blog-publish-file (post-filename)
   (with-find-file post-filename
-   ;; This should really call a derived backend
    (org-export-to-file 'org-static-blog-post
        (org-static-blog-matching-publish-filename post-filename)
      nil nil nil nil nil)))
@@ -308,51 +307,3 @@ as a communication channel."
   <link>" url "</link>
   <pubDate>" (org-timestamp-format (car (plist-get info :date)) "%a, %d %b %Y %H:%M:%S %z") "</pubDate>
 </item>\n")))
-
-(setq org-static-blog-publish-title "Bastibe.de")
-(setq org-static-blog-publish-url "http://bastibe.de/")
-(setq org-static-blog-publish-directory "~/Projects/blog/")
-(setq org-static-blog-posts-directory "~/Projects/blog/posts/")
-(setq org-static-blog-drafts-directory "~/Projects/blog/drafts/")
-(setq org-export-with-toc nil)
-(setq org-export-with-section-numbers nil)
-
-(setq org-static-blog-page-header
-"<meta  name=\"author\" content=\"Bastian Bechtold\" />
-<link href='http://fonts.googleapis.com/css?family=Roboto&subset=latin' rel='stylesheet' type='text/css'>
-<link href='http://fonts.googleapis.com/css?family=Ubuntu+Mono' rel='stylesheet' type='text/css'>
-<link href= \"static/style.css\" rel=\"stylesheet\" type=\"text/css\" />
-<link rel=\"icon\" href=\"static/favicon.ico\">
-<link rel=\"apple-touch-icon-precomposed\" href=\"static/favicon-152.png\">
-<link rel=\"msapplication-TitleImage\" href=\"static/favicon-144.png\">
-<link rel=\"msapplication-TitleColor\" href=\"#0141ff\">
-<meta http-equiv=\"content-type\" content=\"application/xhtml+xml; charset=UTF-8\" />
-<meta name=\"viewport\" content=\"initial-scale=1,width=device-width,minimum-scale=1\">")
-
-(setq org-static-blog-page-preamble
-"<div class=\"header\">
-  <a href=\"http://bastibe.de\">Basti's Scratchpad on the Internet</a>
-  <div class=\"sitelinks\">
-    <a href=\"http://alpha.app.net/bastibe\">alpha.app.net</a> | <a href=\"http://github.com/bastibe\">Github</a>
-  </div>
-</div>")
-
-(setq org-static-blog-page-postamble
-"<div id=\"archive\">
-  <a href=\"archive.html\">Other posts</a>
-</div>
-<div id=\"disqus_thread\"></div>
-<script type=\"text/javascript\">
-  var disqus_shortname = 'bastibe';
-  (function() {
-    var dsq = document.createElement('script');
-    dsq.type = 'text/javascript';
-    dsq.async = true;
-    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-  })();
-</script>
-<noscript>Please enable JavaScript to view the
-<a href=\"http://disqus.com/?ref_noscript\">comments powered by Disqus.</a></noscript>
-<a href=\"http://disqus.com\" class=\"dsq-brlink\">comments powered by <span class=\"logo-disqus\">Disqus</span></a>
-<center><a rel=\"license\" href=\"http://creativecommons.org/licenses/by-sa/3.0/\"><img alt=\"Creative Commons License\" style=\"border-width:0\" src=\"http://i.creativecommons.org/l/by-sa/3.0/88x31.png\" /></a><br /><span xmlns:dct=\"http://purl.org/dc/terms/\" href=\"http://purl.org/dc/dcmitype/Text\" property=\"dct:title\" rel=\"dct:type\">bastibe.de</span> by <a xmlns:cc=\"http://creativecommons.org/ns#\" href=\"http://bastibe.de\" property=\"cc:attributionName\" rel=\"cc:attributionURL\">Bastian Bechtold</a> is licensed under a <a rel=\"license\" href=\"http://creativecommons.org/licenses/by-sa/3.0/\">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.</center>")
