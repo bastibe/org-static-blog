@@ -58,7 +58,7 @@
         (drafts (directory-files
                  org-static-blog-drafts-directory t ".*\\.org$" nil))
         (rebuild nil))
-    (dolist (file (concatenate 'list posts drafts))
+    (dolist (file (append posts drafts))
       (when (org-static-blog-needs-publishing-p file)
         (if (not (member file drafts))
             (setq rebuild t))
