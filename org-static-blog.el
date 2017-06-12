@@ -86,6 +86,7 @@
      post-filename
      (beginning-of-buffer)
      (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
+  (interactive)
      (setq date (date-to-time (match-string 1))))
     date))
 
@@ -137,6 +138,7 @@
       type=\"appliation/rss+xml\"
       href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"
       title=\"RSS feed for " org-static-blog-publish-url "\">
+  (interactive "f")
 <title>" org-static-blog-publish-title "</title>"
 org-static-blog-page-header
 "</head>
