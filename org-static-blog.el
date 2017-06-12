@@ -34,6 +34,7 @@
 
 (defgroup org-static-blog nil
   "Settings for a static blog generator using org-mode"
+  :version "1.0.0"
   :group 'applications)
 
 (defcustom org-static-blog-publish-url "http://example.com/"
