@@ -44,12 +44,12 @@ Every HTML page in org-static-blog can be customized in three ways:
 
 If you have questions, if you find bugs, or if you would like to
 contribute something to org-static-blog, please open an issue or pull
-request on Github.
+request on GitHub.
 
 Finally, I would like to remind you that I am developing this project
-for free, and in my spare time. While I try to be as accomodating as
+for free, and in my spare time. While I try to be as accommodating as
 possible, I can not guarantee a timely response to issues. Publishing
-Open Source Software on Github does not imply an obligation to *fix
+Open Source Software on GitHub does not imply an obligation to *fix
 your problem right now*. Please be civil.
 
 Examples
@@ -77,7 +77,7 @@ Known Issues
 - Org-static-blog is a pure static site generator. As such, it does
   not include comments. However, you can easily include services like
   Disqus to do this for you.
-- You can have hosting services like Github auto-render you blog every
+- You can have hosting services like GitHub auto-render you blog every
   time you commit using continuous integration tools like Travis CI. 
 - Individual blog entries are only re-rendered if no current HTML file
   is available (i.e. the org file is older than the HTML file). If you
