@@ -52,6 +52,7 @@
   "HTML to put after the content of each page."
   :group 'org-static-blog)
 
+;;;###autoload
 (defun org-static-blog-publish ()
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
@@ -102,6 +103,7 @@
           (file-name-nondirectory
            (org-static-blog-matching-publish-filename post-filename))))
 
+;;;###autoload
 (defun org-static-blog-publish-file (post-filename)
   (with-find-file post-filename
    (org-export-to-file 'org-static-blog-post
