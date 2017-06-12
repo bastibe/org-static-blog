@@ -89,6 +89,9 @@
 
 ;;;###autoload
 (defun org-static-blog-publish ()
+  "Render all blog entries, the index, archive, and RSS feed.
+  Only blog entries that changed since the HTML was created are
+  re-rendered."
   (interactive)
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
@@ -106,17 +109,23 @@
       (org-static-blog-create-archive))))
 
 (defun org-static-blog-needs-publishing-p (post-filename)
+  "Check whether the entry was changed since the last render."
   (let ((pub-filename
          (org-static-blog-matching-publish-filename post-filename)))
     (not (and (file-exists-p pub-filename)
               (file-newer-than-file-p pub-filename post-filename)))))
 
 (defun org-static-blog-matching-publish-filename (post-filename)
+  "Generate HTML file name for post."
   (concat org-static-blog-publish-directory
           (file-name-base post-filename)
           ".html"))
 
+;; This macro is needed for many of the following functions.
 (defmacro with-find-file (file &rest body)
+  "Executes `body` within a new buffer that contains `file`.
+  The buffer is disposed after the macro exits (unless it already
+  existed before)."
   `(save-excursion
      (let ((buffer-existed (get-buffer (file-name-nondirectory ,file)))
            (buffer (find-file ,file)))
@@ -127,6 +136,7 @@
         (kill-buffer buffer)))))
 
 (defun org-static-blog-get-date (post-filename)
+  "Extract the `#+date:` from a blog entry."
   (let ((date nil))
     (with-find-file
      post-filename
@@ -136,6 +146,7 @@
     date))
 
 (defun org-static-blog-get-title (post-filename)
+  "Extract the `#+title:` from a blog entry."
   (let ((title nil))
     (with-find-file
      post-filename
@@ -145,12 +156,15 @@
     title))
 
 (defun org-static-blog-get-url (post-filename)
+  "Generate a URL to a blog entry."
   (concat org-static-blog-publish-url
           (file-name-nondirectory
            (org-static-blog-matching-publish-filename post-filename))))
 
 ;;;###autoload
 (defun org-static-blog-publish-file (post-filename)
+  "Publish a single file.
+  The index page, archive page, and RSS feed are not updated."
   (interactive "f")
   (with-find-file post-filename
    (org-export-to-file 'org-static-blog-post
@@ -158,6 +172,9 @@
      nil nil nil nil nil)))
 
 (defun org-static-blog-create-index ()
+  "Re-render the blog index page.
+  The index page contains the last `org-static-blog-index-length`
+  entries as full text entries."
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
         (index-file (concat org-static-blog-publish-directory org-static-blog-index-file))
@@ -209,6 +226,9 @@ org-static-blog-page-preamble
 </body>"))))
 
 (defun org-static-blog-create-rss ()
+  "Re-render the blog RSS feed.
+  The RSS-feed is an XML file that contains every blog entry in a
+  machine-readable format."
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
         (rss-file (concat org-static-blog-publish-directory org-static-blog-rss-file))
@@ -235,6 +255,9 @@ org-static-blog-page-preamble
 </rss>"))))
 
 (defun org-static-blog-create-archive ()
+  "Re-render the blog archive page.
+  The archive page contains single-line links and dates for every
+  blog entry, but no entry body."
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
         (archive-file (concat org-static-blog-publish-directory org-static-blog-archive-file))

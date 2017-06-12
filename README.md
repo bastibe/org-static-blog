@@ -17,6 +17,31 @@ Above all, I tried to make org-static-blog as simple as possible.
 There are no magic tricks, and all of the source code is meant to be
 easy to read, understand and modify.
 
+For org-static-blog, a blog consists of four parts:
+- Blog posts contain individual entries. Every org file in
+  `org-static-blog-posts-directory` is one blog post. Each blog post
+  is rendered as its own HTML page.
+- The index page contains the last few blog posts on a single page.
+  The number of entries on the index page can be customized using
+  `org-static-blog-index-length`.
+- The archive page lists the publishing dates and headlines of every
+  blog post.
+- The RSS feed is a machine-readable XML file that contains every blog
+  post. It is not meant to be consumed by humans. Instead RSS readers
+  can use the RSS feed to aggregate entries from multiple blogs.
+
+Every HTML page in org-static-blog can be customized in three ways:
+- The contents of `org-static-blog-page-header` are inserted into the
+  `<head>` of every page. Use this to include custom CSS and
+  JavaScript for your blog.
+- The contents of `org-static-blog-page-preamble` is inserted just
+  before the content of every page. This is a good place to put the
+  header or menus for your blog.
+- The contents of `org-static-blog-page-postamble` is inserted just
+  after the content of every blog entry, but not in the index page and
+  the archive. This is where you can include copyright notices or
+  comment boxes.
+
 If you have questions, if you find bugs, or if you would like to
 contribute something to org-static-blog, please open an issue or pull
 request on Github.
@@ -37,6 +62,26 @@ itself to see an example of how to use `org-static-blog` in practice.
 [blog]: http://bastibe.de
 [init]: https://github.com/bastibe/.emacs.d/blob/master/init.el#L670
 [repo]: https://github.com/bastibe/bastibe.github.com
+
+Known Issues
+-----------
+
+- Every time the blog is rendered, org-static-blog has to parse and
+  render every single file in the org-static-blog-publish-directory.
+  This will take longer if there are more files. On my computer, it
+  takes about one second per file.  
+  org-static-blog caches old rendered blog entries, but the archive
+  and RSS files need to be rebuilt every time. If this is a problem,
+  you could try limiting the archive and RSS files much like the index
+  page is limited to only a recent few entries.
+- Org-static-blog is a pure static site generator. As such, it does
+  not include comments. However, you can easily include services like
+  Disqus to do this for you.
+- You can have hosting services like Github auto-render you blog every
+  time you commit using continuous integration tools like Travis CI. 
+- Individual blog entries are only re-rendered if no current HTML file
+  is available (i.e. the org file is older than the HTML file). If you
+  want to forcibly re-render an entry, delete the HTML file.
 
 LICENSE
 -------
