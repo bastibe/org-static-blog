@@ -2,7 +2,7 @@
 
 ;; Author: Bastian Bechtold
 ;; URL: http://github.com/bastibe/org-static-blog
-;; Version: 1.0.0
+;; Version: 1.0.1
 
 ;; Static blog generators are a dime a dozen. This is one more, which
 ;; focuses on being simple. All files are simple org-mode files in a
@@ -30,11 +30,13 @@
 ;; issues. Publishing Open Source Software on Github does not imply an
 ;; obligation to *fix your problem right now*. Please be civil.
 
+;;; Code:
+
 (require 'ox-html)
 
 (defgroup org-static-blog nil
   "Settings for a static blog generator using org-mode"
-  :version "1.0.0"
+  :version "1.0.1"
   :group 'applications)
 
 (defcustom org-static-blog-publish-url "http://example.com/"
@@ -113,6 +115,16 @@
   (concat org-static-blog-publish-directory
           (file-name-base post-filename)
           ".html"))
+
+(defmacro with-find-file (file &rest body)
+  `(save-excursion
+     (let ((buffer-existed (get-buffer (file-name-nondirectory ,file)))
+           (buffer (find-file ,file)))
+       ,@body
+       (switch-to-buffer buffer)
+       (save-buffer)
+      (unless buffer-existed
+        (kill-buffer buffer)))))
 
 (defun org-static-blog-get-date (post-filename)
   (let ((date nil))
@@ -266,16 +278,6 @@ org-static-blog-page-preamble
            "</h2>\n")))
        (insert "</body>\n </html>"))))
 
-(defmacro with-find-file (file &rest body)
-  `(save-excursion
-     (let ((buffer-existed (get-buffer (file-name-nondirectory ,file)))
-           (buffer (find-file ,file)))
-       ,@body
-       (switch-to-buffer buffer)
-       (save-buffer)
-      (unless buffer-existed
-        (kill-buffer buffer)))))
-
 (org-export-define-derived-backend 'org-static-blog-post 'html
   :translate-alist '((template . org-static-blog-post-template)))
 
@@ -344,3 +346,7 @@ as a communication channel."
   <link>" url "</link>
   <pubDate>" (org-timestamp-format (car (plist-get info :date)) "%a, %d %b %Y %H:%M:%S %z") "</pubDate>
 </item>\n")))
+
+(provide 'org-static-blog)
+
+;;; org-static-blog.el ends here
