@@ -154,7 +154,7 @@ org-static-blog-page-preamble
                   (nth 3 entry)))))
      (insert
 "<div id=\"archive\">
-  <a href=\"archive.html\">Older posts</a>
+  <a href=\"" org-static-blog-archive-file "\">Older posts</a>
 </div>
 </div>
 </body>"))))
