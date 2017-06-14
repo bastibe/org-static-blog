@@ -78,7 +78,9 @@ Known Issues
   not include comments. However, you can easily include services like
   Disqus to do this for you.
 - You can have hosting services like GitHub auto-render you blog every
-  time you commit using continuous integration tools like Travis CI. 
+  time you commit using continuous integration tools like Travis CI.
+  An example of how to do this has been gracefully provided
+  by [zngguvnf](https://gitlab.com/_zngguvnf/org-static-blog-example).
 - Individual blog entries are only re-rendered if no current HTML file
   is available (i.e. the org file is older than the HTML file). If you
   want to forcibly re-render an entry, delete the HTML file.
