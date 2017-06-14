@@ -2,7 +2,7 @@
 
 ;; Author: Bastian Bechtold
 ;; URL: http://github.com/bastibe/org-static-blog
-;; Version: 1.0.2
+;; Version: 1.0.3
 ;; Package-Requires: ((emacs "24.3"))
 
 ;;; Commentary:
@@ -39,7 +39,7 @@
 
 (defgroup org-static-blog nil
   "Settings for a static blog generator using org-mode"
-  :version "1.0.2"
+  :version "1.0.3"
   :group 'applications)
 
 (defcustom org-static-blog-publish-url "http://example.com/"
@@ -143,7 +143,7 @@ existed before)."
   (let ((date nil))
     (org-static-blog-with-find-file
      post-filename
-     (beginning-of-buffer)
+     (goto-char (point-min))
      (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
      (setq date (date-to-time (match-string 1))))
     date))
@@ -153,7 +153,7 @@ existed before)."
   (let ((title nil))
     (org-static-blog-with-find-file
      post-filename
-     (beginning-of-buffer)
+     (goto-char (point-min))
      (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$")
      (setq title (match-string 1)))
     title))
