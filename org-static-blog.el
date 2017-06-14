@@ -2,7 +2,10 @@
 
 ;; Author: Bastian Bechtold
 ;; URL: http://github.com/bastibe/org-static-blog
-;; Version: 1.0.1
+;; Version: 1.0.2
+;; Package-Requires: ((emacs "24.3"))
+
+;;; Commentary:
 
 ;; Static blog generators are a dime a dozen. This is one more, which
 ;; focuses on being simple. All files are simple org-mode files in a
@@ -36,27 +39,27 @@
 
 (defgroup org-static-blog nil
   "Settings for a static blog generator using org-mode"
-  :version "1.0.1"
+  :version "1.0.2"
   :group 'applications)
 
 (defcustom org-static-blog-publish-url "http://example.com/"
-  "URL of the blog"
+  "URL of the blog."
   :group 'org-static-blog)
 
 (defcustom org-static-blog-publish-title "Example.com"
-  "Title of the blog"
+  "Title of the blog."
   :group 'org-static-blog)
 
 (defcustom org-static-blog-publish-directory "~/blog/"
-  "Directory where published HTML files are stored"
+  "Directory where published HTML files are stored."
   :group 'org-static-blog)
 
 (defcustom org-static-blog-posts-directory "~/blog/posts/"
-  "Directory where published ORG files are stored"
+  "Directory where published ORG files are stored."
   :group 'org-static-blog)
 
 (defcustom org-static-blog-drafts-directory "~/blog/drafts/"
-  "Directory where unpublished ORG files are stored"
+  "Directory where unpublished ORG files are stored."
   :group 'org-static-blog)
 
 (defcustom org-static-blog-index-file "index.html"
@@ -90,8 +93,8 @@
 ;;;###autoload
 (defun org-static-blog-publish ()
   "Render all blog entries, the index, archive, and RSS feed.
-  Only blog entries that changed since the HTML was created are
-  re-rendered."
+Only blog entries that changed since the HTML was created are
+re-rendered."
   (interactive)
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
@@ -109,23 +112,23 @@
       (org-static-blog-create-archive))))
 
 (defun org-static-blog-needs-publishing-p (post-filename)
-  "Check whether the entry was changed since the last render."
+  "Check whether POST-FILENAME was changed since last render."
   (let ((pub-filename
          (org-static-blog-matching-publish-filename post-filename)))
     (not (and (file-exists-p pub-filename)
               (file-newer-than-file-p pub-filename post-filename)))))
 
 (defun org-static-blog-matching-publish-filename (post-filename)
-  "Generate HTML file name for post."
+  "Generate HTML file name for entry POST-FILENAME."
   (concat org-static-blog-publish-directory
           (file-name-base post-filename)
           ".html"))
 
 ;; This macro is needed for many of the following functions.
-(defmacro with-find-file (file &rest body)
-  "Executes `body` within a new buffer that contains `file`.
-  The buffer is disposed after the macro exits (unless it already
-  existed before)."
+(defmacro org-static-blog-with-find-file (file &rest body)
+  "Executes BODY within a new buffer that contains FILE.
+The buffer is disposed after the macro exits (unless it already
+existed before)."
   `(save-excursion
      (let ((buffer-existed (get-buffer (file-name-nondirectory ,file)))
            (buffer (find-file ,file)))
@@ -136,9 +139,9 @@
         (kill-buffer buffer)))))
 
 (defun org-static-blog-get-date (post-filename)
-  "Extract the `#+date:` from a blog entry."
+  "Extract the `#+date:` from entry POST-FILENAME."
   (let ((date nil))
-    (with-find-file
+    (org-static-blog-with-find-file
      post-filename
      (beginning-of-buffer)
      (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
@@ -146,9 +149,9 @@
     date))
 
 (defun org-static-blog-get-title (post-filename)
-  "Extract the `#+title:` from a blog entry."
+  "Extract the `#+title:` from entry POST-FILENAME."
   (let ((title nil))
-    (with-find-file
+    (org-static-blog-with-find-file
      post-filename
      (beginning-of-buffer)
      (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$")
@@ -156,38 +159,38 @@
     title))
 
 (defun org-static-blog-get-url (post-filename)
-  "Generate a URL to a blog entry."
+  "Generate a URL to entry POST-FILENAME."
   (concat org-static-blog-publish-url
           (file-name-nondirectory
            (org-static-blog-matching-publish-filename post-filename))))
 
 ;;;###autoload
 (defun org-static-blog-publish-file (post-filename)
-  "Publish a single file.
-  The index page, archive page, and RSS feed are not updated."
+  "Publish a single entry POST-FILENAME.
+The index page, archive page, and RSS feed are not updated."
   (interactive "f")
-  (with-find-file post-filename
+  (org-static-blog-with-find-file post-filename
    (org-export-to-file 'org-static-blog-post
        (org-static-blog-matching-publish-filename post-filename)
      nil nil nil nil nil)))
 
 (defun org-static-blog-create-index ()
   "Re-render the blog index page.
-  The index page contains the last `org-static-blog-index-length`
-  entries as full text entries."
+The index page contains the last `org-static-blog-index-length`
+entries as full text entries."
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
         (index-file (concat org-static-blog-publish-directory org-static-blog-index-file))
         (index-entries nil))
     (dolist (file posts)
-      (with-find-file
+      (org-static-blog-with-find-file
        file
        (let ((date (org-static-blog-get-date file))
              (title (org-static-blog-get-title file))
              (content (org-export-as 'org-static-blog-post-bare nil nil nil nil))
              (url (org-static-blog-get-url file)))
            (add-to-list 'index-entries (list date title url content)))))
-    (with-find-file
+    (org-static-blog-with-find-file
      index-file
      (erase-buffer)
      (insert
@@ -227,19 +230,19 @@ org-static-blog-page-preamble
 
 (defun org-static-blog-create-rss ()
   "Re-render the blog RSS feed.
-  The RSS-feed is an XML file that contains every blog entry in a
-  machine-readable format."
+The RSS-feed is an XML file that contains every blog entry in a
+machine-readable format."
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
         (rss-file (concat org-static-blog-publish-directory org-static-blog-rss-file))
         (rss-entries nil))
     (dolist (file posts)
-      (with-find-file
+      (org-static-blog-with-find-file
        file
        (let ((rss-date (org-static-blog-get-date file))
              (rss-text (org-export-as 'org-static-blog-rss nil nil nil nil)))
        (add-to-list 'rss-entries (cons rss-date rss-text)))))
-    (with-find-file
+    (org-static-blog-with-find-file
      rss-file
      (erase-buffer)
      (insert "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -256,20 +259,20 @@ org-static-blog-page-preamble
 
 (defun org-static-blog-create-archive ()
   "Re-render the blog archive page.
-  The archive page contains single-line links and dates for every
-  blog entry, but no entry body."
+The archive page contains single-line links and dates for every
+blog entry, but no entry body."
   (let ((posts (directory-files
                 org-static-blog-posts-directory t ".*\\.org$" nil))
         (archive-file (concat org-static-blog-publish-directory org-static-blog-archive-file))
         (archive-entries nil))
     (dolist (file posts)
-      (with-find-file
+      (org-static-blog-with-find-file
        file
        (let ((date (org-static-blog-get-date file))
              (title (org-static-blog-get-title file))
              (url (org-static-blog-get-url file)))
            (add-to-list 'archive-entries (list date title url)))))
-    (with-find-file
+    (org-static-blog-with-find-file
      archive-file
      (erase-buffer)
      (insert (concat
