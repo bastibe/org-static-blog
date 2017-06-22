@@ -220,7 +220,8 @@ org-static-blog-page-preamble
 "</div>
 <div id=\"content\">"))
      (setq index-entries (sort index-entries (lambda (x y) (time-less-p (nth 0 y) (nth 0 x)))))
-     (dolist (idx (number-sequence 0 (1- org-static-blog-index-length)))
+     (dolist (idx (number-sequence 0 (1- (min org-static-blog-index-length
+                                              (length index-entries)))))
        (let ((entry (nth idx index-entries)))
          (insert
           (concat "<div class=\"post-date\">" (format-time-string "%d %b %Y" (nth 0 entry)) "</div>"
