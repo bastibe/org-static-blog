@@ -55,15 +55,21 @@
   :group 'org-static-blog)
 
 (defcustom org-static-blog-posts-directory "~/blog/posts/"
-  "Directory where published ORG files are stored."
+  "Directory where published ORG files are stored.
+When publishing, posts are rendered as HTML, and included in the
+index, archive, and RSS feed."
   :group 'org-static-blog)
 
 (defcustom org-static-blog-drafts-directory "~/blog/drafts/"
-  "Directory where unpublished ORG files are stored."
+  "Directory where unpublished ORG files are stored.
+When publishing, draft are rendered as HTML, but not included in
+the index, archive, or RSS feed."
   :group 'org-static-blog)
 
 (defcustom org-static-blog-index-file "index.html"
-  "File name of the blog landing page."
+  "File name of the blog landing page.
+The index page contains the most recent
+`org-static-blog-index-length` full-text posts."
   :group 'org-static-blog)
 
 (defcustom org-static-blog-index-length 5
@@ -71,7 +77,8 @@
   :group 'org-static-blog)
 
 (defcustom org-static-blog-archive-file "archive.html"
-  "File name of the list of all blog entries."
+  "File name of the list of all blog entries.
+The archive page lists all posts as headlines."
   :group 'org-static-blog)
 
 (defcustom org-static-blog-rss-file "rss.xml"

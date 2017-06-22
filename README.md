@@ -17,7 +17,7 @@ Above all, I tried to make org-static-blog as simple as possible.
 There are no magic tricks, and all of the source code is meant to be
 easy to read, understand and modify.
 
-For org-static-blog, a blog consists of four parts:
+For org-static-blog, a blog consists of five parts:
 - Blog posts contain individual entries. Every org file in
   `org-static-blog-posts-directory` is one blog post. Each blog post
   is rendered as its own HTML page.
@@ -29,6 +29,8 @@ For org-static-blog, a blog consists of four parts:
 - The RSS feed is a machine-readable XML file that contains every blog
   post. It is not meant to be consumed by humans. Instead RSS readers
   can use the RSS feed to aggregate entries from multiple blogs.
+- Drafts are rendered like regular blog posts, but are not included in
+  the index, the archive, or the RSS feed.
 
 Every HTML page in org-static-blog can be customized in three ways:
 - The contents of `org-static-blog-page-header` are inserted into the
