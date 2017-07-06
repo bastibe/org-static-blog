@@ -1,7 +1,7 @@
 ;;; org-static-blog.el --- a simple org-mode based static blog generator
 
 ;; Author: Bastian Bechtold
-;; URL: http://github.com/bastibe/org-static-blog
+;; URL: https://github.com/bastibe/org-static-blog
 ;; Version: 1.0.3
 ;; Package-Requires: ((emacs "24.3"))
 
@@ -42,7 +42,7 @@
   :version "1.0.3"
   :group 'applications)
 
-(defcustom org-static-blog-publish-url "http://example.com/"
+(defcustom org-static-blog-publish-url "https://example.com/"
   "URL of the blog."
   :group 'org-static-blog)
 
@@ -203,8 +203,8 @@ entries as full text entries."
      (insert
       (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
-\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
-<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
+\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
+<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
 <head>
 <meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
 <link rel=\"alternate\"
@@ -286,8 +286,8 @@ blog entry, but no entry body."
      (insert (concat
               "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
-\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
-<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
+\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
+<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
 <head>
 <meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
 <link rel=\"alternate\"
@@ -324,8 +324,8 @@ as a communication channel."
     (concat
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
-\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
-<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
+\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
+<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
 <head>
 <meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
 <link rel=\"alternate\"
