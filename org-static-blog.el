@@ -165,6 +165,24 @@ existed before)."
      (setq title (match-string 1)))
     title))
 
+(defun org-static-blog-get-bare-html (post-filename)
+  "Get the rendered HTML body without headers from POST-FILENAME."
+  (let ((html-filename (org-static-blog-matching-publish-filename post-filename))
+        (content-start)
+        (content-end))
+    (with-temp-buffer
+      (insert-file-contents html-filename)
+      (goto-char (point-min))
+      (buffer-substring-no-properties
+       (progn
+         (search-forward "<h1 class=\"post-title\">")
+         (search-forward "</h1>")
+         (point))
+       (progn
+         (search-forward "<div id=\"postamble\" class=\"status\">")
+         (search-backward "</div>")
+         (point))))))
+
 (defun org-static-blog-get-url (post-filename)
   "Generate a URL to entry POST-FILENAME."
   (concat org-static-blog-publish-url
@@ -190,13 +208,11 @@ entries as full text entries."
         (index-file (concat org-static-blog-publish-directory org-static-blog-index-file))
         (index-entries nil))
     (dolist (file posts)
-      (org-static-blog-with-find-file
-       file
-       (let ((date (org-static-blog-get-date file))
-             (title (org-static-blog-get-title file))
-             (content (org-export-as 'org-static-blog-post-bare nil nil nil nil))
-             (url (org-static-blog-get-url file)))
-           (add-to-list 'index-entries (list date title url content)))))
+      (let ((date (org-static-blog-get-date file))
+            (title (org-static-blog-get-title file))
+            (content (org-static-blog-get-bare-html file))
+            (url (org-static-blog-get-url file)))
+        (add-to-list 'index-entries (list date title url content)))))
     (org-static-blog-with-find-file
      index-file
      (erase-buffer)
@@ -245,11 +261,9 @@ machine-readable format."
         (rss-file (concat org-static-blog-publish-directory org-static-blog-rss-file))
         (rss-entries nil))
     (dolist (file posts)
-      (org-static-blog-with-find-file
-       file
-       (let ((rss-date (org-static-blog-get-date file))
-             (rss-text (org-export-as 'org-static-blog-rss nil nil nil nil)))
-       (add-to-list 'rss-entries (cons rss-date rss-text)))))
+      (let ((rss-date (org-static-blog-get-date file))
+            (rss-text (org-static-blog-get-rss-entry file)))
+        (add-to-list 'rss-entries (cons rss-date rss-text))))
     (org-static-blog-with-find-file
      rss-file
      (erase-buffer)
@@ -357,26 +371,24 @@ CONTENTS is the transcoded contents string.  INFO is a plist used
 as a communication channel."
 contents)
 
-(org-export-define-derived-backend 'org-static-blog-rss 'html
-  :translate-alist '((template . org-static-blog-rss-template)
-                     (timestamp . (lambda (&rest args) ""))))
-
-(defun org-static-blog-rss-template (contents info)
-  "Return complete document string after rss entry conversion.
-CONTENTS is the transcoded contents string.  INFO is a plist used
-as a communication channel."
-  (let ((url (concat org-static-blog-publish-url
-                     (file-name-nondirectory
-                      (org-static-blog-matching-publish-filename
-                       (plist-get info :input-buffer))))))
-    (concat
-"<item>
-  <title>" (org-export-data (plist-get info :title) info) "</title>
+(defun org-static-blog-get-rss-entry (post-filename)
+  "Assemble RSS entry from post-filename.
+The HTML content is taken from the rendered HTML post."
+  (concat
+   "<item>
+  <title>" (org-static-blog-get-title post-filename) "</title>
   <description><![CDATA["
-  contents
+  (org-static-blog-get-bare-html post-filename)
   "]]></description>
-  <link>" url "</link>
-  <pubDate>" (org-timestamp-format (car (plist-get info :date)) "%a, %d %b %Y %H:%M:%S %z") "</pubDate>
+  <link>"
+  (concat org-static-blog-publish-url
+          (file-name-nondirectory
+           (org-static-blog-matching-publish-filename
+            post-filename)))
+  "</link>
+  <pubDate>"
+  (format-time-string "%a, %d %b %Y %H:%M:%S %z" (org-static-blog-get-date post-filename))
+  "</pubDate>
 </item>\n")))
 
 (provide 'org-static-blog)
