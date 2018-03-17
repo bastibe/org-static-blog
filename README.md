@@ -68,14 +68,6 @@ itself to see an example of how to use `org-static-blog` in practice.
 Known Issues
 -----------
 
-- Every time the blog is rendered, org-static-blog has to parse and
-  render every single file in the org-static-blog-publish-directory.
-  This will take longer if there are more files. On my computer, it
-  takes about one second per file.  
-  org-static-blog caches old rendered blog entries, but the archive
-  and RSS files need to be rebuilt every time. If this is a problem,
-  you could try limiting the archive and RSS files much like the index
-  page is limited to only a recent few entries.
 - Org-static-blog is a pure static site generator. As such, it does
   not include comments. However, you can easily include services like
   Disqus to do this for you.
@@ -86,6 +78,13 @@ Known Issues
 - Individual blog entries are only re-rendered if no current HTML file
   is available (i.e. the org file is older than the HTML file). If you
   want to forcibly re-render an entry, delete the HTML file.
+
+Changelog
+---------
+
+- 2018-03-17 (v1.0.4): Massive speed up of org-static-blog. A
+  re-render with one changed file used to take about a second per
+  post, and now takes about a second total.
 
 LICENSE
 -------
