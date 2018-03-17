@@ -148,8 +148,8 @@ existed before)."
 (defun org-static-blog-get-date (post-filename)
   "Extract the `#+date:` from entry POST-FILENAME."
   (let ((date nil))
-    (org-static-blog-with-find-file
-     post-filename
+    (with-temp-buffer
+     (insert-file-contents post-filename)
      (goto-char (point-min))
      (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
      (setq date (date-to-time (match-string 1))))
@@ -158,8 +158,8 @@ existed before)."
 (defun org-static-blog-get-title (post-filename)
   "Extract the `#+title:` from entry POST-FILENAME."
   (let ((title nil))
-    (org-static-blog-with-find-file
-     post-filename
+    (with-temp-buffer
+     (insert-file-contents post-filename)
      (goto-char (point-min))
      (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$")
      (setq title (match-string 1)))
@@ -274,12 +274,10 @@ blog entry, but no entry body."
         (archive-file (concat org-static-blog-publish-directory org-static-blog-archive-file))
         (archive-entries nil))
     (dolist (file posts)
-      (org-static-blog-with-find-file
-       file
-       (let ((date (org-static-blog-get-date file))
-             (title (org-static-blog-get-title file))
-             (url (org-static-blog-get-url file)))
-           (add-to-list 'archive-entries (list date title url)))))
+      (let ((date (org-static-blog-get-date file))
+            (title (org-static-blog-get-title file))
+            (url (org-static-blog-get-url file)))
+        (add-to-list 'archive-entries (list date title url))))
     (org-static-blog-with-find-file
      archive-file
      (erase-buffer)
