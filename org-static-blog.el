@@ -179,7 +179,7 @@ existed before)."
       (goto-char (point-min))
       (if (search-forward-regexp "^\\#\\+tags:[ ]*\\(.+\\)$" nil t)
           (setq tags (split-string (match-string 1)))))
-    tags)))
+    tags))
 
 (defun org-static-blog-get-tag-tree ()
   "Return an association list of tags to filenames."
@@ -277,17 +277,25 @@ org-static-blog-page-postamble
 The index page contains the last `org-static-blog-index-length`
 entries as full text entries."
   (let ((posts (directory-files
-                org-static-blog-posts-directory t ".*\\.org$" nil))
-        (index-file (concat org-static-blog-publish-directory org-static-blog-index-file))
-        (index-entries nil))
-    (dolist (file posts)
+                org-static-blog-posts-directory t ".*\\.org$" nil)))
+    ;; reverse-sort, so that the later `last` will grab the newest entries
+    (setq posts (sort posts (lambda (x y) (time-less-p (org-static-blog-get-date x) (org-static-blog-get-date y)))))
+    (org-static-blog-create-multipost-page
+     (concat org-static-blog-publish-directory org-static-blog-index-file)
+     (last posts org-static-blog-index-length))))
+
+(defun org-static-blog-create-multipost-page (target-file file-list)
+  "Assemble a page that contains multiple posts one after another.
+Posts are sorted in descending time."
+  (let ((target-entries nil))
+    (dolist (file file-list)
       (let ((date (org-static-blog-get-date file))
             (title (org-static-blog-get-title file))
             (content (org-static-blog-get-bare-html file))
             (url (org-static-blog-get-url file)))
-        (add-to-list 'index-entries (list date title url content))))
+        (add-to-list 'target-entries (list date title url content))))
     (org-static-blog-with-find-file
-     index-file
+     target-file
      (erase-buffer)
      (insert
       (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -308,16 +316,14 @@ org-static-blog-page-header
 org-static-blog-page-preamble
 "</div>
 <div id=\"content\">"))
-     (setq index-entries (sort index-entries (lambda (x y) (time-less-p (nth 0 y) (nth 0 x)))))
-     (dolist (idx (number-sequence 0 (1- (min org-static-blog-index-length
-                                              (length index-entries)))))
-       (let ((entry (nth idx index-entries)))
-         (insert
-          (concat "<div class=\"post-date\">" (format-time-string "%d %b %Y" (nth 0 entry)) "</div>"
-                  "<h1 class=\"post-title\">"
-                  "<a href=\"" (nth 2 entry) "\">" (nth 1 entry) "</a>"
-                  "</h1>\n"
-                  (nth 3 entry)))))
+     (setq target-entries (sort target-entries (lambda (x y) (time-less-p (nth 0 y) (nth 0 x)))))
+     (dolist (entry target-entries)
+       (insert
+        (concat "<div class=\"post-date\">" (format-time-string "%d %b %Y" (nth 0 entry)) "</div>"
+                "<h1 class=\"post-title\">"
+                "<a href=\"" (nth 2 entry) "\">" (nth 1 entry) "</a>"
+                "</h1>\n"
+                (nth 3 entry))))
      (insert
 "<div id=\"archive\">
   <a href=\"" org-static-blog-archive-file "\">Older posts</a>
@@ -418,6 +424,9 @@ org-static-blog-page-preamble
        (insert "</body>\n </html>"))))
 
 (defun org-static-blog-create-tags ()
+  (org-static-blog-create-tags-archive))
+
+(defun org-static-blog-create-tags-archive ()
   "Re-render the blog tags page.
 The archive page contains single-line links and dates for every
 blog entry, sorted by tags, but no entry body."
@@ -445,8 +454,7 @@ org-static-blog-page-header
 org-static-blog-page-preamble
 "</div>
 <div id=\"content\">"
-"<h1 class=\"title\">Tags</h1>\n"
-))
+"<h1 class=\"title\">Tags</h1>\n"))
      (dolist (tag tag-tree)
        (insert (concat "<h1 class=\"tags-title\">" (car tag) "</h1>\n"))
        (dolist (file (sort (cdr tag) (lambda (x y) (time-less-p (org-static-blog-get-date y)
