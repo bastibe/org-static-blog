@@ -284,7 +284,7 @@ entries as full text entries."
      (concat org-static-blog-publish-directory org-static-blog-index-file)
      (last posts org-static-blog-index-length))))
 
-(defun org-static-blog-create-multipost-page (target-file file-list)
+(defun org-static-blog-create-multipost-page (target-file file-list &optional front-matter)
   "Assemble a page that contains multiple posts one after another.
 Posts are sorted in descending time."
   (let ((target-entries nil))
@@ -316,6 +316,8 @@ org-static-blog-page-header
 org-static-blog-page-preamble
 "</div>
 <div id=\"content\">"))
+     (if front-matter
+         (insert front-matter))
      (setq target-entries (sort target-entries (lambda (x y) (time-less-p (nth 0 y) (nth 0 x)))))
      (dolist (entry target-entries)
        (insert
@@ -424,10 +426,19 @@ org-static-blog-page-preamble
        (insert "</body>\n </html>"))))
 
 (defun org-static-blog-create-tags ()
-  (org-static-blog-create-tags-archive))
+  "Render the tag pages.
+Each tag page contains the full text of all posts of a tag."
+  (org-static-blog-create-tags-archive)
+  (if (not (file-exists-p (concat org-static-blog-publish-directory "tags/")))
+      (make-directory (concat org-static-blog-publish-directory "tags/")))
+  (dolist (tag (org-static-blog-get-tag-tree))
+    (org-static-blog-create-multipost-page
+     (concat org-static-blog-publish-directory "tags/" (downcase (car tag)) ".html")
+     (cdr tag)
+     (concat "<h1 class=\"title\">Tag: " (car tag) "</h1>"))))
 
 (defun org-static-blog-create-tags-archive ()
-  "Re-render the blog tags page.
+  "Render the blog tag archive page.
 The archive page contains single-line links and dates for every
 blog entry, sorted by tags, but no entry body."
   (let ((tags-file (concat org-static-blog-publish-directory org-static-blog-tags-file))
