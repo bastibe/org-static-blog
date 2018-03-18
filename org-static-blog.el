@@ -81,6 +81,11 @@ The index page contains the most recent
 The archive page lists all posts as headlines."
   :group 'org-static-blog)
 
+(defcustom org-static-blog-tags-file "tags.html"
+  "File name of the list of all blog entries by tag.
+The tags page lists all posts as headlines."
+  :group 'org-static-blog)
+
 (defcustom org-static-blog-rss-file "rss.xml"
   "File name of the RSS feed."
   :group 'org-static-blog)
@@ -116,7 +121,8 @@ re-rendered."
     (when rebuild
       (org-static-blog-create-index)
       (org-static-blog-create-rss)
-      (org-static-blog-create-archive))))
+      (org-static-blog-create-archive)
+      (org-static-blog-create-tags))))
 
 (defun org-static-blog-needs-publishing-p (post-filename)
   "Check whether POST-FILENAME was changed since last render."
@@ -164,6 +170,29 @@ existed before)."
      (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$")
      (setq title (match-string 1)))
     title))
+
+(defun org-static-blog-get-tags (post-filename)
+  "Extract the `#+tags:` from entry POST-FILENAME."
+  (let ((tags nil))
+    (with-temp-buffer
+      (insert-file-contents post-filename)
+      (goto-char (point-min))
+      (if (search-forward-regexp "^\\#\\+tags:[ ]*\\(.+\\)$" nil t)
+          (setq tags (split-string (match-string 1)))))
+    tags)))
+
+(defun org-static-blog-get-tag-tree ()
+  "Return an association list of tags to filenames."
+  (let ((posts (directory-files
+                org-static-blog-posts-directory t ".*\\.org$" nil))
+        (tag-tree '()))
+    (dolist (file posts)
+      (let ((tags (org-static-blog-get-tags file)))
+        (dolist (tag tags)
+          (if (assoc-string tag tag-tree t)
+              (push file (cdr (assoc-string tag tag-tree t)))
+            (push (cons tag (list file)) tag-tree)))))
+    tag-tree))
 
 (defun org-static-blog-get-bare-html (post-filename)
   "Get the rendered HTML body without headers from POST-FILENAME."
@@ -387,6 +416,51 @@ org-static-blog-page-preamble
            "<a href=\"" (nth 2 entry) "\">" (nth 1 entry) "</a>"
            "</h2>\n")))
        (insert "</body>\n </html>"))))
+
+(defun org-static-blog-create-tags ()
+  "Re-render the blog tags page.
+The archive page contains single-line links and dates for every
+blog entry, sorted by tags, but no entry body."
+  (let ((tags-file (concat org-static-blog-publish-directory org-static-blog-tags-file))
+        (tag-tree (org-static-blog-get-tag-tree)))
+    (org-static-blog-with-find-file
+     tags-file
+     (erase-buffer)
+     (insert (concat
+              "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
+\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
+<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
+<head>
+<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
+<link rel=\"alternate\"
+      type=\"appliation/rss+xml\"
+      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"
+      title=\"RSS feed for " org-static-blog-publish-url "\">
+<title>" org-static-blog-publish-title "</title>"
+org-static-blog-page-header
+"</head>
+<body>
+<div id=\"preamble\" class=\"status\">"
+org-static-blog-page-preamble
+"</div>
+<div id=\"content\">"
+"<h1 class=\"title\">Tags</h1>\n"
+))
+     (dolist (tag tag-tree)
+       (insert (concat "<h1 class=\"tags-title\">" (car tag) "</h1>\n"))
+       (dolist (file (sort (cdr tag) (lambda (x y) (time-less-p (org-static-blog-get-date y)
+                                                                 (org-static-blog-get-date x)))))
+         (insert
+          (concat
+           "<div class=\"post-date\">"
+           (format-time-string "%d %b %Y" (org-static-blog-get-date file))
+           "</div>"
+           "<h2 class=\"post-title\">"
+           "<a href=\"" (org-static-blog-get-url file) "\">" (org-static-blog-get-title file) "</a>"
+           "</h2>\n"))))
+     (insert "</body>\n </html>"))))
+
 
 (provide 'org-static-blog)
 
