@@ -341,12 +341,8 @@ org-static-blog-page-preamble
      (insert
 "<div id=\"archive\">
   <a href=\"" org-static-blog-archive-file "\">Older posts</a>
-</div>")
-     (when org-static-blog-enable-tags
-       (insert "<div id=\"tags\">
-  <a href=\"" org-static-blog-tags-file "\">Tags</a>
-</div>"))
-     (insert "</div>
+</div>
+</div>
 </body>"))))
 
 (defun org-static-blog-assemble-rss ()
