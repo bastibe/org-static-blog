@@ -224,11 +224,24 @@ existed before)."
   "Publish a single entry POST-FILENAME.
 The index page, archive page, and RSS feed are not updated."
   (interactive "f")
-  (org-static-blog-with-find-file
-   (org-static-blog-matching-publish-filename post-filename)
-   (erase-buffer)
-   (insert
-    (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+
+  (let ((taglist-content ""))
+    (when (org-static-blog-get-tags post-filename)
+      (setq taglist-content (concat "<div id=\"taglist\">"
+                             "<p><a href=\""
+                             org-static-blog-tags-file
+                             "\">Tags:</a> "))
+      (dolist (tag (org-static-blog-get-tags post-filename))
+        (setq taglist-content (concat taglist-content "<a href=\""
+                                      (concat "tags/" (downcase tag) ".html")
+                                      "\">" tag "</a> ")))
+      (setq taglist-content (concat taglist-content "</div>")))
+
+    (org-static-blog-with-find-file
+     (org-static-blog-matching-publish-filename post-filename)
+     (erase-buffer)
+     (insert
+      (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
 \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
 <html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
@@ -249,12 +262,13 @@ org-static-blog-page-preamble
 <div class=\"post-date\">" (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename)) "</div>
 <h1 class=\"post-title\">" (org-static-blog-get-title post-filename) "</h1>\n"
 (org-static-blog-render-post-bare post-filename)
+taglist-content
 "</div>
 <div id=\"postamble\" class=\"status\">"
 org-static-blog-page-postamble
 "</div>
 </body>
-</html>"))))
+</html>")))))
 
 (defun org-static-blog-render-post-bare (post-filename)
   "Render blog content as bare HTML without header."
@@ -456,7 +470,7 @@ org-static-blog-page-preamble
 <div id=\"content\">"
 "<h1 class=\"title\">Tags</h1>\n"))
      (dolist (tag tag-tree)
-       (insert (concat "<h1 class=\"tags-title\">" (car tag) "</h1>\n"))
+       (insert (concat "<h1 class=\"tags-title\">Tag: " (downcase (car tag)) "</h1>\n"))
        (dolist (post-filename (sort (cdr tag) (lambda (x y) (time-less-p (org-static-blog-get-date y)
                                                                          (org-static-blog-get-date x)))))
          (insert
