@@ -86,6 +86,10 @@ The archive page lists all posts as headlines."
 The tags page lists all posts as headlines."
   :group 'org-static-blog)
 
+(defcustom org-static-blog-enable-tags nil
+  "Show tags below posts, and generate tag pages."
+  :group 'org-static-blog)
+
 (defcustom org-static-blog-rss-file "rss.xml"
   "File name of the RSS feed."
   :group 'org-static-blog)
@@ -120,7 +124,8 @@ re-rendered."
       (org-static-blog-assemble-index)
       (org-static-blog-assemble-rss)
       (org-static-blog-assemble-archive)
-      (org-static-blog-assemble-tags))))
+      (if org-static-blog-enable-tags
+          (org-static-blog-assemble-tags)))))
 
 (defun org-static-blog-needs-publishing-p (post-filename)
   "Check whether POST-FILENAME was changed since last render."
@@ -226,7 +231,7 @@ The index page, archive page, and RSS feed are not updated."
   (interactive "f")
 
   (let ((taglist-content ""))
-    (when (org-static-blog-get-tags post-filename)
+    (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
       (setq taglist-content (concat "<div id=\"taglist\">"
                              "<p><a href=\""
                              org-static-blog-tags-file
@@ -336,8 +341,12 @@ org-static-blog-page-preamble
      (insert
 "<div id=\"archive\">
   <a href=\"" org-static-blog-archive-file "\">Older posts</a>
-</div>
-</div>
+</div>")
+     (when org-static-blog-enable-tags
+       (insert "<div id=\"tags\">
+  <a href=\"" org-static-blog-tags-file "\">Tags</a>
+</div>"))
+     (insert "</div>
 </body>"))))
 
 (defun org-static-blog-assemble-rss ()
@@ -438,7 +447,7 @@ Each tag page contains the full text of all posts of a tag."
     (org-static-blog-assemble-multipost-page
      (concat org-static-blog-publish-directory "tags/" (downcase (car tag)) ".html")
      (cdr tag)
-     (concat "<h1 class=\"title\">Tag: " (car tag) "</h1>"))))
+     (concat "<h1 class=\"title\">Posts tagged \"" (car tag) "\":</h1>"))))
 
 (defun org-static-blog-assemble-tags-archive ()
   "Assemble the blog tag archive page.
@@ -470,7 +479,7 @@ org-static-blog-page-preamble
 <div id=\"content\">"
 "<h1 class=\"title\">Tags</h1>\n"))
      (dolist (tag tag-tree)
-       (insert (concat "<h1 class=\"tags-title\">Tag: " (downcase (car tag)) "</h1>\n"))
+       (insert (concat "<h1 class=\"tags-title\">Posts tagged \"" (downcase (car tag)) "\":</h1>\n"))
        (dolist (post-filename (sort (cdr tag) (lambda (x y) (time-less-p (org-static-blog-get-date y)
                                                                          (org-static-blog-get-date x)))))
          (insert

@@ -4,7 +4,7 @@ ORG-STATIC-BLOG
 Static blog generators are a dime a dozen. This is one more, which
 focuses on being simple. All files are simple org-mode files in a
 directory. The only requirement is that every org file must have a
-`#+TITLE` and a `#+DATE`.
+`#+TITLE` and a `#+DATE`, and optionally, `#+TAGS`.
 
 This file is also available from marmalade and melpa-stable.
 
@@ -17,7 +17,7 @@ Above all, I tried to make org-static-blog as simple as possible.
 There are no magic tricks, and all of the source code is meant to be
 easy to read, understand and modify.
 
-For org-static-blog, a blog consists of five parts:
+For org-static-blog, a blog consists of six parts:
 - Blog posts contain individual entries. Every org file in
   `org-static-blog-posts-directory` is one blog post. Each blog post
   is rendered as its own HTML page.
@@ -31,6 +31,11 @@ For org-static-blog, a blog consists of five parts:
   can use the RSS feed to aggregate entries from multiple blogs.
 - Drafts are rendered like regular blog posts, but are not included in
   the index, the archive, or the RSS feed.
+- Each blog post can be tagged, and each tag links to a page that
+  lists all other posts of the same tag. Additionally, a tag overview
+  page is created that lists the publishing dates and headlines of
+  every blog post, sorted by tags. This feature is only enabled if you
+  set `org-static-blog-enable-tags` to `t`.
 
 Every HTML page in org-static-blog can be customized in three ways:
 - The contents of `org-static-blog-page-header` are inserted into the
