@@ -233,12 +233,14 @@ The index page, archive page, and RSS feed are not updated."
   (let ((taglist-content ""))
     (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
       (setq taglist-content (concat "<div id=\"taglist\">"
-                             "<p><a href=\""
-                             org-static-blog-tags-file
-                             "\">Tags:</a> "))
+                                    "<p><a href=\""
+                                    org-static-blog-publish-url
+                                    org-static-blog-tags-file
+                                    "\">Tags:</a> "))
       (dolist (tag (org-static-blog-get-tags post-filename))
         (setq taglist-content (concat taglist-content "<a href=\""
-                                      (concat "tags/" (downcase tag) ".html")
+                                      org-static-blog-publish-url
+                                      "tags/" (downcase tag) ".html"
                                       "\">" tag "</a> ")))
       (setq taglist-content (concat taglist-content "</div>")))
 
@@ -340,7 +342,7 @@ org-static-blog-page-preamble
                 (nth 3 entry))))
      (insert
 "<div id=\"archive\">
-  <a href=\"" org-static-blog-archive-file "\">Older posts</a>
+  <a href=\"" org-static-blog-publish-url org-static-blog-archive-file "\">Other posts</a>
 </div>
 </div>
 </body>"))))
