@@ -202,15 +202,17 @@ existed before)."
             (push (cons tag (list post-filename)) tag-tree)))))
     tag-tree))
 
-(defun org-static-blog-get-bare-html (post-filename)
+(defun org-static-blog-get-body (post-filename &optional exclude-title)
   "Get the rendered HTML body without headers from POST-FILENAME."
   (with-temp-buffer
     (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
     (buffer-substring-no-properties
      (progn
        (goto-char (point-min))
-       (search-forward "<h1 class=\"post-title\">")
-       (search-forward "</h1>")
+       (if exclude-title
+           (progn (search-forward "<h1 class=\"post-title\">")
+                  (search-forward "</h1>"))
+         (search-forward "<div id=\"content\">"))
        (point))
      (progn
        (goto-char (point-max))
@@ -229,26 +231,11 @@ existed before)."
   "Publish a single entry POST-FILENAME.
 The index page, archive page, and RSS feed are not updated."
   (interactive "f")
-
-  (let ((taglist-content ""))
-    (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
-      (setq taglist-content (concat "<div id=\"taglist\">"
-                                    "<p><a href=\""
-                                    org-static-blog-publish-url
-                                    org-static-blog-tags-file
-                                    "\">Tags:</a> "))
-      (dolist (tag (org-static-blog-get-tags post-filename))
-        (setq taglist-content (concat taglist-content "<a href=\""
-                                      org-static-blog-publish-url
-                                      "tags/" (downcase tag) ".html"
-                                      "\">" tag "</a> ")))
-      (setq taglist-content (concat taglist-content "</div>")))
-
-    (org-static-blog-with-find-file
-     (org-static-blog-matching-publish-filename post-filename)
-     (erase-buffer)
-     (insert
-      (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+  (org-static-blog-with-find-file
+   (org-static-blog-matching-publish-filename post-filename)
+   (erase-buffer)
+   (insert
+    (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
 \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
 <html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
@@ -265,19 +252,18 @@ org-static-blog-page-header
 <div id=\"preamble\" class=\"status\">"
 org-static-blog-page-preamble
 "</div>
-<div id=\"content\">
-<div class=\"post-date\">" (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename)) "</div>
-<h1 class=\"post-title\">" (org-static-blog-get-title post-filename) "</h1>\n"
-(org-static-blog-render-post-bare post-filename)
-taglist-content
+<div id=\"content\">"
+(org-static-blog-entry-preamble post-filename)
+(org-static-blog-render-entry-content post-filename)
+(org-static-blog-entry-postamble post-filename)
 "</div>
 <div id=\"postamble\" class=\"status\">"
 org-static-blog-page-postamble
 "</div>
 </body>
-</html>")))))
+</html>"))))
 
-(defun org-static-blog-render-post-bare (post-filename)
+(defun org-static-blog-render-entry-content (post-filename)
   "Render blog content as bare HTML without header."
   (org-static-blog-with-find-file
    post-filename
@@ -301,18 +287,11 @@ entries as full text entries."
 (defun org-static-blog-assemble-multipost-page (pub-filename post-filenames &optional front-matter)
   "Assemble a page that contains multiple posts one after another.
 Posts are sorted in descending time."
-  (let ((entries nil))
-    (dolist (post-filename post-filenames)
-      (let ((date (org-static-blog-get-date post-filename))
-            (title (org-static-blog-get-title post-filename))
-            (content (org-static-blog-get-bare-html post-filename))
-            (url (org-static-blog-get-url post-filename)))
-        (add-to-list 'entries (list date title url content))))
-    (org-static-blog-with-find-file
-     pub-filename
-     (erase-buffer)
-     (insert
-      (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+  (org-static-blog-with-find-file
+   pub-filename
+   (erase-buffer)
+   (insert
+    (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
 \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
 <html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
@@ -330,22 +309,41 @@ org-static-blog-page-header
 org-static-blog-page-preamble
 "</div>
 <div id=\"content\">"))
-     (if front-matter
-         (insert front-matter))
-     (setq entries (sort entries (lambda (x y) (time-less-p (nth 0 y) (nth 0 x)))))
-     (dolist (entry entries)
-       (insert
-        (concat "<div class=\"post-date\">" (format-time-string "%d %b %Y" (nth 0 entry)) "</div>"
-                "<h1 class=\"post-title\">"
-                "<a href=\"" (nth 2 entry) "\">" (nth 1 entry) "</a>"
-                "</h1>\n"
-                (nth 3 entry))))
-     (insert
+   (if front-matter
+       (insert front-matter))
+   (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date y)
+                                                                        (org-static-blog-get-date x)))))
+   (dolist (post-filename post-filenames)
+     (insert (org-static-blog-get-body post-filename)))
+   (insert
 "<div id=\"archive\">
   <a href=\"" org-static-blog-publish-url org-static-blog-archive-file "\">Other posts</a>
 </div>
 </div>
-</body>"))))
+</body>")))
+
+(defun org-static-blog-entry-preamble (post-filename)
+  (concat
+   "<div class=\"post-date\">" (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename)) "</div>"
+   "<h1 class=\"post-title\">"
+   "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
+   "</h1>\n"))
+
+(defun org-static-blog-entry-postamble (post-filename)
+  (let ((taglist-content ""))
+    (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
+      (setq taglist-content (concat "<div id=\"taglist\">"
+                                    "<p><a href=\""
+                                    org-static-blog-publish-url
+                                    org-static-blog-tags-file
+                                    "\">Tags:</a> "))
+      (dolist (tag (org-static-blog-get-tags post-filename))
+        (setq taglist-content (concat taglist-content "<a href=\""
+                                      org-static-blog-publish-url
+                                      "tags/" (downcase tag) ".html"
+                                      "\">" tag "</a> ")))
+      (setq taglist-content (concat taglist-content "</div>")))
+    taglist-content))
 
 (defun org-static-blog-assemble-rss ()
   "Assemble the blog RSS feed.
@@ -379,7 +377,7 @@ The HTML content is taken from the rendered HTML post."
    "<item>
   <title>" (org-static-blog-get-title post-filename) "</title>
   <description><![CDATA["
-  (org-static-blog-get-bare-html post-filename)
+  (org-static-blog-get-body post-filename t) ; exclude headline!
   "]]></description>
   <link>"
   (concat org-static-blog-publish-url
