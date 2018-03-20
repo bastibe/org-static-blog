@@ -37,7 +37,8 @@ For org-static-blog, a blog consists of six parts:
   every blog post, sorted by tags. This feature is only enabled if you
   set `org-static-blog-enable-tags` to `t`.
 
-Every HTML page in org-static-blog can be customized in three ways:
+Every HTML page in org-static-blog can be customized in the following
+ways:
 - The contents of `org-static-blog-page-header` are inserted into the
   `<head>` of every page. Use this to include custom CSS and
   JavaScript for your blog.
@@ -48,6 +49,10 @@ Every HTML page in org-static-blog can be customized in three ways:
   after the content of every blog entry, but not in the index page and
   the archive. This is where you can include copyright notices or
   comment boxes.
+- The return values of `org-static-blog-post-preamble` and
+  `org-static-blog-post-postamble` are prepended and appended to every
+  blog post. If you want to change the formatting of dates, titles, or
+  the tag list, overwrite these functions.
 
 If you have questions, if you find bugs, or if you would like to
 contribute something to org-static-blog, please open an issue or pull

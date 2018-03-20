@@ -253,9 +253,9 @@ org-static-blog-page-header
 org-static-blog-page-preamble
 "</div>
 <div id=\"content\">"
-(org-static-blog-entry-preamble post-filename)
-(org-static-blog-render-entry-content post-filename)
-(org-static-blog-entry-postamble post-filename)
+(org-static-blog-post-preamble post-filename)
+(org-static-blog-render-post-content post-filename)
+(org-static-blog-post-postamble post-filename)
 "</div>
 <div id=\"postamble\" class=\"status\">"
 org-static-blog-page-postamble
@@ -263,7 +263,7 @@ org-static-blog-page-postamble
 </body>
 </html>"))))
 
-(defun org-static-blog-render-entry-content (post-filename)
+(defun org-static-blog-render-post-content (post-filename)
   "Render blog content as bare HTML without header."
   (org-static-blog-with-find-file
    post-filename
@@ -322,14 +322,18 @@ org-static-blog-page-preamble
 </div>
 </body>")))
 
-(defun org-static-blog-entry-preamble (post-filename)
+(defun org-static-blog-post-preamble (post-filename)
+  "Returns the formatted date and headline of the post.
+This function is called for every post and prepended to the post body."
   (concat
    "<div class=\"post-date\">" (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename)) "</div>"
    "<h1 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h1>\n"))
 
-(defun org-static-blog-entry-postamble (post-filename)
+(defun org-static-blog-post-postamble (post-filename)
+  "Returns the tag list of the post.
+This function is called for every post and appended to the post body."
   (let ((taglist-content ""))
     (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
       (setq taglist-content (concat "<div id=\"taglist\">"
