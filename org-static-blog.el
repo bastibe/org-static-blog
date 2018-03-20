@@ -337,7 +337,7 @@ This function is called for every post and appended to the post body."
   (let ((taglist-content ""))
     (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
       (setq taglist-content (concat "<div id=\"taglist\">"
-                                    "<p><a href=\""
+                                    "<a href=\""
                                     org-static-blog-publish-url
                                     org-static-blog-tags-file
                                     "\">Tags:</a> "))
