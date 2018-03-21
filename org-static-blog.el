@@ -222,9 +222,8 @@ existed before)."
 
 (defun org-static-blog-get-url (post-filename)
   "Generate a URL to entry POST-FILENAME."
-  (concat org-static-blog-publish-url
-          (file-name-nondirectory
-           (org-static-blog-matching-publish-filename post-filename))))
+  (file-name-nondirectory
+   (org-static-blog-matching-publish-filename post-filename)))
 
 ;;;###autoload
 (defun org-static-blog-publish-file (post-filename)
@@ -317,7 +316,7 @@ org-static-blog-page-preamble
      (insert (org-static-blog-get-body post-filename)))
    (insert
 "<div id=\"archive\">
-  <a href=\"" org-static-blog-publish-url org-static-blog-archive-file "\">Other posts</a>
+  <a href=\"" org-static-blog-archive-file "\">Other posts</a>
 </div>
 </div>
 </body>")))
@@ -338,13 +337,11 @@ This function is called for every post and appended to the post body."
     (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
       (setq taglist-content (concat "<div id=\"taglist\">"
                                     "<a href=\""
-                                    org-static-blog-publish-url
                                     org-static-blog-tags-file
                                     "\">Tags:</a> "))
       (dolist (tag (org-static-blog-get-tags post-filename))
         (setq taglist-content (concat taglist-content "<a href=\""
-                                      org-static-blog-publish-url
-                                      "tags/" (downcase tag) ".html"
+                                      "tag-" (downcase tag) ".html"
                                       "\">" tag "</a> ")))
       (setq taglist-content (concat taglist-content "</div>")))
     taglist-content))
@@ -441,11 +438,9 @@ org-static-blog-page-preamble
   "Render the tag pages.
 Each tag page contains the full text of all posts of a tag."
   (org-static-blog-assemble-tags-archive)
-  (if (not (file-exists-p (concat org-static-blog-publish-directory "tags/")))
-      (make-directory (concat org-static-blog-publish-directory "tags/")))
   (dolist (tag (org-static-blog-get-tag-tree))
     (org-static-blog-assemble-multipost-page
-     (concat org-static-blog-publish-directory "tags/" (downcase (car tag)) ".html")
+     (concat org-static-blog-publish-directory "tag-" (downcase (car tag)) ".html")
      (cdr tag)
      (concat "<h1 class=\"title\">Posts tagged \"" (car tag) "\":</h1>"))))
 
