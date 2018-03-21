@@ -156,7 +156,7 @@ existed before)."
            (result nil))
        (if buffer-exists
            (switch-to-buffer buffer-exists)
-         (find-file-literally ,file))
+         (find-file ,file))
        (setq result (progn ,@body))
        (basic-save-buffer)
       (unless buffer-exists
