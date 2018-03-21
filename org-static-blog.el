@@ -340,7 +340,7 @@ This function is called for every post and appended to the post body.
 Modify this function if you want to change a posts footline."
   (let ((taglist-content ""))
     (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
-      (setq taglist-content (concat "<div id=\"taglist\">"
+      (setq taglist-content (concat "<div class=\"taglist\">"
                                     "<a href=\""
                                     org-static-blog-tags-file
                                     "\">Tags:</a> "))
