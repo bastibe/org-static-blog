@@ -95,6 +95,11 @@ Changelog
 - 2018-03-17 (v1.0.4): Massive speed up of org-static-blog. A
   re-render with one changed file used to take about a second per
   post, and now takes about a second total.
+- 2018-03-21 (v1.1.0): Tags.
+  Each post can now have tags (using `#+tags:`). If you enable
+  `org-static-blog-enable-tags`, tags are included in each post,
+  tag-index pages are generated for each tag, and a tag archive
+  is generated for all tags.
 
 LICENSE
 -------
