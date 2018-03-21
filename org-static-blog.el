@@ -151,14 +151,17 @@ re-rendered."
 The buffer is disposed after the macro exits (unless it already
 existed before)."
   `(save-excursion
-     (let ((buffer-existed (get-buffer (file-name-nondirectory ,file)))
-           (buffer (find-file-literally ,file))
+     (let ((current-buffer (current-buffer))
+           (buffer-exists (get-buffer (file-name-nondirectory ,file)))
            (result nil))
+       (if buffer-exists
+           (switch-to-buffer buffer-exists)
+         (find-file-literally ,file))
        (setq result (progn ,@body))
-       (switch-to-buffer buffer)
-       (save-buffer)
-      (unless buffer-existed
-        (kill-buffer buffer))
+       (basic-save-buffer)
+      (unless buffer-exists
+        (kill-buffer))
+      (switch-to-buffer current-buffer)
       result)))
 
 (defun org-static-blog-get-date (post-filename)
