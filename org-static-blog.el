@@ -234,33 +234,33 @@ The index, archive, tags, and RSS feed are not updated."
    (org-static-blog-matching-publish-filename post-filename)
    (erase-buffer)
    (insert
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>
-<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
-\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
-<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
-<head>
-<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
-<link rel=\"alternate\"
-      type=\"appliation/rss+xml\"
-      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"
-      title=\"RSS feed for " org-static-blog-publish-url "\">
-<title>" (org-static-blog-get-title post-filename) "</title>"
-org-static-blog-page-header
-"</head>
-<body>
-<div id=\"preamble\" class=\"status\">"
-org-static-blog-page-preamble
-"</div>
-<div id=\"content\">"
-(org-static-blog-post-preamble post-filename)
-(org-static-blog-render-post-content post-filename)
-(org-static-blog-post-postamble post-filename)
-"</div>
-<div id=\"postamble\" class=\"status\">"
-org-static-blog-page-postamble
-"</div>
-</body>
-</html>")))
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" "
+    "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+    "<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">\n"
+    "<head>\n"
+    "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />\n"
+    "<link rel=\"alternate\"\n"
+    "      type=\"appliation/rss+xml\"\n"
+    "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+    "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
+    "<title>" (org-static-blog-get-title post-filename) "</title>\n"
+    org-static-blog-page-header
+    "</head>\n"
+    "<body>\n"
+    "<div id=\"preamble\" class=\"status\">\n"
+    org-static-blog-page-preamble
+    "</div>\n"
+    "<div id=\"content\">\n"
+    (org-static-blog-post-preamble post-filename)
+    (org-static-blog-render-post-content post-filename)
+    (org-static-blog-post-postamble post-filename)
+    "</div>\n"
+    "<div id=\"postamble\" class=\"status\">"
+    org-static-blog-page-postamble
+    "</div>\n"
+    "</body>\n"
+    "</html>\n")))
 
 (defun org-static-blog-render-post-content (post-filename)
   "Render blog content as bare HTML without header."
@@ -290,24 +290,24 @@ Posts are sorted in descending time."
    pub-filename
    (erase-buffer)
    (insert
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>
-<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
-\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
-<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
-<head>
-<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
-<link rel=\"alternate\"
-      type=\"appliation/rss+xml\"
-      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"
-      title=\"RSS feed for " org-static-blog-publish-url "\">
-<title>" org-static-blog-publish-title "</title>"
-org-static-blog-page-header
-"</head>
-<body>
-<div id=\"preamble\" class=\"status\">"
-org-static-blog-page-preamble
-"</div>
-<div id=\"content\">")
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\""
+    "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+    "<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">\n"
+    "<head>\n"
+    "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />\n"
+    "<link rel=\"alternate\"\n"
+    "      type=\"appliation/rss+xml\"\n"
+    "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+    "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
+    "<title>" org-static-blog-publish-title "</title>\n"
+    org-static-blog-page-header
+    "</head>\n"
+    "<body>\n"
+    "<div id=\"preamble\" class=\"status\">"
+    org-static-blog-page-preamble
+    "</div>\n"
+    "<div id=\"content\">\n")
    (if front-matter
        (insert front-matter))
    (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date y)
@@ -315,11 +315,11 @@ org-static-blog-page-preamble
    (dolist (post-filename post-filenames)
      (insert (org-static-blog-get-body post-filename)))
    (insert
-"<div id=\"archive\">
-  <a href=\"" org-static-blog-archive-file "\">Other posts</a>
-</div>
-</div>
-</body>")))
+    "<div id=\"archive\">\n"
+    "<a href=\"" org-static-blog-archive-file "\">Other posts</a>\n"
+    "</div>\n"
+    "</div>\n"
+    "</body>\n")))
 
 (defun org-static-blog-post-preamble (post-filename)
   "Returns the formatted date and headline of the post.
@@ -361,17 +361,17 @@ machine-readable format."
     (org-static-blog-with-find-file
      rss-filename
      (erase-buffer)
-     (insert "<?xml version=\"1.0\" encoding=\"utf-8\"?>
-<rss version=\"2.0\">
-<channel>
-  <title>" org-static-blog-publish-title "</title>
-  <description>" org-static-blog-publish-title "</description>
-  <link>" org-static-blog-publish-url "</link>
-  <lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n")
+     (insert "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+             "<rss version=\"2.0\">\n"
+             "<channel>\n"
+             "<title>" org-static-blog-publish-title "</title>\n"
+             "<description>" org-static-blog-publish-title "</description>\n"
+             "<link>" org-static-blog-publish-url "</link>\n"
+             "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n")
      (dolist (item (sort rss-items (lambda (x y) (time-less-p (car y) (car x)))))
        (insert (cdr item)))
-     (insert "</channel>
-</rss>"))))
+     (insert "</channel>\n"
+             "</rss>\n"))))
 
 (defun org-static-blog-get-rss-item (post-filename)
   "Assemble RSS item from post-filename.
@@ -404,42 +404,49 @@ The HTML content is taken from the rendered HTML post."
 The archive page contains single-line links and dates for every
 blog post, but no post body."
   (let ((archive-filename (concat org-static-blog-publish-directory org-static-blog-archive-file))
-        (archive-entries nil))
-    (dolist (post-filename (org-static-blog-get-post-filenames))
-      (let ((date (org-static-blog-get-date post-filename))
-            (title (org-static-blog-get-title post-filename))
-            (url (org-static-blog-get-url post-filename)))
-        (add-to-list 'archive-entries (list date title url))))
+        (archive-entries nil)
+        (post-filenames (org-static-blog-get-post-filenames)))
     (org-static-blog-with-find-file
      archive-filename
      (erase-buffer)
      (insert
-      "<?xml version=\"1.0\" encoding=\"utf-8\"?>
-<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
-\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
-<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
-<head>
-<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
-<link rel=\"alternate\"
-      type=\"appliation/rss+xml\"
-      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"
-      title=\"RSS feed for " org-static-blog-publish-url "\">
-<title>" org-static-blog-publish-title "</title>"
-org-static-blog-page-header
-"</head>
-<body>
-<div id=\"preamble\" class=\"status\">"
-org-static-blog-page-preamble
-"</div>
-<div id=\"content\">
-<h1 class=\"title\">Archive</h1>\n")
-       (dolist (item (sort archive-entries (lambda (x y) (time-less-p (car y) (car x)))))
-         (insert
-          "<div class=\"post-date\">" (format-time-string "%d %b %Y" (nth 0 item)) "</div>"
-          "<h2 class=\"post-title\">"
-          "<a href=\"" (nth 2 item) "\">" (nth 1 item) "</a>"
-          "</h2>\n"))
-       (insert "</body>\n </html>"))))
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+      "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" "
+      "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+      "<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">\n"
+      "<head>\n"
+      "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />\n"
+      "<link rel=\"alternate\"\n"
+      "      type=\"appliation/rss+xml\"\n"
+      "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+      "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
+      "<title>" org-static-blog-publish-title "</title>\n"
+      org-static-blog-page-header
+      "</head>\n"
+      "<body>\n"
+      "<div id=\"preamble\" class=\"status\">\n"
+      org-static-blog-page-preamble
+      "</div>\n"
+      "<div id=\"content\">\n"
+      "<h1 class=\"title\">Archive</h1>\n")
+     (dolist (post-filename (sort post-filenames (lambda (x y) (time-less-p
+                                                                (org-static-blog-get-date y)
+                                                                (org-static-blog-get-date x)))))
+       (insert (org-static-blog-get-post-summary post-filename)))
+     (insert "</body>\n </html>"))))
+
+(defun org-static-blog-get-post-summary (post-filename)
+  "Assemble post summary for an archive page.
+This function is called for every post on the archive and
+tags-archive page. Modify this function if you want to change an
+archive headline."
+  (concat
+   "<div class=\"post-date\">"
+   (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename))
+   "</div>"
+   "<h2 class=\"post-title\">"
+   "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
+   "</h2>\n"))
 
 (defun org-static-blog-assemble-tags ()
   "Render the tag archive and tag pages."
@@ -460,38 +467,32 @@ blog post, sorted by tags, but no post body."
      tags-archive-filename
      (erase-buffer)
      (insert
-      "<?xml version=\"1.0\" encoding=\"utf-8\"?>
-<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
-\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
-<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">
-<head>
-<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />
-<link rel=\"alternate\"
-      type=\"appliation/rss+xml\"
-      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"
-      title=\"RSS feed for " org-static-blog-publish-url "\">
-<title>" org-static-blog-publish-title "</title>"
-org-static-blog-page-header
-"</head>
-<body>
-<div id=\"preamble\" class=\"status\">"
-org-static-blog-page-preamble
-"</div>
-<div id=\"content\">"
-"<h1 class=\"title\">Tags</h1>\n")
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+      "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" "
+      "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+      "<html xmlns=\"https://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">\n"
+      "<head>\n"
+      "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />\n"
+      "<link rel=\"alternate\"\n"
+      "      type=\"appliation/rss+xml\"\n"
+      "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+      "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
+      "<title>" org-static-blog-publish-title "</title>\n"
+      org-static-blog-page-header
+      "</head>\n"
+      "<body>\n"
+      "<div id=\"preamble\" class=\"status\">"
+      org-static-blog-page-preamble
+      "</div>\n"
+      "<div id=\"content\">\n"
+      "<h1 class=\"title\">Tags</h1>\n")
      (dolist (tag (sort tag-tree (lambda (x y) (string-greaterp (car y) (car x)))))
        (insert "<h1 class=\"tags-title\">Posts tagged \"" (downcase (car tag)) "\":</h1>\n")
        (dolist (post-filename (sort (cdr tag) (lambda (x y) (time-less-p (org-static-blog-get-date x)
                                                                          (org-static-blog-get-date y)))))
-         (insert
-          "<div class=\"post-date\">"
-          (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename))
-          "</div>"
-          "<h2 class=\"post-title\">"
-          "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
-          "</h2>\n")))
-     (insert "</body>\n</html>"))))
-
+         (insert (org-static-blog-get-post-summary post-filename))))
+     (insert "</body>\n"
+             "</html>\n"))))
 
 (provide 'org-static-blog)
 
