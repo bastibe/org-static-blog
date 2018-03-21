@@ -479,10 +479,10 @@ org-static-blog-page-preamble
 "</div>
 <div id=\"content\">"
 "<h1 class=\"title\">Tags</h1>\n")
-     (dolist (tag tag-tree)
+     (dolist (tag (sort tag-tree (lambda (x y) (string-greaterp (car y) (car x)))))
        (insert "<h1 class=\"tags-title\">Posts tagged \"" (downcase (car tag)) "\":</h1>\n")
-       (dolist (post-filename (sort (cdr tag) (lambda (x y) (time-less-p (org-static-blog-get-date y)
-                                                                         (org-static-blog-get-date x)))))
+       (dolist (post-filename (sort (cdr tag) (lambda (x y) (time-less-p (org-static-blog-get-date x)
+                                                                         (org-static-blog-get-date y)))))
          (insert
           "<div class=\"post-date\">"
           (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename))
