@@ -375,21 +375,27 @@ machine-readable format."
   "Assemble RSS entry from post-filename.
 The HTML content is taken from the rendered HTML post."
   (concat
-   "<item>
-  <title>" (org-static-blog-get-title post-filename) "</title>
-  <description><![CDATA["
-  (org-static-blog-get-body post-filename t) ; exclude headline!
-  "]]></description>
-  <link>"
-  (concat org-static-blog-publish-url
-          (file-name-nondirectory
-           (org-static-blog-matching-publish-filename
-            post-filename)))
-  "</link>
-  <pubDate>"
-  (format-time-string "%a, %d %b %Y %H:%M:%S %z" (org-static-blog-get-date post-filename))
-  "</pubDate>
-</item>\n"))
+   "<item>\n"
+   "  <title>" (org-static-blog-get-title post-filename) "</title>\n"
+   "  <description><![CDATA["
+   (org-static-blog-get-body post-filename t) ; exclude headline!
+   "]]></description>\n"
+   (let ((categories ""))
+     (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
+       (dolist (tag (org-static-blog-get-tags post-filename))
+         (setq categories (concat categories
+                                  "  <category>" tag "</category>\n"))))
+     categories)
+   "  <link>"
+   (concat org-static-blog-publish-url
+           (file-name-nondirectory
+            (org-static-blog-matching-publish-filename
+             post-filename)))
+   "</link>\n"
+   "  <pubDate>"
+   (format-time-string "%a, %d %b %Y %H:%M:%S %z" (org-static-blog-get-date post-filename))
+   "</pubDate>\n"
+   "</item>\n"))
 
 (defun org-static-blog-assemble-archive ()
   "Re-render the blog archive page.
