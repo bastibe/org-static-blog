@@ -54,6 +54,14 @@ ways:
   blog post. If you want to change the formatting of dates, titles, or
   the tag list, overwrite these functions.
 
+If you want to activate a few convenience key bindings, add
+`(add-to-list 'auto-mode-alist (cons (concat org-static-blog-posts-directory ".*\\.org\\'") 'org-static-blog-mode))`
+to your *init.el*. These key bindings are:
+- `C-c C-f`/`C-c C-b` to open next/previous post.
+- `C-c C-p` to open the matching published HTML file of a post.
+- `C-c C-n` to create a new blog post.
+
+
 If you have questions, if you find bugs, or if you would like to
 contribute something to org-static-blog, please open an issue or pull
 request on GitHub.

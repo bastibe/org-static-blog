@@ -497,6 +497,73 @@ blog post, sorted by tags, but no post body."
      (insert "</body>\n"
              "</html>\n"))))
 
+(defun org-static-blog-open-previous-post ()
+  "Opens previous blog post."
+  (interactive)
+  (let ((posts (sort (org-static-blog-get-post-filenames)
+                     (lambda (x y)
+                       (time-less-p (org-static-blog-get-date y)
+                                    (org-static-blog-get-date x)))))
+        (current-post (buffer-file-name)))
+    (while (and posts
+                (not (string-equal
+                      (file-name-nondirectory current-post)
+                      (file-name-nondirectory (car posts)))))
+      (setq posts (cdr posts)))
+    (if (> (list-length posts) 1)
+        (find-file (cadr posts))
+      (message "There is no previous post"))))
+
+(defun org-static-blog-open-next-post ()
+  "Opens next blog post."
+  (interactive)
+  (let ((posts (sort (org-static-blog-get-post-filenames)
+                     (lambda (x y)
+                       (time-less-p (org-static-blog-get-date x)
+                                    (org-static-blog-get-date y)))))
+        (current-post (buffer-file-name)))
+    (while (and posts
+                (not (string-equal
+                      (file-name-nondirectory current-post)
+                      (file-name-nondirectory (car posts)))))
+      (setq posts (cdr posts)))
+    (if (> (list-length posts) 1)
+        (find-file (cadr posts))
+      (message "There is no next post"))))
+
+(defun org-static-blog-open-matching-publish-file ()
+  "Opens HTML for post."
+  (interactive)
+  (find-file (org-static-blog-matching-publish-filename (buffer-file-name))))
+
+(defun org-static-blog-create-new-post ()
+  "Creates a new blog post.
+Prompts for a title and proposes a file name. The file name is
+only a suggestion; You can choose any other file name if you so
+choose."
+  (interactive)
+  (let ((title (read-string "Title: ")))
+    (find-file (concat
+                org-static-blog-posts-directory
+                (read-string "Filename: " (concat (format-time-string "%Y-%m-%d-" (current-time))
+                                                  (replace-regexp-in-string "\s" "-" (downcase title))
+                                                  ".org"))))
+    (insert "#+title: " title "\n"
+            "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
+            "#+tags: ")))
+
+;;;###autoload
+(define-derived-mode org-static-blog-mode org-mode "OSB"
+  "Blogging with org-mode and emacs."
+  (run-mode-hooks)
+  :group 'org-static-blog)
+
+;; Key bindings
+(define-key org-static-blog-mode-map (kbd "C-c C-f") 'org-static-blog-open-next-post)
+(define-key org-static-blog-mode-map (kbd "C-c C-b") 'org-static-blog-open-previous-post)
+(define-key org-static-blog-mode-map (kbd "C-c C-p") 'org-static-blog-open-matching-publish-file)
+(define-key org-static-blog-mode-map (kbd "C-c C-n") 'org-static-blog-create-new-post)
+
 (provide 'org-static-blog)
 
 ;;; org-static-blog.el ends here
