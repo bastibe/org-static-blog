@@ -4,7 +4,7 @@ ORG-STATIC-BLOG
 Static blog generators are a dime a dozen. This is one more, which
 focuses on being simple. All files are simple org-mode files in a
 directory. The only requirement is that every org file must have a
-`#+TITLE` and a `#+DATE`, and optionally, `#+TAGS`.
+`#+TITLE` and a `#+DATE`, and optionally, `#+FILETAGS`.
 
 This file is also available from marmalade and melpa-stable.
 
@@ -108,6 +108,10 @@ Changelog
   `org-static-blog-enable-tags`, tags are included in each post,
   tag-index pages are generated for each tag, and a tag archive
   is generated for all tags.
+- 2018-03-23 (v1.1.1): Tags.
+  Deprecated `#+tags:` in favor of `#+filetags:`, which is the
+  correct way of setting file-wide tags in org-mode.
+  (Thank you, Kaushal Modi!)
 
 LICENSE
 -------

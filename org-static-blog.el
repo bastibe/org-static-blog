@@ -2,7 +2,7 @@
 
 ;; Author: Bastian Bechtold
 ;; URL: https://github.com/bastibe/org-static-blog
-;; Version: 1.1.0
+;; Version: 1.1.1
 ;; Package-Requires: ((emacs "24.3"))
 
 ;;; Commentary:
@@ -10,7 +10,7 @@
 ;; Static blog generators are a dime a dozen. This is one more, which
 ;; focuses on being simple. All files are simple org-mode files in a
 ;; directory. The only requirement is that every org file must have a
-;; #+TITLE and a #+DATE.
+;; #+TITLE and a #+DATE, and optionally, #+FILETAGS.
 
 ;; This file is also available from marmalade and melpa-stable.
 
@@ -39,7 +39,7 @@
 
 (defgroup org-static-blog nil
   "Settings for a static blog generator using org-mode"
-  :version "1.1.0"
+  :version "1.1.1"
   :group 'applications)
 
 (defcustom org-static-blog-publish-url "https://example.com/"
@@ -90,6 +90,10 @@ The tags page lists all posts as headlines."
   "Show tags below posts, and generate tag pages."
   :group 'org-static-blog)
 
+(defcustom org-static-blog-enable-deprecation-warning t
+  "Show deprecation warnings."
+  :group 'org-static-blog)
+
 (defcustom org-static-blog-rss-file "rss.xml"
   "File name of the RSS feed."
   :group 'org-static-blog)
@@ -116,11 +120,13 @@ re-rendered."
                         (org-static-blog-get-draft-filenames)))
     (when (org-static-blog-needs-publishing-p file)
       (org-static-blog-publish-file file)))
-  (org-static-blog-assemble-index)
-  (org-static-blog-assemble-rss)
-  (org-static-blog-assemble-archive)
-  (if org-static-blog-enable-tags
-      (org-static-blog-assemble-tags)))
+  ;; don't spam too many deprecation warnings:
+  (let ((org-static-blog-enable-deprecation-warning nil))
+    (org-static-blog-assemble-index)
+    (org-static-blog-assemble-rss)
+    (org-static-blog-assemble-archive)
+    (if org-static-blog-enable-tags
+        (org-static-blog-assemble-tags))))
 
 (defun org-static-blog-needs-publishing-p (post-filename)
   "Check whether POST-FILENAME was changed since last render."
@@ -183,14 +189,26 @@ existed before)."
       (match-string 1))))
 
 (defun org-static-blog-get-tags (post-filename)
-  "Extract the `#+tags:` from POST-FILENAME as list of strings."
+  "Extract the `#+filetags:` from POST-FILENAME as list of strings."
   (let ((case-fold-search t))
     (with-temp-buffer
       (insert-file-contents post-filename)
       (goto-char (point-min))
-      (if (search-forward-regexp "^\\#\\+tags:[ ]*\\(.+\\)$" nil t)
+      (if (search-forward-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$" nil t)
           (split-string (match-string 1))
-        nil))))
+        ;; for a very short time, I allowed #+tags: to be used to set
+        ;; tags. This was wrong. It now still works, but will issue a
+        ;; warning, and will be removed in the future.
+        (if (search-forward-regexp "^\\#\\+tags:[ ]*\\(.+\\)$" nil t)
+            (progn
+              (if org-static-blog-enable-deprecation-warning
+                  (display-warning
+                   :warning
+                   (concat "Using `#+tags:` is deprecated and "
+                           "will be removed in the future. "
+                           "Please use `#+filetags` instead")))
+              (split-string (match-string 1)))
+            nil)))))
 
 (defun org-static-blog-get-tag-tree ()
   "Return an association list of tags to filenames.
@@ -550,7 +568,7 @@ choose."
                                                   ".org"))))
     (insert "#+title: " title "\n"
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
-            "#+tags: ")))
+            "#+filetags: ")))
 
 ;;;###autoload
 (define-derived-mode org-static-blog-mode org-mode "OSB"
