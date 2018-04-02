@@ -1,3 +1,5 @@
+![melpa badge](http://melpa.org/packages/org-static-blog-badge.svg) ![melpa stable badge](http://stable.melpa.org/packages/org-static-blog-badge.svg)
+
 ORG-STATIC-BLOG
 ===============
 
