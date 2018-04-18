@@ -110,7 +110,7 @@ The tags page lists all posts as headlines."
   "HTML to put after the content of each page."
   :group 'org-static-blog)
 
-(defcustom org-static-blog-publish-langcode "en"
+(defcustom org-static-blog-langcode "en"
   "Language code for the blog content."
   :group 'org-static-blog)
 
@@ -260,7 +260,7 @@ The index, archive, tags, and RSS feed are not updated."
    (erase-buffer)
    (insert
     "<!DOCTYPE html>\n"
-    "<html lang=\"" org-static-blog-publish-langcode "\">\n"
+    "<html lang=\"" org-static-blog-langcode "\">\n"
     "<head>\n"
     "<meta charset=\"UTF-8\">\n"
     "<link rel=\"alternate\"\n"
@@ -318,7 +318,7 @@ Posts are sorted in descending time."
    (erase-buffer)
    (insert
     "<!DOCTYPE html>\n"
-    "<html lang=\"" org-static-blog-publish-langcode "\">\n"
+    "<html lang=\"" org-static-blog-langcode "\">\n"
     "<head>\n"
     "<meta charset=\"UTF-8\">\n"
     "<link rel=\"alternate\"\n"
@@ -437,7 +437,7 @@ blog post, but no post body."
      (erase-buffer)
      (insert
       "<!DOCTYPE html>\n"
-      "<html lang=\"" org-static-blog-publish-langcode "\">\n"
+      "<html lang=\"" org-static-blog-langcode "\">\n"
       "<head>\n"
       "<meta charset=\"UTF-8\">\n"
       "<link rel=\"alternate\"\n"
@@ -492,7 +492,7 @@ blog post, sorted by tags, but no post body."
      (erase-buffer)
      (insert
       "<!DOCTYPE html>\n"
-      "<html lang=\"" org-static-blog-publish-langcode "\">\n"
+      "<html lang=\"" org-static-blog-langcode "\">\n"
       "<head>\n"
       "<meta charset=\"UTF-8\">\n"
       "<link rel=\"alternate\"\n"
