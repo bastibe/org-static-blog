@@ -287,10 +287,8 @@ The index, archive, tags, and RSS feed are not updated."
 
 (defun org-static-blog-render-post-content (post-filename)
   "Render blog content as bare HTML without header."
-  (let (
-        (org-html-doctype "html5")
-        (org-html-html5-fancy t)
-        )
+  (let ((org-html-doctype "html5")
+        (org-html-html5-fancy t))
     (org-static-blog-with-find-file
      post-filename
      (org-export-as 'org-static-blog-post-bare nil nil nil nil))))
