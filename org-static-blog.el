@@ -2,7 +2,7 @@
 
 ;; Author: Bastian Bechtold
 ;; URL: https://github.com/bastibe/org-static-blog
-;; Version: 1.1.2
+;; Version: 1.2.0
 ;; Package-Requires: ((emacs "24.3"))
 
 ;;; Commentary:
@@ -39,7 +39,7 @@
 
 (defgroup org-static-blog nil
   "Settings for a static blog generator using org-mode"
-  :version "1.1.2"
+  :version "1.2.0"
   :group 'applications)
 
 (defcustom org-static-blog-publish-url "https://example.com/"

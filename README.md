@@ -114,6 +114,13 @@ Changelog
   Deprecated `#+tags:` in favor of `#+filetags:`, which is the
   correct way of setting file-wide tags in org-mode.
   (Thank you, Kaushal Modi!)
+- 2018-04-19 (v1.2.0): HTML5
+  Org-static-blog now outputs valid HTML5 instead of XHTML. This makes
+  the resulting HTML cleaner, but shouldn't impact your styles. Also,
+  you can now customize your content language by setting
+  `org-static-blog-langcode` and the HTML output has been fixed in a few
+  places.
+  (Thank you, Michael Cardell Widerkrantz!)
 
 LICENSE
 -------
