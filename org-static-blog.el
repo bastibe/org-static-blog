@@ -91,6 +91,10 @@ The tags page lists all posts as headlines."
   "Show tags below posts, and generate tag pages."
   :group 'org-static-blog)
 
+(defcustom org-static-blog-use-semantic-html nil
+  "Use semantic HTML tags instead of div."
+  :group 'org-static-blog)
+
 (defcustom org-static-blog-enable-deprecation-warning t
   "Show deprecation warnings."
   :group 'org-static-blog)
@@ -328,20 +332,20 @@ Posts are sorted in descending time."
     org-static-blog-page-header
     "</head>\n"
     "<body>\n"
-    "<div id=\"preamble\" class=\"status\">"
+    (if org-static-blog-use-semantic-html "<header>" "<div id=\"preamble\" class=\"status\">" )
     org-static-blog-page-preamble
-    "</div>\n"
-    "<div id=\"content\">\n")
+    (if org-static-blog-use-semantic-html "</header>" "</div>\n" )
+    (if org-static-blog-use-semantic-html "<main>" "<div id=\"content\">\n" ))
    (if front-matter
        (insert front-matter))
    (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date y)
                                                                         (org-static-blog-get-date x)))))
    (dolist (post-filename post-filenames)
-     (insert (org-static-blog-get-body post-filename)))
+     (insert "<article>" (org-static-blog-get-body post-filename) "</article>"))
    (insert
     "<div id=\"archive\">\n"
     "<a href=\"" org-static-blog-archive-file "\">Other posts</a>\n"
-    "</div>\n"
+    (if org-static-blog-use-semantic-html "</main>\n" "</div>\n")
     "</div>\n"
     "</body>\n"
     "</html>\n")))
@@ -351,10 +355,13 @@ Posts are sorted in descending time."
 This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
-   "<div class=\"post-date\">" (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename)) "</div>"
+   "<header>\n"
+    (if org-static-blog-use-semantic-html "<time>" "<div class=\"post-date\">")
+    (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename))
+    (if org-static-blog-use-semantic-html "</time>" "</div>")
    "<h1 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
-   "</h1>\n"))
+   "</h1>\n</header>\n"))
 
 (defun org-static-blog-post-postamble (post-filename)
   "Returns the tag list of the post.
