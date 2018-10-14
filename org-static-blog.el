@@ -107,6 +107,10 @@ The tags page lists all posts as headlines."
   "HTML to put before the content of each page."
   :group 'org-static-blog)
 
+(defcustom org-static-blog-post-postamble ""
+  "HTML to put after the content of each post (e.g. comments)."
+  :group 'org-static-blog)
+
 (defcustom org-static-blog-page-postamble ""
   "HTML to put after the content of each page."
   :group 'org-static-blog)
@@ -121,10 +125,12 @@ The tags page lists all posts as headlines."
 Only blog posts that changed since the HTML was created are
 re-rendered."
   (interactive)
-  (dolist (file (append (org-static-blog-get-post-filenames)
-                        (org-static-blog-get-draft-filenames)))
+  (dolist (file (org-static-blog-get-draft-filenames))
     (when (org-static-blog-needs-publishing-p file)
       (org-static-blog-publish-file file)))
+  (dolist (file (org-static-blog-get-post-filenames))
+    (when (org-static-blog-needs-publishing-p file)
+      (org-static-blog-publish-file file t)))
   ;; don't spam too many deprecation warnings:
   (let ((org-static-blog-enable-deprecation-warning nil))
     (org-static-blog-assemble-index)
@@ -252,10 +258,11 @@ Preamble and Postamble are excluded, too."
    (org-static-blog-matching-publish-filename post-filename)))
 
 ;;;###autoload
-(defun org-static-blog-publish-file (post-filename)
+(defun org-static-blog-publish-file (post-filename &optional is_post)
   "Publish a single POST-FILENAME.
+IS_POST is true if this post is not a draft.
 The index, archive, tags, and RSS feed are not updated."
-  (interactive "f")
+  (interactive "f\nP")
   (org-static-blog-with-find-file
    (org-static-blog-matching-publish-filename post-filename)
    (erase-buffer)
@@ -276,9 +283,9 @@ The index, archive, tags, and RSS feed are not updated."
     org-static-blog-page-preamble
     "</div>\n"
     "<div id=\"content\">\n"
-    (org-static-blog-post-preamble post-filename)
+    (org-static-blog-post-preamble post-filename is_post)
     (org-static-blog-render-post-content post-filename)
-    (org-static-blog-post-postamble post-filename)
+    (org-static-blog-post-postamble post-filename is_post)
     "</div>\n"
     "<div id=\"postamble\" class=\"status\">"
     org-static-blog-page-postamble
@@ -346,8 +353,9 @@ Posts are sorted in descending time."
     "</body>\n"
     "</html>\n")))
 
-(defun org-static-blog-post-preamble (post-filename)
+(defun org-static-blog-post-preamble (post-filename &optional is_post)
   "Returns the formatted date and headline of the post.
+IS_POST is true if this post is not a draft.
 This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
@@ -356,10 +364,8 @@ Modify this function if you want to change a posts headline."
    "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h1>\n"))
 
-(defun org-static-blog-post-postamble (post-filename)
-  "Returns the tag list of the post.
-This function is called for every post and appended to the post body.
-Modify this function if you want to change a posts footline."
+(defun org-static-blog-post-taglist (post-filename)
+  "Returns the tag list of the post."
   (let ((taglist-content ""))
     (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
       (setq taglist-content (concat "<div class=\"taglist\">"
@@ -372,6 +378,13 @@ Modify this function if you want to change a posts footline."
                                       "\">" tag "</a> ")))
       (setq taglist-content (concat taglist-content "</div>")))
     taglist-content))
+
+(defun org-static-blog-post-postamble (post-filename &optional is_post)
+  "Returns the tag list of the post.
+IS_POST is true if this post is not a draft.
+This function is called for every post and appended to the post body.
+Modify this function if you want to change a posts footline."
+  (org-static-blog-post-taglist post-filename))
 
 (defun org-static-blog-assemble-rss ()
   "Assemble the blog RSS feed.
