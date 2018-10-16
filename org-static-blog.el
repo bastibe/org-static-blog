@@ -144,7 +144,7 @@ re-rendered."
           (org-static-blog-assemble-tags posts)))))
 
 (defun org-static-blog-needs-publishing-p (post)
-  "Check whether POST-FILENAME was changed since last render."
+  "Check whether POST was changed since last render."
   (let ((pub-filename (plist-get post :publish-filename))
         (post-filename (plist-get post :filename)))
     (not (and (file-exists-p pub-filename)
@@ -167,7 +167,6 @@ re-rendered."
             :date (date-to-time
                    (org-static-blog-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$"))
             :tags (split-string (org-static-blog-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$"))
-            :html-contents (org-export-as 'org-static-blog-post-bare nil nil nil nil)
             :publish-filename publish-filename
             :url (file-name-nondirectory publish-filename)
     ))))
@@ -240,7 +239,7 @@ existed before)."
   (org-static-blog-publish-post (org-static-blog-get-post-data post-filename) is_post))
 
 (defun org-static-blog-publish-post (post &optional is_post)
-  "Publish a single POST-FILENAME.
+  "Publish a single POST.
 IS_POST is true if this post is not a draft.
 The index, archive, tags, and RSS feed are not updated."
   (let ((publish-filename (plist-get post :publish-filename)))
@@ -250,14 +249,25 @@ The index, archive, tags, and RSS feed are not updated."
      (insert
       (org-static-blog-html-start (plist-get post :title))
       (org-static-blog-post-preamble post is_post)
-      (plist-get post :html-contents)
+      (org-static-blog-render-post-content post)
       (org-static-blog-post-postamble post is_post)
       org-static-blog-html-end))))
+
+(defun org-static-blog-render-post-content (post)
+  "Render blog content as bare HTML without header."
+  (unless (plist-get post :html-contents)
+    (plist-put post :html-contents
+               (let ((org-html-doctype "html5")
+                     (org-html-html5-fancy t))
+                 (org-static-blog-with-find-file
+                  (plist-get post :filename)
+                  (org-export-as 'org-static-blog-post-bare nil nil nil nil)))))
+  (plist-get post :html-contents))
 
 (org-export-define-derived-backend 'org-static-blog-post-bare 'html
   :translate-alist '((template . (lambda (contents info) contents))))
 
-(defun org-static-blog-assemble-index (posts)
+  (defun org-static-blog-assemble-index (posts)
   "Assemble the blog index page.
 The index page contains the last `org-static-blog-index-length`
 posts as full text posts."
@@ -291,32 +301,7 @@ posts as full text posts."
    (format-time-string "%d %b %Y" (plist-get post :date))
    "</div>"))
 
-(defun org-static-blog-assemble-multipost-page (pub-filename posts &optional front-matter)
-  "Assemble a page that contains multiple posts one after another.
-Posts are sorted in descending time."
-  (org-static-blog-with-find-file
-   pub-filename
-   (erase-buffer)
-   (insert (org-static-blog-html-start front-matter))
-   (dolist (post (org-static-blog-sort-posts posts))
-     (insert (org-static-blog-post-html-title post t "h2")
-             (plist-get post :html-contents)))
-   (insert
-    "<div id=\"archive\">\n"
-    "<a href=\"" org-static-blog-archive-file "\">Other posts</a>\n"
-    "</div>"
-    org-static-blog-html-end)))
-
-(defun org-static-blog-post-preamble (post &optional is_post)
-  "Returns the formatted date and headline of the post.
-IS_POST is true if this post is not a draft.
-This function is called for every post and prepended to the post body.
-Modify this function if you want to change a posts headline."
-  (concat
-   (org-static-blog-post-html-date post)
-   (org-static-blog-post-html-title post is_post)))
-
-(defun org-static-blog-post-taglist (post)
+(defun org-static-blog-html-post-taglist (post)
   "Returns the tag list of the post."
   (let ((taglist-content "")
         (tags (plist-get post :tags)))
@@ -332,12 +317,37 @@ Modify this function if you want to change a posts headline."
       (setq taglist-content (concat taglist-content "</div>")))
     taglist-content))
 
+(defun org-static-blog-assemble-multipost-page (pub-filename posts &optional front-matter)
+  "Assemble a page that contains multiple posts one after another.
+Posts are sorted in descending time."
+  (org-static-blog-with-find-file
+   pub-filename
+   (erase-buffer)
+   (insert (org-static-blog-html-start front-matter))
+   (dolist (post (org-static-blog-sort-posts posts))
+     (insert (org-static-blog-post-html-title post t "h2")
+             (org-static-blog-render-post-content post)))
+   (insert
+    "<div id=\"archive\">\n"
+    "<a href=\"" org-static-blog-archive-file "\">Other posts</a>\n"
+    "</div>\n"
+    org-static-blog-html-end)))
+
+(defun org-static-blog-post-preamble (post &optional is_post)
+  "Returns the formatted date and headline of the post.
+IS_POST is true if this post is not a draft.
+This function is called for every post and prepended to the post body.
+Modify this function if you want to change a posts headline."
+  (concat
+   (org-static-blog-post-html-date post)
+   (org-static-blog-post-html-title post is_post)))
+
 (defun org-static-blog-post-postamble (post &optional is_post)
   "Returns the tag list of the post.
 IS_POST is true if this post is not a draft.
 This function is called for every post and appended to the post body.
 Modify this function if you want to change a posts footline."
-  (org-static-blog-post-taglist post))
+  (org-static-blog-html-post-taglist post))
 
 (defun org-static-blog-assemble-rss (posts)
   "Assemble the blog RSS feed.
@@ -365,13 +375,13 @@ machine-readable format."
              "</rss>\n"))))
 
 (defun org-static-blog-get-rss-item (post)
-  "Assemble RSS item from post-filename.
+  "Assemble RSS item from POST
 The HTML content is taken from the rendered HTML post."
   (concat
    "<item>\n"
    "  <title>" (plist-get post :title) "</title>\n"
    "  <description><![CDATA["
-   (plist-get post :html-contents)
+   (org-static-blog-render-post-content post)
    "]]></description>\n"
    (let ((categories "")
          (tags (plist-get post :tags)))
@@ -389,20 +399,6 @@ The HTML content is taken from the rendered HTML post."
    "</pubDate>\n"
    "</item>\n"))
 
-(defun org-static-blog-get-posts-summary (posts &optional chronological)
-   (mapconcat 'org-static-blog-get-post-summary
-              (org-static-blog-sort-posts posts chronological)
-              "\n"))
-
-(defun org-static-blog-get-post-summary (post)
-  "Assemble post summary for an archive page.
-This function is called for every post on the archive and
-tags-archive page. Modify this function if you want to change an
-archive headline."
-  (concat
-   (org-static-blog-post-html-date post)
-   (org-static-blog-post-html-title post t "h3")))
-
 (defun org-static-blog-assemble-archive (posts)
   "Re-render the blog archive page.
 The archive page contains single-line links and dates for every
@@ -417,6 +413,20 @@ blog post, but no post body."
       (org-static-blog-html-start "Archive")
       (org-static-blog-get-posts-summary posts)
       org-static-blog-html-end))))
+
+(defun org-static-blog-get-posts-summary (posts &optional chronological)
+   (mapconcat 'org-static-blog-get-post-summary
+              (org-static-blog-sort-posts posts chronological)
+              "\n"))
+
+(defun org-static-blog-get-post-summary (post)
+  "Assemble post summary for an archive page.
+This function is called for every post on the archive and
+tags-archive page. Modify this function if you want to change an
+archive headline."
+  (concat
+   (org-static-blog-post-html-date post)
+   (org-static-blog-post-html-title post t "h3")))
 
 (defun org-static-blog-get-tag-tree (posts)
   "Return an association list of tags to posts.
@@ -458,7 +468,6 @@ blog post, sorted by tags, but no post body."
         (org-static-blog-get-posts-summary (cdr tag))))
      (insert org-static-blog-html-end))))
 
-;; TODO
 (defun org-static-blog-goto-first-other (posts message)
   (let ((current-post (file-name-nondirectory (buffer-file-name))))
     (while (and posts
