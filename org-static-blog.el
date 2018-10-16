@@ -224,11 +224,11 @@ existed before)."
    "<div id=\"content\">\n"
    (if title (concat "<h1 class=\"title\">" title "</h1>\n"))))
 
-(setq org-static-blog-html-end
+(defun org-static-blog-html-end (&optional postamble)
       (concat
        "</div>\n"
        "<div id=\"postamble\" class=\"status\">"
-       org-static-blog-page-postamble
+       (or postamble org-static-blog-page-postamble)
        "</div>\n"
        "</body>\n"
        "</html>\n"))
@@ -251,7 +251,7 @@ The index, archive, tags, and RSS feed are not updated."
       (org-static-blog-post-preamble post is_post)
       (org-static-blog-render-post-content post)
       (org-static-blog-post-postamble post is_post)
-      org-static-blog-html-end))))
+      (org-static-blog-html-end)))))
 
 (defun org-static-blog-render-post-content (post)
   "Render blog content as bare HTML without header."
@@ -267,7 +267,7 @@ The index, archive, tags, and RSS feed are not updated."
 (org-export-define-derived-backend 'org-static-blog-post-bare 'html
   :translate-alist '((template . (lambda (contents info) contents))))
 
-  (defun org-static-blog-assemble-index (posts)
+(defun org-static-blog-assemble-index (posts)
   "Assemble the blog index page.
 The index page contains the last `org-static-blog-index-length`
 posts as full text posts."
@@ -331,7 +331,7 @@ Posts are sorted in descending time."
     "<div id=\"archive\">\n"
     "<a href=\"" org-static-blog-archive-file "\">Other posts</a>\n"
     "</div>\n"
-    org-static-blog-html-end)))
+    (org-static-blog-html-end))))
 
 (defun org-static-blog-post-preamble (post &optional is_post)
   "Returns the formatted date and headline of the post.
@@ -412,7 +412,7 @@ blog post, but no post body."
      (insert
       (org-static-blog-html-start "Archive")
       (org-static-blog-get-posts-summary posts)
-      org-static-blog-html-end))))
+      (org-static-blog-html-end)))))
 
 (defun org-static-blog-get-posts-summary (posts &optional chronological)
    (mapconcat 'org-static-blog-get-post-summary
@@ -466,7 +466,7 @@ blog post, sorted by tags, but no post body."
         (downcase (car tag))
         "\"</h2>\n"
         (org-static-blog-get-posts-summary (cdr tag))))
-     (insert org-static-blog-html-end))))
+     (insert (org-static-blog-html-end)))))
 
 (defun org-static-blog-goto-first-other (posts message)
   (let ((current-post (file-name-nondirectory (buffer-file-name))))
