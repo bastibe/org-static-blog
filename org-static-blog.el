@@ -285,7 +285,7 @@ posts as full text posts."
       (sort copy (lambda (x y) (time-less-p (plist-get y :date)
                                             (plist-get x :date)))))))
 
-(defun org-static-blog-post-html-title (post &optional link element)
+(defun org-static-blog-render-post-title (post &optional link element)
   (let ((element (or element "h1")))
     (concat
      "<" element " class=\"post-title\">"
@@ -295,13 +295,13 @@ posts as full text posts."
        (plist-get post :title))
      "</" element ">\n")))
 
-(defun org-static-blog-post-html-date (post)
+(defun org-static-blog-render-post-date (post)
   (concat
    "<div class=\"post-date\">"
    (format-time-string "%d %b %Y" (plist-get post :date))
    "</div>"))
 
-(defun org-static-blog-html-post-taglist (post)
+(defun org-static-blog-render-post-taglist (post)
   "Returns the tag list of the post."
   (let ((taglist-content "")
         (tags (plist-get post :tags)))
@@ -323,11 +323,9 @@ Posts are sorted in descending time."
   (org-static-blog-with-find-file
    pub-filename
    (erase-buffer)
-   (insert (org-static-blog-html-start front-matter))
-   (dolist (post (org-static-blog-sort-posts posts))
-     (insert (org-static-blog-post-html-title post t "h2")
-             (org-static-blog-render-post-content post)))
    (insert
+    (org-static-blog-html-start front-matter)
+    (string-join (mapcar 'org-static-blog-get-post-summary (org-static-blog-sort-posts posts)))
     "<div id=\"archive\">\n"
     "<a href=\"" org-static-blog-archive-file "\">Other posts</a>\n"
     "</div>\n"
@@ -339,15 +337,15 @@ IS_POST is true if this post is not a draft.
 This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
-   (org-static-blog-post-html-date post)
-   (org-static-blog-post-html-title post is_post)))
+   (org-static-blog-render-post-date post)
+   (org-static-blog-render-post-title post is_post)))
 
 (defun org-static-blog-post-postamble (post &optional is_post)
   "Returns the tag list of the post.
 IS_POST is true if this post is not a draft.
 This function is called for every post and appended to the post body.
 Modify this function if you want to change a posts footline."
-  (org-static-blog-html-post-taglist post))
+  (org-static-blog-render-post-taglist post))
 
 (defun org-static-blog-assemble-rss (posts)
   "Assemble the blog RSS feed.
@@ -419,14 +417,14 @@ blog post, but no post body."
               (org-static-blog-sort-posts posts chronological)
               "\n"))
 
-(defun org-static-blog-get-post-summary (post)
+(defun org-static-blog-get-post-summary (post &optional element)
   "Assemble post summary for an archive page.
 This function is called for every post on the archive and
 tags-archive page. Modify this function if you want to change an
 archive headline."
   (concat
-   (org-static-blog-post-html-date post)
-   (org-static-blog-post-html-title post t "h3")))
+   (org-static-blog-render-post-date post)
+   (org-static-blog-render-post-title post t (or element "h3"))))
 
 (defun org-static-blog-get-tag-tree (posts)
   "Return an association list of tags to posts.
