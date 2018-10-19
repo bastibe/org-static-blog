@@ -124,7 +124,7 @@ The tags page lists all posts as headlines."
   (dolist (post posts)
     (when (org-static-blog-needs-publishing-p post)
       (org-static-blog-publish-post post is_post))
-  ))
+    ))
 
 (defun org-static-blog-publish ()
   "Render all blog posts, the index, archive, tags, and RSS feed.
@@ -169,7 +169,7 @@ re-rendered."
             :tags (split-string (org-static-blog-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$"))
             :publish-filename publish-filename
             :url (file-name-nondirectory publish-filename)
-    ))))
+            ))))
 
 (defun org-static-blog-matching-publish-filename (post-filename)
   "Generate HTML file name for POST-FILENAME."
@@ -177,13 +177,11 @@ re-rendered."
           (file-name-base post-filename)
           ".html"))
 
-(defun org-static-blog-get-filenames (&optional directory)
-  "Returns a list of all posts file names from DIRECTORY."
-  (directory-files (or directory org-static-blog-posts-directory) t ".*\\.org$" nil))
-
 (defun org-static-blog-get-posts (&optional directory)
   "Returns a list of all posts from DIRECTORY"
-  (mapcar 'org-static-blog-get-post-data (org-static-blog-get-filenames directory)))
+  (let ((filenames (directory-files
+                    (or directory org-static-blog-posts-directory) t ".*\\.org$" nil)))
+    (mapcar 'org-static-blog-get-post-data (org-static-blog-get-filenames directory))))
 
 ;; This macro is needed for many of the following functions.
 (defmacro org-static-blog-with-find-file (file &rest body)
@@ -199,39 +197,10 @@ existed before)."
          (find-file ,file))
        (setq result (progn ,@body))
        (basic-save-buffer)
-      (unless buffer-exists
-        (kill-buffer))
-      (switch-to-buffer current-buffer)
-      result)))
-
-(defun org-static-blog-html-start (&optional title)
-  (concat
-   "<!DOCTYPE html>\n"
-   "<html lang=\"" org-static-blog-langcode "\">\n"
-   "<head>\n"
-   "<meta charset=\"UTF-8\">\n"
-   "<link rel=\"alternate\"\n"
-   "      type=\"application/rss+xml\"\n"
-   "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
-   "      title=\"RSS feed for " org-static-blog-publish-url "\"/>\n"
-   "<title>" (or title org-static-blog-publish-title) "</title>\n"
-   org-static-blog-page-header
-   "</head>\n"
-   "<body>\n"
-   "<div id=\"preamble\" class=\"status\">\n"
-   org-static-blog-page-preamble
-   "</div>\n"
-   "<div id=\"content\">\n"
-   (if title (concat "<h1 class=\"title\">" title "</h1>\n"))))
-
-(defun org-static-blog-html-end (&optional postamble)
-      (concat
-       "</div>\n"
-       "<div id=\"postamble\" class=\"status\">"
-       (or postamble org-static-blog-page-postamble)
-       "</div>\n"
-       "</body>\n"
-       "</html>\n"))
+       (unless buffer-exists
+         (kill-buffer))
+       (switch-to-buffer current-buffer)
+       result)))
 
 ;;;###autoload
 (defun org-static-blog-publish-file (post-filename &optional is_post)
@@ -247,13 +216,33 @@ The index, archive, tags, and RSS feed are not updated."
      publish-filename
      (erase-buffer)
      (insert
-      (org-static-blog-html-start (plist-get post :title))
+      "<!DOCTYPE html>\n"
+      "<html lang=\"" org-static-blog-langcode "\">\n"
+      "<head>\n"
+      "<meta charset=\"UTF-8\">\n"
+      "<link rel=\"alternate\"\n"
+      "      type=\"application/rss+xml\"\n"
+      "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+      "      title=\"RSS feed for " org-static-blog-publish-url "\"/>\n"
+      "<title>" (plist-get post :title) "</title>\n"
+      org-static-blog-page-header
+      "</head>\n"
+      "<body>\n"
+      "<div id=\"preamble\" class=\"status\">\n"
+      org-static-blog-page-preamble
+      "</div>\n"
+      "<div id=\"content\">\n"
       (org-static-blog-post-preamble post is_post)
-      (org-static-blog-render-post-content post)
+      (org-static-blog-render-post-content post is_post)
       (org-static-blog-post-postamble post is_post)
-      (org-static-blog-html-end)))))
+      "</div>\n"
+      "<div id=\"postamble\" class=\"status\">"
+      org-static-blog-page-postamble
+      "</div>\n"
+      "</body>\n"
+      "</html>\n"))))
 
-(defun org-static-blog-render-post-content (post)
+(defun org-static-blog-render-post-content (post &optional exclude_title)
   "Render blog content as bare HTML without header."
   (unless (plist-get post :html-contents)
     (plist-put post :html-contents
@@ -262,7 +251,12 @@ The index, archive, tags, and RSS feed are not updated."
                  (org-static-blog-with-find-file
                   (plist-get post :filename)
                   (org-export-as 'org-static-blog-post-bare nil nil nil nil)))))
-  (plist-get post :html-contents))
+  (if exclude_title
+      (plist-get post :html-contents)
+    (concat "<h1 class=\"post-title\">"
+            "<a href=\"" (plist-get post :url) "\">" (plist-get post :title) "</a>"
+            "</h1>\n"
+            (plist-get post :html-contents))))
 
 (org-export-define-derived-backend 'org-static-blog-post-bare 'html
   :translate-alist '((template . (lambda (contents info) contents))))
@@ -285,38 +279,6 @@ posts as full text posts."
       (sort copy (lambda (x y) (time-less-p (plist-get y :date)
                                             (plist-get x :date)))))))
 
-(defun org-static-blog-render-post-title (post &optional link element)
-  (let ((element (or element "h1")))
-    (concat
-     "<" element " class=\"post-title\">"
-     (if link
-         (concat "<a href=\"" (plist-get post :url) "\">"
-                 (plist-get post :title) "</a>")
-       (plist-get post :title))
-     "</" element ">\n")))
-
-(defun org-static-blog-render-post-date (post)
-  (concat
-   "<div class=\"post-date\">"
-   (format-time-string "%d %b %Y" (plist-get post :date))
-   "</div>"))
-
-(defun org-static-blog-render-post-taglist (post)
-  "Returns the tag list of the post."
-  (let ((taglist-content "")
-        (tags (plist-get post :tags)))
-    (when (and tags org-static-blog-enable-tags)
-      (setq taglist-content (concat "<div class=\"taglist\">"
-                                    "<a href=\""
-                                    org-static-blog-tags-file
-                                    "\">Tags:</a> "))
-      (dolist (tag tags)
-        (setq taglist-content (concat taglist-content "<a href=\""
-                                      "tag-" (downcase tag) ".html"
-                                      "\">" tag "</a> ")))
-      (setq taglist-content (concat taglist-content "</div>")))
-    taglist-content))
-
 (defun org-static-blog-assemble-multipost-page (pub-filename posts &optional front-matter)
   "Assemble a page that contains multiple posts one after another.
 Posts are sorted in descending time."
@@ -324,53 +286,76 @@ Posts are sorted in descending time."
    pub-filename
    (erase-buffer)
    (insert
-    (org-static-blog-html-start front-matter)
-    (string-join (mapcar 'org-static-blog-get-post-summary (org-static-blog-sort-posts posts)))
+    "<!DOCTYPE html>\n"
+    "<html lang=\"" org-static-blog-langcode "\">\n"
+    "<head>\n"
+    "<meta charset=\"UTF-8\">\n"
+    "<link rel=\"alternate\"\n"
+    "      type=\"application/rss+xml\"\n"
+    "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+    "      title=\"RSS feed for " org-static-blog-publish-url "\"/>\n"
+    "<title>" org-static-blog-publish-title "</title>\n"
+    org-static-blog-page-header
+    "</head>\n"
+    "<body>\n"
+    "<div id=\"preamble\" class=\"status\">"
+    org-static-blog-page-preamble
+    "</div>\n"
+    "<div id=\"content\">\n"
+    (if front-matter front-matter "")
+    (mapconcat
+     'org-static-blog-render-post-content
+    (org-static-blog-sort-posts posts) "")
     "<div id=\"archive\">\n"
     "<a href=\"" org-static-blog-archive-file "\">Other posts</a>\n"
     "</div>\n"
-    (org-static-blog-html-end))))
+    "</div>\n"
+    "</body>\n"
+    "</html>\n")))
 
 (defun org-static-blog-post-preamble (post &optional is_post)
   "Returns the formatted date and headline of the post.
-IS_POST is true if this post is not a draft.
 This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
-   (org-static-blog-render-post-date post)
-   (org-static-blog-render-post-title post is_post)))
+   "<div class=\"post-date\">" (format-time-string "%d %b %Y" (plist-get post :date)) "</div>"))
 
 (defun org-static-blog-post-postamble (post &optional is_post)
   "Returns the tag list of the post.
-IS_POST is true if this post is not a draft.
 This function is called for every post and appended to the post body.
 Modify this function if you want to change a posts footline."
-  (org-static-blog-render-post-taglist post))
+  (let ((taglist-content ""))
+    (when (and (plist-get post :tags) org-static-blog-enable-tags)
+      (setq taglist-content (concat "<div class=\"taglist\">"
+                                    "<a href=\""
+                                    org-static-blog-tags-file
+                                    "\">Tags:</a> "))
+      (dolist (tag (plist-get post :tags))
+        (setq taglist-content (concat taglist-content "<a href=\""
+                                      "tag-" (downcase tag) ".html"
+                                      "\">" tag "</a> ")))
+      (setq taglist-content (concat taglist-content "</div>")))
+    taglist-content))
 
 (defun org-static-blog-assemble-rss (posts)
   "Assemble the blog RSS feed.
 The RSS-feed is an XML file that contains every blog post in a
 machine-readable format."
-  (let ((rss-filename (concat org-static-blog-publish-directory
-                              org-static-blog-rss-file))
-        (rss-items nil))
-    (dolist (post posts)
-      (add-to-list 'rss-items (cons (plist-get post :date)
-                                    (org-static-blog-get-rss-item post))))
+  (let ((rss-filename (concat org-static-blog-publish-directory org-static-blog-rss-file)))
     (org-static-blog-with-find-file
      rss-filename
      (erase-buffer)
-     (insert "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-             "<rss version=\"2.0\">\n"
-             "<channel>\n"
-             "<title>" org-static-blog-publish-title "</title>\n"
-             "<description>" org-static-blog-publish-title "</description>\n"
-             "<link>" org-static-blog-publish-url "</link>\n"
-             "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n")
-     (dolist (item (sort rss-items (lambda (x y) (time-less-p (car y) (car x)))))
-       (insert (cdr item)))
-     (insert "</channel>\n"
-             "</rss>\n"))))
+     (insert
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+      "<rss version=\"2.0\">\n"
+      "<channel>\n"
+      "<title>" org-static-blog-publish-title "</title>\n"
+      "<description>" org-static-blog-publish-title "</description>\n"
+      "<link>" org-static-blog-publish-url "</link>\n"
+      "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n"
+      (mapconcat 'org-static-blog-get-rss-item (org-static-blog-sort-posts posts) "")
+      "</channel>\n"
+      "</rss>\n"))))
 
 (defun org-static-blog-get-rss-item (post)
   "Assemble RSS item from POST
@@ -379,13 +364,14 @@ The HTML content is taken from the rendered HTML post."
    "<item>\n"
    "  <title>" (plist-get post :title) "</title>\n"
    "  <description><![CDATA["
-   (org-static-blog-render-post-content post)
+   (org-static-blog-render-post-content post t) ; exclude headline!
    "]]></description>\n"
    (let ((categories "")
          (tags (plist-get post :tags)))
      (when (and tags org-static-blog-enable-tags)
        (dolist (tag tags)
-         (setq categories (concat categories "  <category>" tag "</category>\n"))))
+         (setq categories (concat categories
+                                  "  <category>" tag "</category>\n"))))
      categories)
    "  <link>"
    (concat org-static-blog-publish-url
@@ -401,21 +387,36 @@ The HTML content is taken from the rendered HTML post."
   "Re-render the blog archive page.
 The archive page contains single-line links and dates for every
 blog post, but no post body."
-  (let ((archive-filename (concat org-static-blog-publish-directory
-                                  org-static-blog-archive-file))
+  (let ((archive-filename (concat org-static-blog-publish-directory org-static-blog-archive-file))
         (archive-entries nil))
     (org-static-blog-with-find-file
      archive-filename
      (erase-buffer)
      (insert
-      (org-static-blog-html-start "Archive")
+      "<!DOCTYPE html>\n"
+      "<html lang=\"" org-static-blog-langcode "\">\n"
+      "<head>\n"
+      "<meta charset=\"UTF-8\">\n"
+      "<link rel=\"alternate\"\n"
+      "      type=\"application/rss+xml\"\n"
+      "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+      "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
+      "<title>" org-static-blog-publish-title "</title>\n"
+      org-static-blog-page-header
+      "</head>\n"
+      "<body>\n"
+      "<div id=\"preamble\" class=\"status\">\n"
+      org-static-blog-page-preamble
+      "</div>\n"
+      "<div id=\"content\">\n"
+      "<h1 class=\"title\">Archive</h1>\n"
       (org-static-blog-get-posts-summary posts)
-      (org-static-blog-html-end)))))
+      "</body>\n </html>"))))
 
 (defun org-static-blog-get-posts-summary (posts &optional chronological)
-   (mapconcat 'org-static-blog-get-post-summary
-              (org-static-blog-sort-posts posts chronological)
-              "\n"))
+  (mapconcat 'org-static-blog-get-post-summary
+             (org-static-blog-sort-posts posts chronological)
+             "\n"))
 
 (defun org-static-blog-get-post-summary (post &optional element)
   "Assemble post summary for an archive page.
@@ -423,8 +424,12 @@ This function is called for every post on the archive and
 tags-archive page. Modify this function if you want to change an
 archive headline."
   (concat
-   (org-static-blog-render-post-date post)
-   (org-static-blog-render-post-title post t (or element "h3"))))
+   "<div class=\"post-date\">"
+   (format-time-string "%d %b %Y" (plist-get post :date))
+   "</div>"
+   "<h2 class=\"post-title\">"
+   "<a href=\"" (plist-get post :url) "\">" (plist-get post :title) "</a>"
+   "</h2>\n"))
 
 (defun org-static-blog-get-tag-tree (posts)
   "Return an association list of tags to posts.
@@ -457,14 +462,29 @@ blog post, sorted by tags, but no post body."
     (org-static-blog-with-find-file
      tags-archive-filename
      (erase-buffer)
-     (insert (org-static-blog-html-start "Tags"))
-     (dolist (tag (sort tag-tree (lambda (x y) (string-greaterp (car y) (car x)))))
-       (insert
-        "<h2 class=\"tags-title\">Posts tagged \""
-        (downcase (car tag))
-        "\"</h2>\n"
-        (org-static-blog-get-posts-summary (cdr tag))))
-     (insert (org-static-blog-html-end)))))
+     (insert
+      "<!DOCTYPE html>\n"
+      "<html lang=\"" org-static-blog-langcode "\">\n"
+      "<head>\n"
+      "<meta charset=\"UTF-8\">\n"
+      "<link rel=\"alternate\"\n"
+      "      type=\"application/rss+xml\"\n"
+      "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+      "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
+      "<title>" org-static-blog-publish-title "</title>\n"
+      org-static-blog-page-header
+      "</head>\n"
+      "<body>\n"
+      "<div id=\"preamble\" class=\"status\">"
+      org-static-blog-page-preamble
+      "</div>\n"
+      "<div id=\"content\">\n"
+      "<h1 class=\"title\">Tags</h1>\n")
+      (dolist (tag (sort tag-tree (lambda (x y) (string-greaterp (car y) (car x)))))
+        (insert "<h1 class=\"tags-title\">Posts tagged \"" (downcase (car tag))
+                "\":</h1>\n" (org-static-blog-get-posts-summary (cdr tag) t)))
+      (insert "</body>\n"
+              "</html>\n"))))
 
 (defun org-static-blog-goto-first-other (posts message)
   (let ((current-post (file-name-nondirectory (buffer-file-name))))
@@ -506,10 +526,9 @@ choose."
   (let ((title (read-string "Title: ")))
     (find-file (concat
                 org-static-blog-posts-directory
-                (read-string "Filename: "
-                             (concat (format-time-string "%Y-%m-%d-" (current-time))
-                                     (replace-regexp-in-string "\s" "-" (downcase title))
-                                     ".org"))))
+                (read-string "Filename: " (concat (format-time-string "%Y-%m-%d-" (current-time))
+                                                  (replace-regexp-in-string "\s" "-" (downcase title))
+                                                  ".org"))))
     (insert "#+title: " title "\n"
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
             "#+filetags: ")))
