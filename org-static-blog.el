@@ -242,12 +242,15 @@ Preamble and Postamble are excluded, too."
        (if exclude-title
            (progn (search-forward "<h1 class=\"post-title\">")
                   (search-forward "</h1>"))
-         (search-forward "<div id=\"content\">"))
+         (search-forward
+	  (if org-static-blog-use-semantic-html "<main>" "<div id=\"content\">" )))
        (point))
      (progn
        (goto-char (point-max))
-       (search-backward "<div id=\"postamble\" class=\"status\">")
-       (search-backward "</div>")
+       (search-backward
+	(if org-static-blog-use-semantic-html "<footer>" "<div id=\"postamble\" class=\"status\">" ))
+       (search-backward
+	(if org-static-blog-use-semantic-html "</main>" "</div>" ))
        (point)))))
 
 (defun org-static-blog-get-url (post-filename)
@@ -276,17 +279,17 @@ The index, archive, tags, and RSS feed are not updated."
     org-static-blog-page-header
     "</head>\n"
     "<body>\n"
-    "<div id=\"preamble\" class=\"status\">\n"
+    (if org-static-blog-use-semantic-html "<header>\n" "<div id=\"preamble\" class=\"status\">\n")
     org-static-blog-page-preamble
-    "</div>\n"
-    "<div id=\"content\">\n"
+    (if org-static-blog-use-semantic-html "</header>\n" "</div>\n")
+    (if org-static-blog-use-semantic-html "<main>\n" "<div id=\"content\">\n" )
     (org-static-blog-post-preamble post-filename)
     (org-static-blog-render-post-content post-filename)
     (org-static-blog-post-postamble post-filename)
-    "</div>\n"
-    "<div id=\"postamble\" class=\"status\">"
+    (if org-static-blog-use-semantic-html "</main>\n" "</div>\n" )
+    (if org-static-blog-use-semantic-html "<footer>" "<div id=\"postamble\" class=\"status\">" )
     org-static-blog-page-postamble
-    "</div>\n"
+    (if org-static-blog-use-semantic-html "</footer>\n" "</div>\n")
     "</body>\n"
     "</html>\n")))
 
@@ -332,10 +335,10 @@ Posts are sorted in descending time."
     org-static-blog-page-header
     "</head>\n"
     "<body>\n"
-    (if org-static-blog-use-semantic-html "<header>" "<div id=\"preamble\" class=\"status\">" )
+    (if org-static-blog-use-semantic-html "<header>\n" "<div id=\"preamble\" class=\"status\">\n" )
     org-static-blog-page-preamble
-    (if org-static-blog-use-semantic-html "</header>" "</div>\n" )
-    (if org-static-blog-use-semantic-html "<main>" "<div id=\"content\">\n" ))
+    (if org-static-blog-use-semantic-html "</header>\n" "</div>\n" )
+    (if org-static-blog-use-semantic-html "<main>\n" "<div id=\"content\">\n" ))
    (if front-matter
        (insert front-matter))
    (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date y)
@@ -454,16 +457,18 @@ blog post, but no post body."
       org-static-blog-page-header
       "</head>\n"
       "<body>\n"
-      "<div id=\"preamble\" class=\"status\">\n"
+      (if org-static-blog-use-semantic-html "<header>\n" "<div id=\"preamble\" class=\"status\">\n")
       org-static-blog-page-preamble
-      "</div>\n"
-      "<div id=\"content\">\n"
+      (if org-static-blog-use-semantic-html "</header>\n" "</div>\n")
+      (if org-static-blog-use-semantic-html "<main>\n" "<div id=\"content\">\n" )
       "<h1 class=\"title\">Archive</h1>\n")
      (dolist (post-filename (sort post-filenames (lambda (x y) (time-less-p
                                                                 (org-static-blog-get-date y)
                                                                 (org-static-blog-get-date x)))))
        (insert (org-static-blog-get-post-summary post-filename)))
-     (insert "</body>\n </html>"))))
+     (insert
+      (if org-static-blog-use-semantic-html "</main>\n" "</div>\n" )
+      "</body>\n </html>"))))
 
 (defun org-static-blog-get-post-summary (post-filename)
   "Assemble post summary for an archive page.
@@ -471,9 +476,9 @@ This function is called for every post on the archive and
 tags-archive page. Modify this function if you want to change an
 archive headline."
   (concat
-   "<div class=\"post-date\">"
+   (if org-static-blog-use-semantic-html "<time>" "<div class=\"post-date\">" )
    (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename))
-   "</div>"
+   (if org-static-blog-use-semantic-html "</time>" "</div>" )
    "<h2 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h2>\n"))
@@ -509,18 +514,20 @@ blog post, sorted by tags, but no post body."
       org-static-blog-page-header
       "</head>\n"
       "<body>\n"
-      "<div id=\"preamble\" class=\"status\">"
+      (if org-static-blog-use-semantic-html "<header>\n" "<div id=\"preamble\" class=\"status\">\n")
       org-static-blog-page-preamble
-      "</div>\n"
-      "<div id=\"content\">\n"
+      (if org-static-blog-use-semantic-html "</header>\n" "</div>\n")
+      (if org-static-blog-use-semantic-html "<main>\n" "<div id=\"content\">\n")
       "<h1 class=\"title\">Tags</h1>\n")
      (dolist (tag (sort tag-tree (lambda (x y) (string-greaterp (car y) (car x)))))
        (insert "<h1 class=\"tags-title\">Posts tagged \"" (downcase (car tag)) "\":</h1>\n")
        (dolist (post-filename (sort (cdr tag) (lambda (x y) (time-less-p (org-static-blog-get-date x)
                                                                          (org-static-blog-get-date y)))))
          (insert (org-static-blog-get-post-summary post-filename))))
-     (insert "</body>\n"
-             "</html>\n"))))
+     (insert
+      (if org-static-blog-use-semantic-html "</main>" "</div>")
+      "</body>\n"
+      "</html>\n"))))
 
 (defun org-static-blog-open-previous-post ()
   "Opens previous blog post."
