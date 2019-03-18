@@ -156,6 +156,14 @@ re-rendered."
   (directory-files
    org-static-blog-drafts-directory t ".*\\.org$" nil))
 
+(defun org-static-blog-file-buffer (file)
+  "Return the buffer open with a full filepath, or nil."
+  (require 'seq)
+  (car (seq-filter
+         (lambda (buf)
+           (string= (with-current-buffer buf buffer-file-name) file))
+         (buffer-list))))
+
 ;; This macro is needed for many of the following functions.
 (defmacro org-static-blog-with-find-file (file &rest body)
   "Executes BODY in FILE. Use this to insert text into FILE.
@@ -163,7 +171,7 @@ The buffer is disposed after the macro exits (unless it already
 existed before)."
   `(save-excursion
      (let ((current-buffer (current-buffer))
-           (buffer-exists (get-buffer (file-name-nondirectory ,file)))
+           (buffer-exists (org-static-blog-file-buffer ,file))
            (result nil))
        (if buffer-exists
            (switch-to-buffer buffer-exists)
