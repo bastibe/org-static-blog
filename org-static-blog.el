@@ -45,11 +45,13 @@
 
 (defcustom org-static-blog-publish-url "https://example.com/"
   "URL of the blog."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-publish-title "Example.com"
   "Title of the blog."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-publish-directory "~/blog/"
   "Directory where published HTML files are stored."
@@ -71,25 +73,30 @@ the index, archive, tags, or RSS feed."
   "File name of the blog landing page.
 The index page contains the most recent
 `org-static-blog-index-length` full-text posts."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-index-length 5
   "Number of articles to include on index page."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-archive-file "archive.html"
   "File name of the list of all blog posts.
 The archive page lists all posts as headlines."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-tags-file "tags.html"
   "File name of the list of all blog posts by tag.
 The tags page lists all posts as headlines."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-enable-tags nil
   "Show tags below posts, and generate tag pages."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-enable-deprecation-warning t
   "Show deprecation warnings."
@@ -97,23 +104,28 @@ The tags page lists all posts as headlines."
 
 (defcustom org-static-blog-rss-file "rss.xml"
   "File name of the RSS feed."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-page-header ""
   "HTML to put in the <head> of each page."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-page-preamble ""
   "HTML to put before the content of each page."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-page-postamble ""
   "HTML to put after the content of each page."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 (defcustom org-static-blog-langcode "en"
   "Language code for the blog content."
-  :group 'org-static-blog)
+  :group 'org-static-blog
+  :safe t)
 
 ;;;###autoload
 (defun org-static-blog-publish ()
@@ -165,23 +177,26 @@ re-rendered."
          (buffer-list))))
 
 ;; This macro is needed for many of the following functions.
-(defmacro org-static-blog-with-find-file (file &rest body)
+(defmacro org-static-blog-with-find-file (file contents &rest body)
   "Executes BODY in FILE. Use this to insert text into FILE.
 The buffer is disposed after the macro exits (unless it already
 existed before)."
   `(save-excursion
      (let ((current-buffer (current-buffer))
            (buffer-exists (org-static-blog-file-buffer ,file))
-           (result nil))
+           (result nil)
+	   (contents ,contents))
        (if buffer-exists
            (switch-to-buffer buffer-exists)
          (find-file ,file))
+       (erase-buffer)
+       (insert contents)
        (setq result (progn ,@body))
        (basic-save-buffer)
-      (unless buffer-exists
-        (kill-buffer))
-      (switch-to-buffer current-buffer)
-      result)))
+       (unless buffer-exists
+         (kill-buffer))
+       (switch-to-buffer current-buffer)
+       result)))
 
 (defun org-static-blog-get-date (post-filename)
   "Extract the `#+date:` from POST-FILENAME as date-time."
@@ -221,7 +236,7 @@ existed before)."
                            "will be removed in the future. "
                            "Please use `#+filetags` instead")))
               (split-string (match-string 1)))
-            nil)))))
+          nil)))))
 
 (defun org-static-blog-get-tag-tree ()
   "Return an association list of tags to filenames.
@@ -266,8 +281,7 @@ The index, archive, tags, and RSS feed are not updated."
   (interactive "f")
   (org-static-blog-with-find-file
    (org-static-blog-matching-publish-filename post-filename)
-   (erase-buffer)
-   (insert
+   (concat
     "<!DOCTYPE html>\n"
     "<html lang=\"" org-static-blog-langcode "\">\n"
     "<head>\n"
@@ -299,7 +313,7 @@ The index, archive, tags, and RSS feed are not updated."
   (let ((org-html-doctype "html5")
         (org-html-html5-fancy t))
     (org-static-blog-with-find-file
-     post-filename
+     post-filename ""
      (org-export-as 'org-static-blog-post-bare nil nil nil nil))))
 
 (org-export-define-derived-backend 'org-static-blog-post-bare 'html
@@ -320,10 +334,11 @@ posts as full text posts."
 (defun org-static-blog-assemble-multipost-page (pub-filename post-filenames &optional front-matter)
   "Assemble a page that contains multiple posts one after another.
 Posts are sorted in descending time."
+  (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date y)
+                                                                  (org-static-blog-get-date x)))))
   (org-static-blog-with-find-file
    pub-filename
-   (erase-buffer)
-   (insert
+   (concat
     "<!DOCTYPE html>\n"
     "<html lang=\"" org-static-blog-langcode "\">\n"
     "<head>\n"
@@ -339,14 +354,9 @@ Posts are sorted in descending time."
     "<div id=\"preamble\" class=\"status\">"
     org-static-blog-page-preamble
     "</div>\n"
-    "<div id=\"content\">\n")
-   (if front-matter
-       (insert front-matter))
-   (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date y)
-                                                                        (org-static-blog-get-date x)))))
-   (dolist (post-filename post-filenames)
-     (insert (org-static-blog-get-body post-filename)))
-   (insert
+    "<div id=\"content\">\n"
+    (when front-matter front-matter)
+    (apply 'concat (mapcar 'org-static-blog-get-body post-filenames))
     "<div id=\"archive\">\n"
     "<a href=\"" org-static-blog-archive-file "\">Other posts</a>\n"
     "</div>\n"
@@ -391,19 +401,18 @@ machine-readable format."
       (let ((rss-date (org-static-blog-get-date post-filename))
             (rss-text (org-static-blog-get-rss-item post-filename)))
         (add-to-list 'rss-items (cons rss-date rss-text))))
+    (setq rss-items (sort rss-items (lambda (x y) (time-less-p (car y) (car x)))))
     (org-static-blog-with-find-file
      rss-filename
-     (erase-buffer)
-     (insert "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-             "<rss version=\"2.0\">\n"
-             "<channel>\n"
-             "<title>" org-static-blog-publish-title "</title>\n"
-             "<description>" org-static-blog-publish-title "</description>\n"
-             "<link>" org-static-blog-publish-url "</link>\n"
-             "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n")
-     (dolist (item (sort rss-items (lambda (x y) (time-less-p (car y) (car x)))))
-       (insert (cdr item)))
-     (insert "</channel>\n"
+     (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+	     "<rss version=\"2.0\">\n"
+	     "<channel>\n"
+	     "<title>" org-static-blog-publish-title "</title>\n"
+	     "<description>" org-static-blog-publish-title "</description>\n"
+	     "<link>" org-static-blog-publish-url "</link>\n"
+	     "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n"
+	     (apply 'concat (mapcar 'cdr rss-items))
+	     "</channel>\n"
              "</rss>\n"))))
 
 (defun org-static-blog-get-rss-item (post-filename)
@@ -439,10 +448,12 @@ blog post, but no post body."
   (let ((archive-filename (concat org-static-blog-publish-directory org-static-blog-archive-file))
         (archive-entries nil)
         (post-filenames (org-static-blog-get-post-filenames)))
+    (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p
+                                                        (org-static-blog-get-date y)
+                                                        (org-static-blog-get-date x)))))
     (org-static-blog-with-find-file
      archive-filename
-     (erase-buffer)
-     (insert
+     (concat
       "<!DOCTYPE html>\n"
       "<html lang=\"" org-static-blog-langcode "\">\n"
       "<head>\n"
@@ -459,12 +470,10 @@ blog post, but no post body."
       org-static-blog-page-preamble
       "</div>\n"
       "<div id=\"content\">\n"
-      "<h1 class=\"title\">Archive</h1>\n")
-     (dolist (post-filename (sort post-filenames (lambda (x y) (time-less-p
-                                                                (org-static-blog-get-date y)
-                                                                (org-static-blog-get-date x)))))
-       (insert (org-static-blog-get-post-summary post-filename)))
-     (insert "</body>\n </html>"))))
+      "<h1 class=\"title\">Archive</h1>\n"
+      (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames))
+      "</body>\n"
+      "</html>"))))
 
 (defun org-static-blog-get-post-summary (post-filename)
   "Assemble post summary for an archive page.
@@ -488,16 +497,25 @@ archive headline."
      (cdr tag)
      (concat "<h1 class=\"title\">Posts tagged \"" (car tag) "\":</h1>"))))
 
+(defun org-static-blog-assemble-tags-archive-tag (tag)
+  "Assemble single TAG for all filenames."
+  (let ((post-filenames (cdr tag)))
+    (setq post-filenames
+	  (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date x)
+						     (org-static-blog-get-date y)))))
+    (concat "<h1 class=\"tags-title\">Posts tagged \"" (downcase (car tag)) "\":</h1>\n"
+	    (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames)))))
+
 (defun org-static-blog-assemble-tags-archive ()
   "Assemble the blog tag archive page.
 The archive page contains single-line links and dates for every
 blog post, sorted by tags, but no post body."
   (let ((tags-archive-filename (concat org-static-blog-publish-directory org-static-blog-tags-file))
         (tag-tree (org-static-blog-get-tag-tree)))
+    (setq tag-tree (sort tag-tree (lambda (x y) (string-greaterp (car y) (car x)))))
     (org-static-blog-with-find-file
      tags-archive-filename
-     (erase-buffer)
-     (insert
+     (concat
       "<!DOCTYPE html>\n"
       "<html lang=\"" org-static-blog-langcode "\">\n"
       "<head>\n"
@@ -514,14 +532,10 @@ blog post, sorted by tags, but no post body."
       org-static-blog-page-preamble
       "</div>\n"
       "<div id=\"content\">\n"
-      "<h1 class=\"title\">Tags</h1>\n")
-     (dolist (tag (sort tag-tree (lambda (x y) (string-greaterp (car y) (car x)))))
-       (insert "<h1 class=\"tags-title\">Posts tagged \"" (downcase (car tag)) "\":</h1>\n")
-       (dolist (post-filename (sort (cdr tag) (lambda (x y) (time-less-p (org-static-blog-get-date x)
-                                                                         (org-static-blog-get-date y)))))
-         (insert (org-static-blog-get-post-summary post-filename))))
-     (insert "</body>\n"
-             "</html>\n"))))
+      "<h1 class=\"title\">Tags</h1>\n"
+      (apply 'concat (mapcar tag-tree 'org-static-blog-assemble-tags-archive-tag))
+      "</body>\n"
+      "</html>\n"))))
 
 (defun org-static-blog-open-previous-post ()
   "Opens previous blog post."
