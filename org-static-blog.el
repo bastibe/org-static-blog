@@ -204,8 +204,9 @@ existed before)."
     (with-temp-buffer
       (insert-file-contents post-filename)
       (goto-char (point-min))
-      (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
-      (date-to-time (match-string 1)))))
+      (if (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$" nil t)
+	  (date-to-time (match-string 1))
+	(time-since 0)))))
 
 (defun org-static-blog-get-title (post-filename)
   "Extract the `#+title:` from POST-FILENAME."
