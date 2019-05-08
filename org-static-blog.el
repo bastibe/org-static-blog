@@ -204,8 +204,9 @@ existed before)."
     (with-temp-buffer
       (insert-file-contents post-filename)
       (goto-char (point-min))
-      (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$")
-      (date-to-time (match-string 1)))))
+      (if (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$" nil t)
+	  (date-to-time (match-string 1))
+	(time-since 0)))))
 
 (defun org-static-blog-get-title (post-filename)
   "Extract the `#+title:` from POST-FILENAME."
@@ -312,9 +313,20 @@ The index, archive, tags, and RSS feed are not updated."
   "Render blog content as bare HTML without header."
   (let ((org-html-doctype "html5")
         (org-html-html5-fancy t))
-    (org-static-blog-with-find-file
-     post-filename ""
-     (org-export-as 'org-static-blog-post-bare nil nil nil nil))))
+    (save-excursion
+      (let ((current-buffer (current-buffer))
+	    (buffer-exists (org-static-blog-file-buffer post-filename))
+	    (result nil))
+	(if buffer-exists
+	    (switch-to-buffer buffer-exists)
+	  (find-file post-filename))
+	(setq result
+	      (org-export-as 'org-static-blog-post-bare nil nil nil nil))
+	(basic-save-buffer)
+	(unless buffer-exists
+	  (kill-buffer))
+	(switch-to-buffer current-buffer)
+	result))))
 
 (org-export-define-derived-backend 'org-static-blog-post-bare 'html
   :translate-alist '((template . (lambda (contents info) contents))))
