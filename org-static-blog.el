@@ -223,21 +223,11 @@ existed before)."
     (with-temp-buffer
       (insert-file-contents post-filename)
       (goto-char (point-min))
-      (if (search-forward-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$" nil t)
-          (split-string (match-string 1))
-        ;; for a very short time, I allowed #+tags: to be used to set
-        ;; tags. This was wrong. It now still works, but will issue a
-        ;; warning, and will be removed in the future.
-        (if (search-forward-regexp "^\\#\\+tags:[ ]*\\(.+\\)$" nil t)
-            (progn
-              (if org-static-blog-enable-deprecation-warning
-                  (display-warning
-                   :warning
-                   (concat "Using `#+tags:` is deprecated and "
-                           "will be removed in the future. "
-                           "Please use `#+filetags` instead")))
-              (split-string (match-string 1)))
-          nil)))))
+      (if (search-forward-regexp "^\\#\\+filetags:[ ]*:\\(.*\\):$" nil t)
+          (split-string (match-string 1) ":")
+	(if (search-forward-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$" nil t)
+            (split-string (match-string 1))
+	  )))))
 
 (defun org-static-blog-get-tag-tree ()
   "Return an association list of tags to filenames.
@@ -437,7 +427,7 @@ The HTML content is taken from the rendered HTML post."
      (when post-tags
        (mapconcat (lambda (tag) (when (not (string= tag ""))
 				  (format "<category>%s</category>" tag)))
-		  (split-string (car post-tags) ":") "\n")))
+		  post-tags "\n")))
    "  <description><![CDATA["
    (org-static-blog-get-body post-filename t) ; exclude headline!
    "]]></description>\n"
