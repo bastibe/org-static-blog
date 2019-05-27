@@ -208,16 +208,6 @@ existed before)."
 	  (date-to-time (match-string 1))
 	(time-since 0)))))
 
-(defun org-static-blog-get-filetags (post-filename)
-  "Extract the `#+filetags:` from POST-FILENAME as list of strings."
-  (let ((case-fold-search t))
-    (with-temp-buffer
-      (insert-file-contents post-filename)
-      (goto-char (point-min))
-      (if (search-forward-regexp "^\\#\\+filetags:[ ]*:\\(.*\\):$" nil t)
-          (split-string (match-string 1) ":")
-	))))
-
 (defun org-static-blog-get-title (post-filename)
   "Extract the `#+title:` from POST-FILENAME."
   (let ((case-fold-search t))
@@ -443,8 +433,11 @@ The HTML content is taken from the rendered HTML post."
   (concat
    "<item>\n"
    "  <title>" (org-static-blog-get-title post-filename) "</title>\n"
-   (mapconcat (lambda (tag) (format "<category>%s</category>" tag))
-	      (org-static-blog-get-filetags post-filename) "\n")
+   (let ((post-tags (org-static-blog-get-tags post-filename)))
+     (when post-tags
+       (mapconcat (lambda (tag) (when (not (string= tag ""))
+				  (format "<category>%s</category>" tag)))
+		  (split-string (car post-tags) ":") "\n")))
    "  <description><![CDATA["
    (org-static-blog-get-body post-filename t) ; exclude headline!
    "]]></description>\n"
