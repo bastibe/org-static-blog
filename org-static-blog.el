@@ -423,11 +423,6 @@ The HTML content is taken from the rendered HTML post."
   (concat
    "<item>\n"
    "  <title>" (org-static-blog-get-title post-filename) "</title>\n"
-   (let ((post-tags (org-static-blog-get-tags post-filename)))
-     (when post-tags
-       (mapconcat (lambda (tag) (when (not (string= tag ""))
-				  (format "<category>%s</category>" tag)))
-		  post-tags "\n")))
    "  <description><![CDATA["
    (org-static-blog-get-body post-filename t) ; exclude headline!
    "]]></description>\n"
