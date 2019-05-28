@@ -223,21 +223,11 @@ existed before)."
     (with-temp-buffer
       (insert-file-contents post-filename)
       (goto-char (point-min))
-      (if (search-forward-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$" nil t)
-          (split-string (match-string 1))
-        ;; for a very short time, I allowed #+tags: to be used to set
-        ;; tags. This was wrong. It now still works, but will issue a
-        ;; warning, and will be removed in the future.
-        (if (search-forward-regexp "^\\#\\+tags:[ ]*\\(.+\\)$" nil t)
-            (progn
-              (if org-static-blog-enable-deprecation-warning
-                  (display-warning
-                   :warning
-                   (concat "Using `#+tags:` is deprecated and "
-                           "will be removed in the future. "
-                           "Please use `#+filetags` instead")))
-              (split-string (match-string 1)))
-          nil)))))
+      (if (search-forward-regexp "^\\#\\+filetags:[ ]*:\\(.*\\):$" nil t)
+          (split-string (match-string 1) ":")
+	(if (search-forward-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$" nil t)
+            (split-string (match-string 1))
+	  )))))
 
 (defun org-static-blog-get-tag-tree ()
   "Return an association list of tags to filenames.
@@ -425,7 +415,7 @@ machine-readable format."
 	     "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n"
 	     (apply 'concat (mapcar 'cdr rss-items))
 	     "</channel>\n"
-             "</rss>\n"))))
+	     "</rss>\n"))))
 
 (defun org-static-blog-get-rss-item (post-filename)
   "Assemble RSS item from post-filename.
