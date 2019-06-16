@@ -528,7 +528,7 @@ tags-archive page. Modify this function if you want to change an
 archive headline."
   (concat
    "<div class=\"post-date\">"
-   (format-time-string (org-static-blog 'date-format) (org-static-blog-get-date post-filename))
+   (format-time-string (org-static-blog-l12n 'date-format) (org-static-blog-get-date post-filename))
    "</div>"
    "<h2 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
