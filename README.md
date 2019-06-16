@@ -84,6 +84,7 @@ itself to see an example of how to use `org-static-blog` in practice.
 Other org-journal blogs:
 - [https://zngguvnf.org/][zngguvnf.org]
 - [https://matthewbauer.us/blog/][matthewbauer.us/blog/]
+- [http://lisper.pl/][lisper.pl]
 - Please open a pull request to add your blog, here!
 
 [blog]: http://bastibe.de
@@ -91,6 +92,7 @@ Other org-journal blogs:
 [repo]: https://github.com/bastibe/bastibe.github.com
 [zngguvnf.org]: https://zngguvnf.org/
 [matthewbauer.us/blog/]: https://matthewbauer.us/blog/
+[lisper.pl]: http://lisper.pl/
 
 Known Issues
 -----------
