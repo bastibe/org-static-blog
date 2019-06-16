@@ -1,7 +1,7 @@
+#+TITLE: ORG-STATIC-BLOG
 
-[[http://melpa.org/packages/org-static-blog-badge.svg ]][[http://stable.melpa.org/packages/org-static-blog-badge.svg]]
+[[http://melpa.org/packages/org-static-blog-badge.svg]] [[http://stable.melpa.org/packages/org-static-blog-badge.svg]]
 
-* ORG-STATIC-BLOG
 
 Static blog generators are a dime a dozen. This is one more, which
 focuses on being simple. All files are simple org-mode files in a
@@ -74,7 +74,7 @@ possible, I can not guarantee a timely response to issues. Publishing
 Open Source Software on GitHub does not imply an obligation to /fix
 your problem right now/. Please be civil.
 
-** Examples
+* Examples
 
 =org-static-blog= was used to render [[http://bastibe.de/][bastibe.de/]]. Have
 a look at my [[https://github.com/bastibe/.emacs.d/blob/master/init.el#L670][init.el]] and the [[https://github.com/bastibe/bastibe.github.com][repository]] for the blog
@@ -86,7 +86,7 @@ Other org-static-blog blogs:
 - [[http://lisper.pl/][lisper.pl]]
 - Please open a pull request to add your blog, here!
 
-** Known Issues
+* Known Issues
 
 - Org-static-blog is a pure static site generator. As such, it does
   not include comments. However, you can easily include services like
@@ -99,7 +99,7 @@ Other org-static-blog blogs:
   is available (i.e. the org file is older than the HTML file). If you
   want to forcibly re-render an entry, delete the HTML file.
 
-** Changelog
+* Changelog
 
 - 2018-03-17 (v1.0.4): Massive speed up of org-static-blog. A
   re-render with one changed file used to take about a second per
@@ -121,7 +121,7 @@ Other org-static-blog blogs:
   places.
   (Thank you, Michael Cardell Widerkrantz!)
 
-** LICENSE
+* LICENSE
 
 Copyright 2015, Bastian Bechtold
 
