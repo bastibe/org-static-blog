@@ -632,9 +632,10 @@ choose."
   (let ((title (read-string (org-static-blog-gettext 'title))))
     (find-file (concat
                 org-static-blog-posts-directory
-                (read-string (org-static-blog-gettext 'filename) (concat (format-time-string "%Y-%m-%d-" (current-time))
-                                                  (replace-regexp-in-string "\s" "-" (downcase title))
-                                                  ".org"))))
+                (read-string (org-static-blog-gettext 'filename)
+			     (concat (format-time-string "%Y-%m-%d-" (current-time))
+				     (replace-regexp-in-string "\s" "-" (downcase title))
+				     ".org"))))
     (insert "#+title: " title "\n"
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
             "#+filetags: ")))
