@@ -56,6 +56,14 @@ ways:
   blog post. If you want to change the formatting of dates, titles, or
   the tag list, overwrite these functions.
 
+There are some static texts like "/Other posts/", "/Tags/" etc that
+org-static-blog includes in produced html. By default org-static-blog
+uses english texts, but language chosen depends on value set to
+=org-static-blog-langcode=. If your language is not supported yet, you
+will see placeholders like =[other-posts:de]= and =[tags:de]=.
+You can add new language by adding texts to =org-static-blog-texts=
+list. And if you do, please share and create Pull Request.
+
 If you want to activate a few convenience key bindings, add
 =(add-to-list 'auto-mode-alist (cons (concat org-static-blog-posts-directory ".*\\.org\\'") 'org-static-blog-mode))=
 to your /init.el/. These key bindings are:
