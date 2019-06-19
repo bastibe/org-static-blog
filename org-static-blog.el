@@ -127,6 +127,48 @@ The tags page lists all posts as headlines."
   :group 'org-static-blog
   :safe t)
 
+;; localization support
+(defconst org-static-blog-texts
+  '((other-posts
+     ("en" . "Other posts")
+     ("pl" . "Pozostałe wpisy"))
+    (date-format
+     ("en" . "%d %b %Y")
+     ("pl" . "%Y-%m-%d"))
+    (tags
+     ("en" . "Tags")
+     ("pl" . "Tagi"))
+    (archive
+     ("en" . "Archive")
+     ("pl" . "Archiwum"))
+    (posts-tagged
+     ("en" . "Posts tagged")
+     ("pl" . "Wpisy z tagiem"))
+    (no-prev-post
+     ("en" . "There is no previous post")
+     ("pl" . "Poprzedni wpis nie istnieje"))
+    (no-next-post
+     ("en" . "There is no next post")
+     ("pl" . "Następny wpis nie istnieje"))
+    (title
+     ("en" . "Title: ")
+     ("pl" . "Tytuł: "))
+    (filename
+     ("en" . "Filename: ")
+     ("pl" . "Nazwa pliku: "))))
+
+(defun org-static-blog-gettext (text-id)
+  "Return localized text.
+Depends on org-static-blog-langcode and org-static-blog-texts."
+  (let* ((text-node (assoc text-id org-static-blog-texts))
+	 (text-lang-node (if text-node
+			     (assoc org-static-blog-langcode text-node)
+			   nil)))
+    (if text-lang-node
+	(cdr text-lang-node)
+      (concat "[" (symbol-name text-id) ":" org-static-blog-langcode "]"))))
+
+
 ;;;###autoload
 (defun org-static-blog-publish ()
   "Render all blog posts, the index, archive, tags, and RSS feed.
@@ -360,7 +402,7 @@ Posts are sorted in descending time."
     (when front-matter front-matter)
     (apply 'concat (mapcar 'org-static-blog-get-body post-filenames))
     "<div id=\"archive\">\n"
-    "<a href=\"" org-static-blog-archive-file "\">Other posts</a>\n"
+    "<a href=\"" org-static-blog-archive-file "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
     "</div>\n"
     "</div>\n"
     "</body>\n"
@@ -371,7 +413,9 @@ Posts are sorted in descending time."
 This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
-   "<div class=\"post-date\">" (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename)) "</div>"
+   "<div class=\"post-date\">" (format-time-string (org-static-blog-gettext 'date-format)
+						   (org-static-blog-get-date post-filename))
+   "</div>"
    "<h1 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h1>\n"))
@@ -385,7 +429,7 @@ Modify this function if you want to change a posts footline."
       (setq taglist-content (concat "<div class=\"taglist\">"
                                     "<a href=\""
                                     org-static-blog-tags-file
-                                    "\">Tags:</a> "))
+                                    "\">" (org-static-blog-gettext 'tags) "</a>: "))
       (dolist (tag (org-static-blog-get-tags post-filename))
         (setq taglist-content (concat taglist-content "<a href=\""
                                       "tag-" (downcase tag) ".html"
@@ -472,7 +516,7 @@ blog post, but no post body."
       org-static-blog-page-preamble
       "</div>\n"
       "<div id=\"content\">\n"
-      "<h1 class=\"title\">Archive</h1>\n"
+      "<h1 class=\"title\">" (org-static-blog-gettext 'archive) "</h1>\n"
       (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames))
       "</body>\n"
       "</html>"))))
@@ -484,7 +528,7 @@ tags-archive page. Modify this function if you want to change an
 archive headline."
   (concat
    "<div class=\"post-date\">"
-   (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename))
+   (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
    "</div>"
    "<h2 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
@@ -497,7 +541,7 @@ archive headline."
     (org-static-blog-assemble-multipost-page
      (concat org-static-blog-publish-directory "tag-" (downcase (car tag)) ".html")
      (cdr tag)
-     (concat "<h1 class=\"title\">Posts tagged \"" (car tag) "\":</h1>"))))
+     (concat "<h1 class=\"title\">" (org-static-blog-gettext 'posts-tagged) " \"" (car tag) "\":</h1>"))))
 
 (defun org-static-blog-assemble-tags-archive-tag (tag)
   "Assemble single TAG for all filenames."
@@ -505,7 +549,7 @@ archive headline."
     (setq post-filenames
 	  (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date x)
 						     (org-static-blog-get-date y)))))
-    (concat "<h1 class=\"tags-title\">Posts tagged \"" (downcase (car tag)) "\":</h1>\n"
+    (concat "<h1 class=\"tags-title\">" (org-static-blog-gettext 'posts-tagged) " \"" (downcase (car tag)) "\":</h1>\n"
 	    (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames)))))
 
 (defun org-static-blog-assemble-tags-archive ()
@@ -534,7 +578,7 @@ blog post, sorted by tags, but no post body."
       org-static-blog-page-preamble
       "</div>\n"
       "<div id=\"content\">\n"
-      "<h1 class=\"title\">Tags</h1>\n"
+      "<h1 class=\"title\">" (org-static-blog-gettext 'tags) "</h1>\n"
       (apply 'concat (mapcar 'org-static-blog-assemble-tags-archive-tag tag-tree))
       "</body>\n"
       "</html>\n"))))
@@ -554,7 +598,7 @@ blog post, sorted by tags, but no post body."
       (setq posts (cdr posts)))
     (if (> (list-length posts) 1)
         (find-file (cadr posts))
-      (message "There is no previous post"))))
+      (message (org-static-blog-gettext 'no-prev-post)))))
 
 (defun org-static-blog-open-next-post ()
   "Opens next blog post."
@@ -571,7 +615,7 @@ blog post, sorted by tags, but no post body."
       (setq posts (cdr posts)))
     (if (> (list-length posts) 1)
         (find-file (cadr posts))
-      (message "There is no next post"))))
+      (message (org-static-blog-gettext 'no-next-post)))))
 
 (defun org-static-blog-open-matching-publish-file ()
   "Opens HTML for post."
@@ -585,12 +629,13 @@ Prompts for a title and proposes a file name. The file name is
 only a suggestion; You can choose any other file name if you so
 choose."
   (interactive)
-  (let ((title (read-string "Title: ")))
+  (let ((title (read-string (org-static-blog-gettext 'title))))
     (find-file (concat
                 org-static-blog-posts-directory
-                (read-string "Filename: " (concat (format-time-string "%Y-%m-%d-" (current-time))
-                                                  (replace-regexp-in-string "\s" "-" (downcase title))
-                                                  ".org"))))
+                (read-string (org-static-blog-gettext 'filename)
+			     (concat (format-time-string "%Y-%m-%d-" (current-time))
+				     (replace-regexp-in-string "\s" "-" (downcase title))
+				     ".org"))))
     (insert "#+title: " title "\n"
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
             "#+filetags: ")))
