@@ -107,7 +107,7 @@ which will be saved in the directory ~/projects/blog/.
 "<meta name=\"author\" content=\"John Dow\">
 <meta name=\"referrer\" content=\"no-referrer\">
 <link href= \"static/style.css\" rel=\"stylesheet\" type=\"text/css\" />
-<link rel=\"icon\" href=\"static/favicon.ico\">"
+<link rel=\"icon\" href=\"static/favicon.ico\">")
 
 ;; This preamble is inserted at the beginning of the <body> of every page:
 ;;   This particular HTML creates a <div> with a simple linked headline
