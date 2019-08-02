@@ -170,14 +170,17 @@ Depends on org-static-blog-langcode and org-static-blog-texts."
 
 
 ;;;###autoload
-(defun org-static-blog-publish ()
+(defun org-static-blog-publish (&optional force-render)
   "Render all blog posts, the index, archive, tags, and RSS feed.
 Only blog posts that changed since the HTML was created are
-re-rendered."
-  (interactive)
+re-rendered.
+
+With a prefix argument, all blog posts are re-rendered
+unconditionally."
+  (interactive "P")
   (dolist (file (append (org-static-blog-get-post-filenames)
                         (org-static-blog-get-draft-filenames)))
-    (when (org-static-blog-needs-publishing-p file)
+    (when (or force-render (org-static-blog-needs-publishing-p file))
       (org-static-blog-publish-file file)))
   ;; don't spam too many deprecation warnings:
   (let ((org-static-blog-enable-deprecation-warning nil))
