@@ -405,6 +405,9 @@ Posts are sorted in descending time."
     "<a href=\"" org-static-blog-archive-file "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
     "</div>\n"
     "</div>\n"
+    "<div id=\"postamble\" class=\"status\">"
+    org-static-blog-page-postamble
+    "</div>\n"
     "</body>\n"
     "</html>\n")))
 
@@ -518,6 +521,9 @@ blog post, but no post body."
       "<div id=\"content\">\n"
       "<h1 class=\"title\">" (org-static-blog-gettext 'archive) "</h1>\n"
       (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames))
+      "<div id=\"postamble\" class=\"status\">"
+      org-static-blog-page-postamble
+      "</div>\n"
       "</body>\n"
       "</html>"))))
 
@@ -580,6 +586,9 @@ blog post, sorted by tags, but no post body."
       "<div id=\"content\">\n"
       "<h1 class=\"title\">" (org-static-blog-gettext 'tags) "</h1>\n"
       (apply 'concat (mapcar 'org-static-blog-assemble-tags-archive-tag tag-tree))
+      "<div id=\"postamble\" class=\"status\">"
+      org-static-blog-page-postamble
+      "</div>\n"
       "</body>\n"
       "</html>\n"))))
 
