@@ -320,7 +320,7 @@ Preamble and Postamble are excluded, too."
 
 (defun org-static-blog-post-url (post-filename post-datetime)
   "Generate arbitrary post URL. This function is overridable by user"
-  ('post-filename))
+  post-filename)
 
 ;;;###autoload
 (defun org-static-blog-publish-file (post-filename)
