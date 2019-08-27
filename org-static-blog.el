@@ -197,22 +197,22 @@ re-rendered."
 (defun org-static-blog-matching-publish-filename (post-filename)
   "Generate HTML file name for POST-FILENAME."
   (concat org-static-blog-publish-directory
-          (file-name-base post-filename)
-          ".html"))
+          (org-static-blog-get-url post-filename)))
 
 (defun org-static-blog-get-post-filenames ()
   "Returns a list of all posts."
-  (directory-files
-   org-static-blog-posts-directory t ".*\\.org$" nil))
+  (directory-files-recursively
+   org-static-blog-posts-directory ".*\\.org$"))
 
 (defun org-static-blog-get-draft-filenames ()
   "Returns a list of all drafts."
-  (directory-files
-   org-static-blog-drafts-directory t ".*\\.org$" nil))
+  (directory-files-recursively
+   org-static-blog-drafts-directory ".*\\.org$"))
 
 (defun org-static-blog-file-buffer (file)
   "Return the buffer open with a full filepath, or nil."
   (require 'seq)
+  (make-directory (file-name-directory file) t)
   (car (seq-filter
          (lambda (buf)
            (string= (with-current-buffer buf buffer-file-name) file))
@@ -304,8 +304,10 @@ Preamble and Postamble are excluded, too."
 
 (defun org-static-blog-get-url (post-filename)
   "Generate a URL to the published POST-FILENAME."
-  (file-name-nondirectory
-   (org-static-blog-matching-publish-filename post-filename)))
+  (replace-regexp-in-string ".org$" ".html"
+   (replace-regexp-in-string
+    (concat "^" (file-truename org-static-blog-posts-directory))
+     "" post-filename)))
 
 ;;;###autoload
 (defun org-static-blog-publish-file (post-filename)
