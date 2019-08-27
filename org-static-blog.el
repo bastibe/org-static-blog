@@ -304,10 +304,23 @@ Preamble and Postamble are excluded, too."
 
 (defun org-static-blog-get-url (post-filename)
   "Generate a URL to the published POST-FILENAME."
-  (replace-regexp-in-string ".org$" ".html"
+  (concat (org-static-blog-post-url
+           (org-static-blog-prepare-post-url post-filename)
+           (org-static-blog-get-date post-filename))
+          ".html"))
+
+(defun org-static-blog-prepare-post-url (post-filename)
+  "Cleanup and normalize POST-FILENAME to be sent to user-defined function"
+  (replace-regexp-in-string ".org$" ""
    (replace-regexp-in-string
-    (concat "^" (file-truename org-static-blog-posts-directory))
-     "" post-filename)))
+    (concat "^"
+            (file-truename org-static-blog-posts-directory))
+    ""
+    post-filename)))
+
+(defun org-static-blog-post-url (post-filename post-datetime)
+  "Generate arbitrary post URL. This function is overridable by user"
+  ('post-filename))
 
 ;;;###autoload
 (defun org-static-blog-publish-file (post-filename)
