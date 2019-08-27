@@ -432,7 +432,7 @@ Modify this function if you want to change a posts headline."
 						   (org-static-blog-get-date post-filename))
    "</div>"
    "<h1 class=\"post-title\">"
-   "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
+   "<a href=\"" org-static-blog-publish-url (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h1>\n"))
 
 (defun org-static-blog-post-postamble (post-filename)
@@ -548,7 +548,7 @@ archive headline."
    (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
    "</div>"
    "<h2 class=\"post-title\">"
-   "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
+   "<a href=\"" org-static-blog-publish-url (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h2>\n"))
 
 (defun org-static-blog-assemble-tags ()
