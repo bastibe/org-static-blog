@@ -417,7 +417,7 @@ Posts are sorted in descending time."
     (when front-matter front-matter)
     (apply 'concat (mapcar 'org-static-blog-get-body post-filenames))
     "<div id=\"archive\">\n"
-    "<a href=\"" org-static-blog-archive-file "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
+    "<a href=\"" org-static-blog-publish-url org-static-blog-archive-file "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
     "</div>\n"
     "</div>\n"
     "</body>\n"
@@ -443,10 +443,12 @@ Modify this function if you want to change a posts footline."
     (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
       (setq taglist-content (concat "<div class=\"taglist\">"
                                     "<a href=\""
+                                    org-static-blog-publish-url
                                     org-static-blog-tags-file
                                     "\">" (org-static-blog-gettext 'tags) "</a>: "))
       (dolist (tag (org-static-blog-get-tags post-filename))
         (setq taglist-content (concat taglist-content "<a href=\""
+                                      org-static-blog-publish-url
                                       "tag-" (downcase tag) ".html"
                                       "\">" tag "</a> ")))
       (setq taglist-content (concat taglist-content "</div>")))
