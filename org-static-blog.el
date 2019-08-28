@@ -313,8 +313,11 @@ Preamble and Postamble are excluded, too."
   "Cleanup and normalize POST-FILENAME to be sent to user-defined function"
   (replace-regexp-in-string ".org$" ""
    (replace-regexp-in-string
-    (concat "^"
-            (file-truename org-static-blog-posts-directory))
+    (concat "^\\("
+            (file-truename org-static-blog-posts-directory)
+            "\\|"
+            (file-truename org-static-blog-drafts-directory)
+            "\\)")
     ""
     post-filename)))
 
