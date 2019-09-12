@@ -374,8 +374,8 @@ If this function is overriden with something like this:
           \"/\"
           (file-name-nondirectory post-filename)))
 
-Then the output will be '2019/08/20/charity-coding.html' and this will be
-the path to HTML file in publish directory and the url for the post."
+Then the output will be '2019/08/20/charity-coding' and this will be
+the path to the HTML file in publish directory and the url for the post."
   post-filename)
 
 ;;;###autoload
