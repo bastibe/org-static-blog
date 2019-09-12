@@ -303,22 +303,41 @@ Preamble and Postamble are excluded, too."
        (point)))))
 
 (defun org-static-blog-get-absolute-url (relative-url)
-  "Return absolute URL based on the RELATIVE-URL passed to the function."
+  "Returns absolute URL based on the RELATIVE-URL passed to the function.
+
+For example, when `org-static-blog-publish-url` is set to 'https://example.com/'
+and `relative-url` is passed as 'archive.html' then the function
+will return 'https://example.com/archive.html'."
   (concat org-static-blog-publish-url relative-url))
 
 (defun org-static-blog-get-post-url (post-filename)
-  "Generate full URL to the published POST-FILENAME."
+  "Returns absolute URL to the published POST-FILENAME.
+
+This function concatenates publish URL and generated custom filepath to the
+published HTML version of the post."
   (org-static-blog-get-absolute-url
           (org-static-blog-get-post-public-path post-filename)))
 
 (defun org-static-blog-get-post-public-path (post-filename)
-  "Return post filepath in public directory."
+  "Returns post filepath in public directory.
+
+This function retrieves relative path to the post file in posts or drafts
+directories, the date of the post from its contents and then passes it to
+`org-static-blog-generate-post-path` to generate custom filepath for the published
+HTML version of the post."
   (org-static-blog-generate-post-path
    (org-static-blog-get-relative-path post-filename)
    (org-static-blog-get-date post-filename)))
 
 (defun org-static-blog-get-relative-path (post-filename)
-  "Remove absolute directory path from POST-FILENAME and return relative path to HTML file."
+  "Removes absolute directory path from POST-FILENAME and changes file extention
+from `.org` to `.html`. Returns filepath to HTML file relative to posts or drafts directories.
+
+Works with both posts and drafts directories.
+
+For example, when `org-static-blog-posts-directory` is set to '~/blog/posts'
+and `post-filename` is passed as '~/blog/posts/my-life-update.org' then the function
+will return 'my-life-update.html'."
   (replace-regexp-in-string ".org$" ".html"
                             (replace-regexp-in-string
                              (concat "^\\("
@@ -330,8 +349,33 @@ Preamble and Postamble are excluded, too."
                              post-filename)))
 
 (defun org-static-blog-generate-post-path (post-filename post-datetime)
-  "Generate post public path (URL) based on POST-FILENAME and PORT-DATETIME.
-This function is overridable by user."
+  "Returns post public path based on POST-FILENAME and PORT-DATETIME.
+
+By default, this function returns post filepath unmodified, so script will
+replicate file and directory structure of posts and drafts directories.
+
+Override this function if you want to generate custom post URLs different
+from how they are stored in posts and drafts directories.
+
+For example, there is a post in posts directory with the
+file path `hobby/charity-coding.org` and dated `<2019-08-20 Tue>`.
+
+In this case, the function will receive following argument values:
+- post-filename: 'hobby/charity-coding'
+- post-datetime: datetime of <2019-08-20 Tue>
+
+and by default will return 'hobby/charity-coding', so that the path
+to HTML file in publish directory will be 'hobby/charity-coding.html'.
+
+If this function is overriden with something like this:
+
+(defun org-static-blog-generate-post-path (post-filename post-datetime)
+  (concat (format-time-string \"%Y/%m/%d\" post-datetime)
+          \"/\"
+          (file-name-nondirectory post-filename)))
+
+Then the output will be '2019/08/20/charity-coding.html' and this will be
+the path to HTML file in publish directory and the url for the post."
   post-filename)
 
 ;;;###autoload
