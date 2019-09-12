@@ -302,13 +302,13 @@ Preamble and Postamble are excluded, too."
        (search-backward "</div>")
        (point)))))
 
-(defun org-static-blog-get-full-url (relative-url)
+(defun org-static-blog-get-absolute-url (relative-url)
   "Return absolute URL based on the RELATIVE-URL passed to the function."
   (concat org-static-blog-publish-url relative-url))
 
 (defun org-static-blog-get-post-url (post-filename)
   "Generate full URL to the published POST-FILENAME."
-  (org-static-blog-get-full-url
+  (org-static-blog-get-absolute-url
           (org-static-blog-get-post-public-path post-filename)))
 
 (defun org-static-blog-get-post-public-path (post-filename)
@@ -348,7 +348,7 @@ The index, archive, tags, and RSS feed are not updated."
     "<meta charset=\"UTF-8\">\n"
     "<link rel=\"alternate\"\n"
     "      type=\"application/rss+xml\"\n"
-    "      href=\"" (org-static-blog-get-full-url org-static-blog-rss-file) "\"\n"
+    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
     "      title=\"RSS feed for " org-static-blog-publish-url "\"/>\n"
     "<title>" (org-static-blog-get-title post-filename) "</title>\n"
     org-static-blog-page-header
@@ -416,7 +416,7 @@ Posts are sorted in descending time."
     "<meta charset=\"UTF-8\">\n"
     "<link rel=\"alternate\"\n"
     "      type=\"application/rss+xml\"\n"
-    "      href=\"" (org-static-blog-get-full-url org-static-blog-rss-file) "\"\n"
+    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
     "      title=\"RSS feed for " org-static-blog-publish-url "\"/>\n"
     "<title>" org-static-blog-publish-title "</title>\n"
     org-static-blog-page-header
@@ -429,7 +429,7 @@ Posts are sorted in descending time."
     (when front-matter front-matter)
     (apply 'concat (mapcar 'org-static-blog-get-body post-filenames))
     "<div id=\"archive\">\n"
-    "<a href=\"" (org-static-blog-get-full-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
+    "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
     "</div>\n"
     "</div>\n"
     "</body>\n"
@@ -455,11 +455,11 @@ Modify this function if you want to change a posts footline."
     (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
       (setq taglist-content (concat "<div class=\"taglist\">"
                                     "<a href=\""
-                                    (org-static-blog-get-full-url org-static-blog-tags-file)
+                                    (org-static-blog-get-absolute-url org-static-blog-tags-file)
                                     "\">" (org-static-blog-gettext 'tags) "</a>: "))
       (dolist (tag (org-static-blog-get-tags post-filename))
         (setq taglist-content (concat taglist-content "<a href=\""
-                                      (org-static-blog-get-full-url (concat "tag-" (downcase tag) ".html"))
+                                      (org-static-blog-get-absolute-url (concat "tag-" (downcase tag) ".html"))
                                       "\">" tag "</a> ")))
       (setq taglist-content (concat taglist-content "</div>")))
     taglist-content))
@@ -530,7 +530,7 @@ blog post, but no post body."
       "<meta charset=\"UTF-8\">\n"
       "<link rel=\"alternate\"\n"
       "      type=\"application/rss+xml\"\n"
-      "      href=\"" (org-static-blog-get-full-url org-static-blog-rss-file) "\"\n"
+      "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
       "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
       "<title>" org-static-blog-publish-title "</title>\n"
       org-static-blog-page-header
@@ -592,7 +592,7 @@ blog post, sorted by tags, but no post body."
       "<meta charset=\"UTF-8\">\n"
       "<link rel=\"alternate\"\n"
       "      type=\"application/rss+xml\"\n"
-      "      href=\"" (org-static-blog-get-full-url org-static-blog-rss-file) "\"\n"
+      "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
       "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
       "<title>" org-static-blog-publish-title "</title>\n"
       org-static-blog-page-header
