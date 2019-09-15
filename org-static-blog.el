@@ -349,7 +349,7 @@ will return 'my-life-update.html'."
                              post-filename)))
 
 (defun org-static-blog-generate-post-path (post-filename post-datetime)
-  "Returns post public path based on POST-FILENAME and PORT-DATETIME.
+  "Returns post public path based on POST-FILENAME and POST-DATETIME.
 
 By default, this function returns post filepath unmodified, so script will
 replicate file and directory structure of posts and drafts directories.
