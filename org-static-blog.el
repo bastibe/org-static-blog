@@ -131,31 +131,49 @@ The tags page lists all posts as headlines."
 (defconst org-static-blog-texts
   '((other-posts
      ("en" . "Other posts")
-     ("pl" . "Pozostałe wpisy"))
+     ("pl" . "Pozostałe wpisy")
+     ("ru" . "Другие публикации")
+     ("by" . "Іншыя публікацыі"))
     (date-format
      ("en" . "%d %b %Y")
-     ("pl" . "%Y-%m-%d"))
+     ("pl" . "%Y-%m-%d")
+     ("ru" . "%d.%m.%Y")
+     ("by" . "%d.%m.%Y"))
     (tags
      ("en" . "Tags")
-     ("pl" . "Tagi"))
+     ("pl" . "Tagi")
+     ("ru" . "Ярлыки")
+     ("by" . "Ярлыкі"))
     (archive
      ("en" . "Archive")
-     ("pl" . "Archiwum"))
+     ("pl" . "Archiwum")
+     ("ru" . "Архив")
+     ("by" . "Архіў"))
     (posts-tagged
      ("en" . "Posts tagged")
-     ("pl" . "Wpisy z tagiem"))
+     ("pl" . "Wpisy z tagiem")
+     ("ru" . "Публикации с ярлыками")
+     ("by" . "Публікацыі"))
     (no-prev-post
      ("en" . "There is no previous post")
-     ("pl" . "Poprzedni wpis nie istnieje"))
+     ("pl" . "Poprzedni wpis nie istnieje")
+     ("ru" . "Нет предыдущей публикации")
+     ("by" . "Няма папярэдняй публікацыі"))
     (no-next-post
      ("en" . "There is no next post")
-     ("pl" . "Następny wpis nie istnieje"))
+     ("pl" . "Następny wpis nie istnieje")
+     ("ru" . "Нет следующей публикации")
+     ("by" . "Няма наступнай публікацыі"))
     (title
      ("en" . "Title: ")
-     ("pl" . "Tytuł: "))
+     ("pl" . "Tytuł: ")
+     ("ru" . "Заголовок: ")
+     ("by" . "Загаловак: "))
     (filename
      ("en" . "Filename: ")
-     ("pl" . "Nazwa pliku: "))))
+     ("pl" . "Nazwa pliku: ")
+     ("ru" . "Имя файла: ")
+     ("by" . "Імя файла: "))))
 
 (defun org-static-blog-gettext (text-id)
   "Return localized text.
