@@ -131,31 +131,49 @@ The tags page lists all posts as headlines."
 (defconst org-static-blog-texts
   '((other-posts
      ("en" . "Other posts")
-     ("pl" . "Pozostałe wpisy"))
+     ("pl" . "Pozostałe wpisy")
+     ("ru" . "Другие публикации")
+     ("by" . "Іншыя публікацыі"))
     (date-format
      ("en" . "%d %b %Y")
-     ("pl" . "%Y-%m-%d"))
+     ("pl" . "%Y-%m-%d")
+     ("ru" . "%d.%m.%Y")
+     ("by" . "%d.%m.%Y"))
     (tags
      ("en" . "Tags")
-     ("pl" . "Tagi"))
+     ("pl" . "Tagi")
+     ("ru" . "Ярлыки")
+     ("by" . "Ярлыкі"))
     (archive
      ("en" . "Archive")
-     ("pl" . "Archiwum"))
+     ("pl" . "Archiwum")
+     ("ru" . "Архив")
+     ("by" . "Архіў"))
     (posts-tagged
      ("en" . "Posts tagged")
-     ("pl" . "Wpisy z tagiem"))
+     ("pl" . "Wpisy z tagiem")
+     ("ru" . "Публикации с ярлыками")
+     ("by" . "Публікацыі"))
     (no-prev-post
      ("en" . "There is no previous post")
-     ("pl" . "Poprzedni wpis nie istnieje"))
+     ("pl" . "Poprzedni wpis nie istnieje")
+     ("ru" . "Нет предыдущей публикации")
+     ("by" . "Няма папярэдняй публікацыі"))
     (no-next-post
      ("en" . "There is no next post")
-     ("pl" . "Następny wpis nie istnieje"))
+     ("pl" . "Następny wpis nie istnieje")
+     ("ru" . "Нет следующей публикации")
+     ("by" . "Няма наступнай публікацыі"))
     (title
      ("en" . "Title: ")
-     ("pl" . "Tytuł: "))
+     ("pl" . "Tytuł: ")
+     ("ru" . "Заголовок: ")
+     ("by" . "Загаловак: "))
     (filename
      ("en" . "Filename: ")
-     ("pl" . "Nazwa pliku: "))))
+     ("pl" . "Nazwa pliku: ")
+     ("ru" . "Имя файла: ")
+     ("by" . "Імя файла: "))))
 
 (defun org-static-blog-gettext (text-id)
   "Return localized text.
@@ -170,14 +188,17 @@ Depends on org-static-blog-langcode and org-static-blog-texts."
 
 
 ;;;###autoload
-(defun org-static-blog-publish ()
+(defun org-static-blog-publish (&optional force-render)
   "Render all blog posts, the index, archive, tags, and RSS feed.
 Only blog posts that changed since the HTML was created are
-re-rendered."
-  (interactive)
+re-rendered.
+
+With a prefix argument, all blog posts are re-rendered
+unconditionally."
+  (interactive "P")
   (dolist (file (append (org-static-blog-get-post-filenames)
                         (org-static-blog-get-draft-filenames)))
-    (when (org-static-blog-needs-publishing-p file)
+    (when (or force-render (org-static-blog-needs-publishing-p file))
       (org-static-blog-publish-file file)))
   ;; don't spam too many deprecation warnings:
   (let ((org-static-blog-enable-deprecation-warning nil))
@@ -197,22 +218,22 @@ re-rendered."
 (defun org-static-blog-matching-publish-filename (post-filename)
   "Generate HTML file name for POST-FILENAME."
   (concat org-static-blog-publish-directory
-          (file-name-base post-filename)
-          ".html"))
+          (org-static-blog-get-post-public-path post-filename)))
 
 (defun org-static-blog-get-post-filenames ()
   "Returns a list of all posts."
-  (directory-files
-   org-static-blog-posts-directory t ".*\\.org$" nil))
+  (directory-files-recursively
+   org-static-blog-posts-directory ".*\\.org$"))
 
 (defun org-static-blog-get-draft-filenames ()
   "Returns a list of all drafts."
-  (directory-files
-   org-static-blog-drafts-directory t ".*\\.org$" nil))
+  (directory-files-recursively
+   org-static-blog-drafts-directory ".*\\.org$"))
 
 (defun org-static-blog-file-buffer (file)
   "Return the buffer open with a full filepath, or nil."
   (require 'seq)
+  (make-directory (file-name-directory file) t)
   (car (seq-filter
          (lambda (buf)
            (string= (with-current-buffer buf buffer-file-name) file))
@@ -302,10 +323,81 @@ Preamble and Postamble are excluded, too."
        (search-backward "</div>")
        (point)))))
 
-(defun org-static-blog-get-url (post-filename)
-  "Generate a URL to the published POST-FILENAME."
-  (file-name-nondirectory
-   (org-static-blog-matching-publish-filename post-filename)))
+(defun org-static-blog-get-absolute-url (relative-url)
+  "Returns absolute URL based on the RELATIVE-URL passed to the function.
+
+For example, when `org-static-blog-publish-url` is set to 'https://example.com/'
+and `relative-url` is passed as 'archive.html' then the function
+will return 'https://example.com/archive.html'."
+  (concat org-static-blog-publish-url relative-url))
+
+(defun org-static-blog-get-post-url (post-filename)
+  "Returns absolute URL to the published POST-FILENAME.
+
+This function concatenates publish URL and generated custom filepath to the
+published HTML version of the post."
+  (org-static-blog-get-absolute-url
+          (org-static-blog-get-post-public-path post-filename)))
+
+(defun org-static-blog-get-post-public-path (post-filename)
+  "Returns post filepath in public directory.
+
+This function retrieves relative path to the post file in posts or drafts
+directories, the date of the post from its contents and then passes it to
+`org-static-blog-generate-post-path` to generate custom filepath for the published
+HTML version of the post."
+  (org-static-blog-generate-post-path
+   (org-static-blog-get-relative-path post-filename)
+   (org-static-blog-get-date post-filename)))
+
+(defun org-static-blog-get-relative-path (post-filename)
+  "Removes absolute directory path from POST-FILENAME and changes file extention
+from `.org` to `.html`. Returns filepath to HTML file relative to posts or drafts directories.
+
+Works with both posts and drafts directories.
+
+For example, when `org-static-blog-posts-directory` is set to '~/blog/posts'
+and `post-filename` is passed as '~/blog/posts/my-life-update.org' then the function
+will return 'my-life-update.html'."
+  (replace-regexp-in-string ".org$" ".html"
+                            (replace-regexp-in-string
+                             (concat "^\\("
+                                     (file-truename org-static-blog-posts-directory)
+                                     "\\|"
+                                     (file-truename org-static-blog-drafts-directory)
+                                     "\\)")
+                             ""
+                             post-filename)))
+
+(defun org-static-blog-generate-post-path (post-filename post-datetime)
+  "Returns post public path based on POST-FILENAME and POST-DATETIME.
+
+By default, this function returns post filepath unmodified, so script will
+replicate file and directory structure of posts and drafts directories.
+
+Override this function if you want to generate custom post URLs different
+from how they are stored in posts and drafts directories.
+
+For example, there is a post in posts directory with the
+file path `hobby/charity-coding.org` and dated `<2019-08-20 Tue>`.
+
+In this case, the function will receive following argument values:
+- post-filename: 'hobby/charity-coding'
+- post-datetime: datetime of <2019-08-20 Tue>
+
+and by default will return 'hobby/charity-coding', so that the path
+to HTML file in publish directory will be 'hobby/charity-coding.html'.
+
+If this function is overriden with something like this:
+
+(defun org-static-blog-generate-post-path (post-filename post-datetime)
+  (concat (format-time-string \"%Y/%m/%d\" post-datetime)
+          \"/\"
+          (file-name-nondirectory post-filename)))
+
+Then the output will be '2019/08/20/charity-coding' and this will be
+the path to the HTML file in publish directory and the url for the post."
+  post-filename)
 
 ;;;###autoload
 (defun org-static-blog-publish-file (post-filename)
@@ -321,7 +413,7 @@ The index, archive, tags, and RSS feed are not updated."
     "<meta charset=\"UTF-8\">\n"
     "<link rel=\"alternate\"\n"
     "      type=\"application/rss+xml\"\n"
-    "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
     "      title=\"RSS feed for " org-static-blog-publish-url "\"/>\n"
     "<title>" (org-static-blog-get-title post-filename) "</title>\n"
     org-static-blog-page-header
@@ -389,7 +481,7 @@ Posts are sorted in descending time."
     "<meta charset=\"UTF-8\">\n"
     "<link rel=\"alternate\"\n"
     "      type=\"application/rss+xml\"\n"
-    "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
     "      title=\"RSS feed for " org-static-blog-publish-url "\"/>\n"
     "<title>" org-static-blog-publish-title "</title>\n"
     org-static-blog-page-header
@@ -402,7 +494,7 @@ Posts are sorted in descending time."
     (when front-matter front-matter)
     (apply 'concat (mapcar 'org-static-blog-get-body post-filenames))
     "<div id=\"archive\">\n"
-    "<a href=\"" org-static-blog-archive-file "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
+    "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
     "</div>\n"
     "</div>\n"
     "<div id=\"postamble\" class=\"status\">"
@@ -420,7 +512,7 @@ Modify this function if you want to change a posts headline."
 						   (org-static-blog-get-date post-filename))
    "</div>"
    "<h1 class=\"post-title\">"
-   "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
+   "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h1>\n"))
 
 (defun org-static-blog-post-postamble (post-filename)
@@ -431,11 +523,11 @@ Modify this function if you want to change a posts footline."
     (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
       (setq taglist-content (concat "<div class=\"taglist\">"
                                     "<a href=\""
-                                    org-static-blog-tags-file
+                                    (org-static-blog-get-absolute-url org-static-blog-tags-file)
                                     "\">" (org-static-blog-gettext 'tags) "</a>: "))
       (dolist (tag (org-static-blog-get-tags post-filename))
         (setq taglist-content (concat taglist-content "<a href=\""
-                                      "tag-" (downcase tag) ".html"
+                                      (org-static-blog-get-absolute-url (concat "tag-" (downcase tag) ".html"))
                                       "\">" tag "</a> ")))
       (setq taglist-content (concat taglist-content "</div>")))
     taglist-content))
@@ -480,10 +572,7 @@ The HTML content is taken from the rendered HTML post."
                                   "  <category>" tag "</category>\n"))))
      categories)
    "  <link>"
-   (concat org-static-blog-publish-url
-           (file-name-nondirectory
-            (org-static-blog-matching-publish-filename
-             post-filename)))
+   (org-static-blog-get-post-url post-filename)
    "</link>\n"
    "  <pubDate>"
    (format-time-string "%a, %d %b %Y %H:%M:%S %z" (org-static-blog-get-date post-filename))
@@ -509,7 +598,7 @@ blog post, but no post body."
       "<meta charset=\"UTF-8\">\n"
       "<link rel=\"alternate\"\n"
       "      type=\"application/rss+xml\"\n"
-      "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+      "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
       "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
       "<title>" org-static-blog-publish-title "</title>\n"
       org-static-blog-page-header
@@ -537,7 +626,7 @@ archive headline."
    (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
    "</div>"
    "<h2 class=\"post-title\">"
-   "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
+   "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h2>\n"))
 
 (defun org-static-blog-assemble-tags ()
@@ -574,7 +663,7 @@ blog post, sorted by tags, but no post body."
       "<meta charset=\"UTF-8\">\n"
       "<link rel=\"alternate\"\n"
       "      type=\"application/rss+xml\"\n"
-      "      href=\"" org-static-blog-publish-url org-static-blog-rss-file "\"\n"
+      "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
       "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
       "<title>" org-static-blog-publish-title "</title>\n"
       org-static-blog-page-header
