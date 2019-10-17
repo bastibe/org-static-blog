@@ -128,6 +128,11 @@ The tags page lists all posts as headlines."
   :group 'org-static-blog
   :safe t)
 
+(defcustom org-static-blog-use-preview "en"
+  "Use preview versions of posts on multipost pages."
+  :group 'org-static-blog
+  :safe t)
+
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
@@ -532,7 +537,10 @@ Posts are sorted in descending time."
     "</div>\n"
     "<div id=\"content\">\n"
     (when front-matter front-matter)
-    (apply 'concat (mapcar 'org-static-blog-get-preview post-filenames))
+    (apply 'concat (mapcar
+                    (if org-static-blog-use-preview
+                        'org-static-blog-get-preview
+                      'org-static-blog-get-body) post-filenames))
     "<div id=\"archive\">\n"
     "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
     "</div>\n"
