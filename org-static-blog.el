@@ -332,8 +332,8 @@ e.g. `(('foo' 'file1.org' 'file2.org') ('bar' 'file2.org'))`"
       (goto-char (point-max))
       (search-backward "<div id=\"postamble\" class=\"status\">")
       (setq post-end (search-backward "</div>"))
-      (search-backward "<div id=\"taglist\">")
-      (search-backward ">")
+      (search-backward "<div class=\"taglist\">")
+      (search-backward ">") ;; eat the returns/white spaces
       (setq post-start (+ (point) 1))
       (concat (buffer-substring-no-properties
                title-start
