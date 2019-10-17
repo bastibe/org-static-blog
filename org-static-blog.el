@@ -1,6 +1,7 @@
 ;;; org-static-blog.el --- a simple org-mode based static blog generator
 
 ;; Author: Bastian Bechtold
+;; Contrib: Qiantan Hong
 ;; URL: https://github.com/bastibe/org-static-blog
 ;; Version: 1.2.1
 ;; Package-Requires: ((emacs "24.3"))
@@ -312,7 +313,37 @@ e.g. `(('foo' 'file1.org' 'file2.org') ('bar' 'file2.org'))`"
               (push post-filename (cdr (assoc-string tag tag-tree t)))
             (push (cons tag (list post-filename)) tag-tree)))))
     tag-tree))
-
+(defun org-static-blog-get-preview (post-filename)
+  (with-temp-buffer
+    (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
+    (let ((title-start)
+          (paragraph-end)
+          (post-start)
+          (post-end))
+      (goto-char (point-min))
+      (setq title-start (search-forward "<div id=\"content\">"))
+      (search-forward "<h1 class=\"post-title\">")
+      (replace-match "<h2 class=\"post-title\">")
+      (search-forward "</h1>")
+      (replace-match "</h2>")
+      (when (search-forward "<p>" nil t)
+        (search-forward "</p>"))
+      (setq paragraph-end (point))
+      (goto-char (point-max))
+      (search-backward "<div id=\"postamble\" class=\"status\">")
+      (setq post-end (search-backward "</div>"))
+      (search-backward "<div id=\"taglist\">")
+      (search-backward ">")
+      (setq post-start (+ (point) 1))
+      (concat (buffer-substring-no-properties
+               title-start
+               paragraph-end)
+              (if (equal paragraph-end post-start)
+                  ""
+                "(...)")
+              (buffer-substring-no-properties
+               post-start
+               post-end)))))
 (defun org-static-blog-get-body (post-filename &optional exclude-title)
   "Get the rendered HTML body without headers from POST-FILENAME.
 Preamble and Postamble are excluded, too."
@@ -501,7 +532,7 @@ Posts are sorted in descending time."
     "</div>\n"
     "<div id=\"content\">\n"
     (when front-matter front-matter)
-    (apply 'concat (mapcar 'org-static-blog-get-body post-filenames))
+    (apply 'concat (mapcar 'org-static-blog-get-preview post-filenames))
     "<div id=\"archive\">\n"
     "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
     "</div>\n"
