@@ -128,7 +128,7 @@ The tags page lists all posts as headlines."
   :group 'org-static-blog
   :safe t)
 
-(defcustom org-static-blog-use-preview "en"
+(defcustom org-static-blog-use-preview nil
   "Use preview versions of posts on multipost pages."
   :group 'org-static-blog
   :safe t)
