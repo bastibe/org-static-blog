@@ -1,7 +1,9 @@
 ;;; org-static-blog.el --- a simple org-mode based static blog generator
 
 ;; Author: Bastian Bechtold
-;; Contrib: Qiantan Hong
+;; Contrib: Shmavon Gazanchyan, Rafał -rsm- Marek, neeasade,
+;; Michael Cardell Widerkrantz, Matthew Bauer, Winny, Yauhen Makei,
+;; luhuaei, zngguvnf, Qiantan Hong
 ;; URL: https://github.com/bastibe/org-static-blog
 ;; Version: 1.2.1
 ;; Package-Requires: ((emacs "24.3"))
@@ -130,6 +132,16 @@ The tags page lists all posts as headlines."
 
 (defcustom org-static-blog-use-preview nil
   "Use preview versions of posts on multipost pages."
+  :group 'org-static-blog
+  :safe t)
+
+(defcustom org-static-blog-preview-convert-titles t
+  "When preview is enabled, convert <h1> to <h2> for the previews."
+  :group 'org-static-blog
+  :safe t)
+
+(defcustom org-static-blog-preview-ellipsis "(...)"
+  "The HTML appended to the preview if some part of the post is hidden."
   :group 'org-static-blog
   :safe t)
 
@@ -318,37 +330,46 @@ e.g. `(('foo' 'file1.org' 'file2.org') ('bar' 'file2.org'))`"
               (push post-filename (cdr (assoc-string tag tag-tree t)))
             (push (cons tag (list post-filename)) tag-tree)))))
     tag-tree))
+
 (defun org-static-blog-get-preview (post-filename)
+  "Get the rendered HTML body without headers from POST-FILENAME.
+If the HTML body contains multiple paragraphs, include only the first paragraph,
+and display an ellipsis.
+Preamble and Postamble are excluded, too."
   (with-temp-buffer
     (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
     (let ((title-start)
-          (paragraph-end)
-          (post-start)
-          (post-end))
+          (first-paragraph-end)
+          (taglist-start)
+          (taglist-end))
       (goto-char (point-min))
       (setq title-start (search-forward "<div id=\"content\">"))
-      (search-forward "<h1 class=\"post-title\">")
-      (replace-match "<h2 class=\"post-title\">")
-      (search-forward "</h1>")
-      (replace-match "</h2>")
+      (when org-static-blog-preview-convert-titles
+        (search-forward "<h1 class=\"post-title\">")
+        (replace-match "<h2 class=\"post-title\">")
+        (search-forward "</h1>")
+        (replace-match "</h2>"))
       (when (search-forward "<p>" nil t)
-        (search-forward "</p>"))
-      (setq paragraph-end (point))
+        (search-forward "</p>")) ;; Find where the first paragraph ends
+      (setq first-paragraph-end (point))
       (goto-char (point-max))
       (search-backward "<div id=\"postamble\" class=\"status\">")
-      (setq post-end (search-backward "</div>"))
+      (setq taglist-end (search-backward "</div>"))
+      ;; We also include the taglist, which is between the paragraphs and postamble
       (search-backward "<div class=\"taglist\">")
       (search-backward ">") ;; eat the returns/white spaces
-      (setq post-start (+ (point) 1))
+      (setq taglist-start (+ (point) 1))
       (concat (buffer-substring-no-properties
                title-start
-               paragraph-end)
-              (if (equal paragraph-end post-start)
+               first-paragraph-end)
+              (if (equal first-paragraph-end taglist-start)
+                  ;; if these equal, that means there's only one paragraph
                   ""
-                "(...)")
+                org-static-blog-preview-ellipsis)
               (buffer-substring-no-properties
-               post-start
-               post-end)))))
+               taglist-start
+               taglist-end)))))
+
 (defun org-static-blog-get-body (post-filename &optional exclude-title)
   "Get the rendered HTML body without headers from POST-FILENAME.
 Preamble and Postamble are excluded, too."
