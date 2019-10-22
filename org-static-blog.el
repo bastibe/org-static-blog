@@ -738,6 +738,7 @@ blog post, sorted by tags, but no post body."
       "<div id=\"content\">\n"
       "<h1 class=\"title\">" (org-static-blog-gettext 'tags) "</h1>\n"
       (apply 'concat (mapcar 'org-static-blog-assemble-tags-archive-tag tag-tree))
+      "</div>\n"
       "</body>\n"
       "</html>\n"))))
 
