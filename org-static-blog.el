@@ -1,6 +1,9 @@
 ;;; org-static-blog.el --- a simple org-mode based static blog generator
 
 ;; Author: Bastian Bechtold
+;; Contrib: Shmavon Gazanchyan, Rafał -rsm- Marek, neeasade,
+;; Michael Cardell Widerkrantz, Matthew Bauer, Winny, Yauhen Makei,
+;; luhuaei, zngguvnf, Qiantan Hong
 ;; URL: https://github.com/bastibe/org-static-blog
 ;; Version: 1.2.1
 ;; Package-Requires: ((emacs "24.3"))
@@ -124,6 +127,21 @@ The tags page lists all posts as headlines."
 
 (defcustom org-static-blog-langcode "en"
   "Language code for the blog content."
+  :group 'org-static-blog
+  :safe t)
+
+(defcustom org-static-blog-use-preview nil
+  "Use preview versions of posts on multipost pages."
+  :group 'org-static-blog
+  :safe t)
+
+(defcustom org-static-blog-preview-convert-titles t
+  "When preview is enabled, convert <h1> to <h2> for the previews."
+  :group 'org-static-blog
+  :safe t)
+
+(defcustom org-static-blog-preview-ellipsis "(...)"
+  "The HTML appended to the preview if some part of the post is hidden."
   :group 'org-static-blog
   :safe t)
 
@@ -313,6 +331,45 @@ e.g. `(('foo' 'file1.org' 'file2.org') ('bar' 'file2.org'))`"
             (push (cons tag (list post-filename)) tag-tree)))))
     tag-tree))
 
+(defun org-static-blog-get-preview (post-filename)
+  "Get the rendered HTML body without headers from POST-FILENAME.
+If the HTML body contains multiple paragraphs, include only the first paragraph,
+and display an ellipsis.
+Preamble and Postamble are excluded, too."
+  (with-temp-buffer
+    (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
+    (let ((title-start)
+          (first-paragraph-end)
+          (taglist-start)
+          (taglist-end))
+      (goto-char (point-min))
+      (setq title-start (search-forward "<div id=\"content\">"))
+      (when org-static-blog-preview-convert-titles
+        (search-forward "<h1 class=\"post-title\">")
+        (replace-match "<h2 class=\"post-title\">")
+        (search-forward "</h1>")
+        (replace-match "</h2>"))
+      (when (search-forward "<p>" nil t)
+        (search-forward "</p>")) ;; Find where the first paragraph ends
+      (setq first-paragraph-end (point))
+      (goto-char (point-max))
+      (search-backward "<div id=\"postamble\" class=\"status\">")
+      (setq taglist-end (search-backward "</div>"))
+      ;; We also include the taglist, which is between the paragraphs and postamble
+      (search-backward "<div class=\"taglist\">")
+      (search-backward ">") ;; eat the returns/white spaces
+      (setq taglist-start (+ (point) 1))
+      (concat (buffer-substring-no-properties
+               title-start
+               first-paragraph-end)
+              (if (equal first-paragraph-end taglist-start)
+                  ;; if these equal, that means there's only one paragraph
+                  ""
+                org-static-blog-preview-ellipsis)
+              (buffer-substring-no-properties
+               taglist-start
+               taglist-end)))))
+
 (defun org-static-blog-get-body (post-filename &optional exclude-title)
   "Get the rendered HTML body without headers from POST-FILENAME.
 Preamble and Postamble are excluded, too."
@@ -501,7 +558,10 @@ Posts are sorted in descending time."
     "</div>\n"
     "<div id=\"content\">\n"
     (when front-matter front-matter)
-    (apply 'concat (mapcar 'org-static-blog-get-body post-filenames))
+    (apply 'concat (mapcar
+                    (if org-static-blog-use-preview
+                        'org-static-blog-get-preview
+                      'org-static-blog-get-body) post-filenames))
     "<div id=\"archive\">\n"
     "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
     "</div>\n"
@@ -678,6 +738,7 @@ blog post, sorted by tags, but no post body."
       "<div id=\"content\">\n"
       "<h1 class=\"title\">" (org-static-blog-gettext 'tags) "</h1>\n"
       (apply 'concat (mapcar 'org-static-blog-assemble-tags-archive-tag tag-tree))
+      "</div>\n"
       "</body>\n"
       "</html>\n"))))
 
