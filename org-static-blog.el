@@ -1,6 +1,9 @@
 ;;; org-static-blog.el --- a simple org-mode based static blog generator
 
 ;; Author: Bastian Bechtold
+;; Contrib: Shmavon Gazanchyan, Rafał -rsm- Marek, neeasade,
+;; Michael Cardell Widerkrantz, Matthew Bauer, Winny, Yauhen Makei,
+;; luhuaei, zngguvnf, Qiantan Hong
 ;; URL: https://github.com/bastibe/org-static-blog
 ;; Version: 1.2.1
 ;; Package-Requires: ((emacs "24.3"))
@@ -127,53 +130,77 @@ The tags page lists all posts as headlines."
   :group 'org-static-blog
   :safe t)
 
+(defcustom org-static-blog-use-preview nil
+  "Use preview versions of posts on multipost pages."
+  :group 'org-static-blog
+  :safe t)
+
+(defcustom org-static-blog-preview-convert-titles t
+  "When preview is enabled, convert <h1> to <h2> for the previews."
+  :group 'org-static-blog
+  :safe t)
+
+(defcustom org-static-blog-preview-ellipsis "(...)"
+  "The HTML appended to the preview if some part of the post is hidden."
+  :group 'org-static-blog
+  :safe t)
+
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
      ("en" . "Other posts")
      ("pl" . "Pozostałe wpisy")
      ("ru" . "Другие публикации")
-     ("by" . "Іншыя публікацыі"))
+     ("by" . "Іншыя публікацыі")
+     ("fr" . "Autres articles"))
     (date-format
      ("en" . "%d %b %Y")
      ("pl" . "%Y-%m-%d")
      ("ru" . "%d.%m.%Y")
-     ("by" . "%d.%m.%Y"))
+     ("by" . "%d.%m.%Y")
+     ("fr" . "%d-%m-%Y"))
     (tags
      ("en" . "Tags")
      ("pl" . "Tagi")
      ("ru" . "Ярлыки")
-     ("by" . "Ярлыкі"))
+     ("by" . "Ярлыкі")
+     ("fr" . "Tags"))
     (archive
      ("en" . "Archive")
      ("pl" . "Archiwum")
      ("ru" . "Архив")
-     ("by" . "Архіў"))
+     ("by" . "Архіў")
+     ("fr" . "Archive"))
     (posts-tagged
      ("en" . "Posts tagged")
      ("pl" . "Wpisy z tagiem")
      ("ru" . "Публикации с ярлыками")
-     ("by" . "Публікацыі"))
+     ("by" . "Публікацыі")
+     ("fr" . "Articles tagués"))
     (no-prev-post
      ("en" . "There is no previous post")
      ("pl" . "Poprzedni wpis nie istnieje")
      ("ru" . "Нет предыдущей публикации")
-     ("by" . "Няма папярэдняй публікацыі"))
+     ("by" . "Няма папярэдняй публікацыі")
+     ("fr" . "Il n'y a pas d'article précédent"))
     (no-next-post
      ("en" . "There is no next post")
      ("pl" . "Następny wpis nie istnieje")
      ("ru" . "Нет следующей публикации")
-     ("by" . "Няма наступнай публікацыі"))
+     ("by" . "Няма наступнай публікацыі")
+     ("fr" . "Il n'y a pas d'article suivants"))
     (title
      ("en" . "Title: ")
      ("pl" . "Tytuł: ")
      ("ru" . "Заголовок: ")
-     ("by" . "Загаловак: "))
+     ("by" . "Загаловак: ")
+     ("fr" . "Titre : "))
     (filename
      ("en" . "Filename: ")
      ("pl" . "Nazwa pliku: ")
      ("ru" . "Имя файла: ")
-     ("by" . "Імя файла: "))))
+     ("by" . "Імя файла: ")
+     ("fr" . "Nom du fichier :"))))
 
 (defun org-static-blog-gettext (text-id)
   "Return localized text.
@@ -303,6 +330,45 @@ e.g. `(('foo' 'file1.org' 'file2.org') ('bar' 'file2.org'))`"
               (push post-filename (cdr (assoc-string tag tag-tree t)))
             (push (cons tag (list post-filename)) tag-tree)))))
     tag-tree))
+
+(defun org-static-blog-get-preview (post-filename)
+  "Get the rendered HTML body without headers from POST-FILENAME.
+If the HTML body contains multiple paragraphs, include only the first paragraph,
+and display an ellipsis.
+Preamble and Postamble are excluded, too."
+  (with-temp-buffer
+    (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
+    (let ((title-start)
+          (first-paragraph-end)
+          (taglist-start)
+          (taglist-end))
+      (goto-char (point-min))
+      (setq title-start (search-forward "<div id=\"content\">"))
+      (when org-static-blog-preview-convert-titles
+        (search-forward "<h1 class=\"post-title\">")
+        (replace-match "<h2 class=\"post-title\">")
+        (search-forward "</h1>")
+        (replace-match "</h2>"))
+      (when (search-forward "<p>" nil t)
+        (search-forward "</p>")) ;; Find where the first paragraph ends
+      (setq first-paragraph-end (point))
+      (goto-char (point-max))
+      (search-backward "<div id=\"postamble\" class=\"status\">")
+      (setq taglist-end (search-backward "</div>"))
+      ;; We also include the taglist, which is between the paragraphs and postamble
+      (search-backward "<div class=\"taglist\">")
+      (search-backward ">") ;; eat the returns/white spaces
+      (setq taglist-start (+ (point) 1))
+      (concat (buffer-substring-no-properties
+               title-start
+               first-paragraph-end)
+              (if (equal first-paragraph-end taglist-start)
+                  ;; if these equal, that means there's only one paragraph
+                  ""
+                org-static-blog-preview-ellipsis)
+              (buffer-substring-no-properties
+               taglist-start
+               taglist-end)))))
 
 (defun org-static-blog-get-body (post-filename &optional exclude-title)
   "Get the rendered HTML body without headers from POST-FILENAME.
@@ -492,7 +558,10 @@ Posts are sorted in descending time."
     "</div>\n"
     "<div id=\"content\">\n"
     (when front-matter front-matter)
-    (apply 'concat (mapcar 'org-static-blog-get-body post-filenames))
+    (apply 'concat (mapcar
+                    (if org-static-blog-use-preview
+                        'org-static-blog-get-preview
+                      'org-static-blog-get-body) post-filenames))
     "<div id=\"archive\">\n"
     "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
     "</div>\n"

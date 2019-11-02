@@ -26,6 +26,8 @@ For org-static-blog, a blog consists of six parts:
 - The index page contains the last few blog posts on a single page.
   The number of entries on the index page can be customized using
   =org-static-blog-index-length=.
+- Optionally show a preview of one paragraph instead of full post on index
+  =org-static-blog-use-preview=.
 - The archive page lists the publishing dates and headlines of every
   blog post.
 - The RSS feed is a machine-readable XML file that contains every blog
@@ -139,6 +141,7 @@ You can find more complete examples by looking at my [[https://github.com/bastib
 use =org-static-blog= in practice.
 
 Other org-static-blog blogs:
+- [[http://cat-v.mit.edu/][cat-v.mit.edu]]
 - [[https://zngguvnf.org/][zngguvnf.org]]
 - [[https://matthewbauer.us/blog/][matthewbauer.us/blog/]]
 - [[http://lisper.pl/][lisper.pl]]
