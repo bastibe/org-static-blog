@@ -614,8 +614,8 @@ machine-readable format."
      (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 	     "<rss version=\"2.0\">\n"
 	     "<channel>\n"
-	     "<title>" org-static-blog-publish-title "</title>\n"
-	     "<description>" org-static-blog-publish-title "</description>\n"
+	     "<title><![CDATA[" org-static-blog-publish-title "]]></title>\n"
+	     "<description><![CDATA[" org-static-blog-publish-title "]]></description>\n"
 	     "<link>" org-static-blog-publish-url "</link>\n"
 	     "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n"
 	     (apply 'concat (mapcar 'cdr rss-items))
@@ -627,7 +627,7 @@ machine-readable format."
 The HTML content is taken from the rendered HTML post."
   (concat
    "<item>\n"
-   "  <title>" (org-static-blog-get-title post-filename) "</title>\n"
+   "  <title><![CDATA[" (org-static-blog-get-title post-filename) "]]></title>\n"
    "  <description><![CDATA["
    (org-static-blog-get-body post-filename t) ; exclude headline!
    "]]></description>\n"
@@ -635,7 +635,7 @@ The HTML content is taken from the rendered HTML post."
      (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
        (dolist (tag (org-static-blog-get-tags post-filename))
          (setq categories (concat categories
-                                  "  <category>" tag "</category>\n"))))
+                                  "  <category><![CDATA[" tag "]]></category>\n"))))
      categories)
    "  <link>"
    (org-static-blog-get-post-url post-filename)
