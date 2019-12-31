@@ -314,10 +314,16 @@ existed before)."
       (insert-file-contents post-filename)
       (goto-char (point-min))
       (if (search-forward-regexp "^\\#\\+filetags:[ ]*:\\(.*\\):$" nil t)
-          (split-string (match-string 1) ":")
-	(if (search-forward-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$" nil t)
+          (cl-remove-if-not
+           (lambda (tags)
+             (with-temp-buffer
+               (insert tags)
+               (goto-char (point-min))
+               (not (search-forward-regexp "^:[blank:]*$" nil t))))
+           (split-string (match-string 1) ":"))
+        (if (search-forward-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$" nil t)
             (split-string (match-string 1))
-	  )))))
+          )))))
 
 (defun org-static-blog-get-tag-tree ()
   "Return an association list of tags to filenames.
