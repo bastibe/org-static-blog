@@ -433,7 +433,7 @@ will return 'my-life-update.html'."
                                      (file-truename org-static-blog-drafts-directory)
                                      "\\)")
                              ""
-                             post-filename)))
+                             (file-truename post-filename))))
 
 (defun org-static-blog-generate-post-path (post-filename post-datetime)
   "Returns post public path based on POST-FILENAME and POST-DATETIME.
