@@ -3,9 +3,10 @@
 ;; Author: Bastian Bechtold
 ;; Contrib: Shmavon Gazanchyan, Rafał -rsm- Marek, neeasade,
 ;; Michael Cardell Widerkrantz, Matthew Bauer, Winny, Yauhen Makei,
-;; luhuaei, zngguvnf, Qiantan Hong
+;; luhuaei, zngguvnf, Qiantan Hong, Jonas Bernoulli, Théo Jacquin,
+;; K. Scarlet, zsxh
 ;; URL: https://github.com/bastibe/org-static-blog
-;; Version: 1.2.1
+;; Version: 1.3.0
 ;; Package-Requires: ((emacs "24.3"))
 
 ;;; Commentary:
@@ -43,7 +44,7 @@
 
 (defgroup org-static-blog nil
   "Settings for a static blog generator using org-mode"
-  :version "1.2.1"
+  :version "1.3.0"
   :group 'applications)
 
 (defcustom org-static-blog-publish-url "https://example.com/"

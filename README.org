@@ -181,6 +181,16 @@ Other org-static-blog blogs:
   =org-static-blog-langcode= and the HTML output has been fixed in a few
   places.
   (Thank you, Michael Cardell Widerkrantz!)
+- 2019-03-20 (v1.3.0): Nested directories, Translations, and more
+  Improve handling of local variables (Thank you, Matthew Bauer)
+  Rewrote README in org-mode (Thank you, Rafał -rsm- Marek)
+  Adds support for localizations (Thank you, Rafał -rsm- Marek)
+  Put license in a LICENSE file (Thank you, Jonas Bernoulli)
+  Adds uption to force-rerender entire blog (Thank you, Winny)
+  Support for non-flat directory structure (Thank you, Shmavon Gazanchyan)
+  Support for "preview" slugs on index page (Thank you, K. Scarlet)
+  Various bugfixes (Thank you, Matthew Bauer, luhuaei, neeasade, Yauhen Makei, Winny, zsxh)
+  Translations in RU, BY, FR (Thank you, Yauhen Makei, Théo Jacquin)
 
 * LICENSE
 
