@@ -181,7 +181,7 @@ Other org-static-blog blogs:
   =org-static-blog-langcode= and the HTML output has been fixed in a few
   places.
   (Thank you, Michael Cardell Widerkrantz!)
-- 2019-03-20 (v1.3.0): Nested directories, Translations, and more
+- 2020-03-20 (v1.3.0): Nested directories, Translations, and more
   Improve handling of local variables (Thank you, Matthew Bauer)
   Rewrote README in org-mode (Thank you, Rafał -rsm- Marek)
   Adds support for localizations (Thank you, Rafał -rsm- Marek)
