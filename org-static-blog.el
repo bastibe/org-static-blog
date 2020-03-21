@@ -783,7 +783,7 @@ blog post, sorted by tags, but no post body."
   (find-file (org-static-blog-matching-publish-filename (buffer-file-name))))
 
 ;;;###autoload
-(defun org-static-blog-create-new-post ()
+(defun org-static-blog-create-new-post (&optional draft)
   "Creates a new blog post.
 Prompts for a title and proposes a file name. The file name is
 only a suggestion; You can choose any other file name if you so
@@ -791,7 +791,9 @@ choose."
   (interactive)
   (let ((title (read-string (org-static-blog-gettext 'title))))
     (find-file (concat
-                org-static-blog-posts-directory
+                (if draft
+                    org-static-blog-drafts-directory
+                    org-static-blog-posts-directory)
                 (read-string (org-static-blog-gettext 'filename)
 			     (concat (format-time-string "%Y-%m-%d-" (current-time))
 				     (replace-regexp-in-string "\s" "-" (downcase title))
@@ -799,6 +801,16 @@ choose."
     (insert "#+title: " title "\n"
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
             "#+filetags: ")))
+
+;;;###autoload
+(defun org-static-blog-create-new-draft ()
+  "Creates a new blog draft.
+Prompts for a title and proposes a file name. The file name is
+only a suggestion; You can choose any other file name if you so
+choose."
+  (interactive)
+  (org-static-blog-create-new-post 't))
+
 
 ;;;###autoload
 (define-derived-mode org-static-blog-mode org-mode "OSB"
@@ -811,6 +823,7 @@ choose."
 (define-key org-static-blog-mode-map (kbd "C-c C-b") 'org-static-blog-open-previous-post)
 (define-key org-static-blog-mode-map (kbd "C-c C-p") 'org-static-blog-open-matching-publish-file)
 (define-key org-static-blog-mode-map (kbd "C-c C-n") 'org-static-blog-create-new-post)
+(define-key org-static-blog-mode-map (kbd "C-c C-d") 'org-static-blog-create-new-draft)
 
 (provide 'org-static-blog)
 
