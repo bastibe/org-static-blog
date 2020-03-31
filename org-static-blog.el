@@ -111,6 +111,16 @@ The tags page lists all posts as headlines."
   :group 'org-static-blog
   :safe t)
 
+(defcustom org-static-blog-rss-extra ""
+  "Extra information for the RSS feed header.
+This information is placed right before the sequence of posts.
+You can add an icon for the feed, or advertise that you built
+your blog with emacs, org-mode and org-static-blog.
+"
+  :group 'org-static-blog
+  :safe t)
+
+
 (defcustom org-static-blog-page-header ""
   "HTML to put in the <head> of each page."
   :group 'org-static-blog
@@ -628,6 +638,7 @@ machine-readable format."
 	     "<description><![CDATA[" org-static-blog-publish-title "]]></description>\n"
 	     "<link>" org-static-blog-publish-url "</link>\n"
 	     "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n"
+             org-static-blog-rss-extra
 	     (apply 'concat (mapcar 'cdr rss-items))
 	     "</channel>\n"
 	     "</rss>\n"))))
