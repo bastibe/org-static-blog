@@ -58,6 +58,12 @@ ways:
   blog post. If you want to change the formatting of dates, titles, or
   the tag list, overwrite these functions.
 
+You    can    customize   the    RSS    feed    output   by    setting
+=org-static-blog-rss-extra=. Its  content is  placed right  before the
+sequence of posts. For  example you can add an RSS  icon for the feed,
+or advertise that you built your blog with org-static-blog.
+
+
 There are some static texts like "/Other posts/", "/Tags/" etc that
 org-static-blog includes in produced html. By default org-static-blog
 uses english texts, but language chosen depends on value set to
