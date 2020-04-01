@@ -49,14 +49,16 @@ ways:
 - The contents of =org-static-blog-page-preamble= is inserted just
   before the content of every page. This is a good place to put the
   header or menus for your blog.
-- The contents of =org-static-blog-page-postamble= is inserted just
-  after the content of every blog entry, but not in the index page and
-  the archive. This is where you can include copyright notices or
-  comment boxes.
-- The return values of =org-static-blog-post-preamble= and
+- The contents  of =org-static-blog-page-postamble= is  inserted after
+  the content of every generated page: after any blog post page, after
+  the index page, the tag pages and the archive. This is where you can
+  include copyright notices.
+- The   return    values   of    =org-static-blog-post-preamble=   and
   =org-static-blog-post-postamble= are prepended and appended to every
   blog post. If you want to change the formatting of dates, titles, or
-  the tag list, overwrite these functions.
+  the tag list,  overwrite these functions. In  particular the content
+  of =org-static-blog-post-comments=  is inserted  at the end  of each
+  blog post. Use this to add a comment box.
 
 You    can    customize   the    RSS    feed    output   by    setting
 =org-static-blog-rss-extra=. Its  content is  placed right  before the
