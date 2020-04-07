@@ -156,6 +156,7 @@ Other org-static-blog blogs:
 - [[https://jao.io/blog/2020-02-11-simplicity.html][jao's programming musings]]
 - [[https://whatacold.github.io/][whatacold.github.io]]
 - [[https://massimolauria.net/blog/][Hard Theorems]]
+- [[https://f.santos.gitlab.io/][f.santos.gitlab.io]]
 - Please open a pull request to add your blog, here!
 
 * Known Issues
