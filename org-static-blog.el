@@ -170,6 +170,7 @@ your blog with emacs, org-mode and org-static-blog.
      ("ru" . "Другие публикации")
      ("by" . "Іншыя публікацыі")
      ("it" . "Altri articoli")
+     ("es" . "Otros artículos")
      ("fr" . "Autres articles"))
     (date-format
      ("en" . "%d %b %Y")
@@ -177,6 +178,7 @@ your blog with emacs, org-mode and org-static-blog.
      ("ru" . "%d.%m.%Y")
      ("by" . "%d.%m.%Y")
      ("it" . "%d/%m/%Y")
+     ("es" . "%d/%m/%Y")
      ("fr" . "%d-%m-%Y"))
     (tags
      ("en" . "Tags")
@@ -184,6 +186,7 @@ your blog with emacs, org-mode and org-static-blog.
      ("ru" . "Ярлыки")
      ("by" . "Ярлыкі")
      ("it" . "Categorie")
+     ("es" . "Categoría")
      ("fr" . "Tags"))
     (archive
      ("en" . "Archive")
@@ -191,6 +194,7 @@ your blog with emacs, org-mode and org-static-blog.
      ("ru" . "Архив")
      ("by" . "Архіў")
      ("it" . "Archivio")
+     ("es" . "Archivo")
      ("fr" . "Archive"))
     (posts-tagged
      ("en" . "Posts tagged")
@@ -198,6 +202,7 @@ your blog with emacs, org-mode and org-static-blog.
      ("ru" . "Публикации с ярлыками")
      ("by" . "Публікацыі")
      ("it" . "Articoli nella categoria")
+     ("es" . "Artículos de la categoría")
      ("fr" . "Articles tagués"))
     (no-prev-post
      ("en" . "There is no previous post")
@@ -205,6 +210,7 @@ your blog with emacs, org-mode and org-static-blog.
      ("ru" . "Нет предыдущей публикации")
      ("by" . "Няма папярэдняй публікацыі")
      ("it" . "Non c'è nessun articolo precedente")
+     ("es" . "No existe un artículo precedente")
      ("fr" . "Il n'y a pas d'article précédent"))
     (no-next-post
      ("en" . "There is no next post")
@@ -212,6 +218,7 @@ your blog with emacs, org-mode and org-static-blog.
      ("ru" . "Нет следующей публикации")
      ("by" . "Няма наступнай публікацыі")
      ("it" . "Non c'è nessun articolo successivo")
+     ("es" . "No hay artículo siguiente")
      ("fr" . "Il n'y a pas d'article suivants"))
     (title
      ("en" . "Title: ")
@@ -219,6 +226,7 @@ your blog with emacs, org-mode and org-static-blog.
      ("ru" . "Заголовок: ")
      ("by" . "Загаловак: ")
      ("it" . "Titolo: ")
+     ("es" . "Título: ")
      ("fr" . "Titre : "))
     (filename
      ("en" . "Filename: ")
@@ -226,6 +234,7 @@ your blog with emacs, org-mode and org-static-blog.
      ("ru" . "Имя файла: ")
      ("by" . "Імя файла: ")
      ("it" . "Nome del file: ")
+     ("es" . "Nombre del archivo: ")
      ("fr" . "Nom du fichier :"))))
 
 (defun org-static-blog-gettext (text-id)
