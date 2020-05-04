@@ -148,8 +148,12 @@ your blog with emacs, org-mode and org-static-blog.
   :safe t)
 
 (defcustom org-static-blog-use-preview nil
-  "Use preview versions of posts on multipost pages."
+  "Use preview versions of posts on multipost pages.
+
+See also `org-static-blog-preview-ellipsis' and
+`org-static-blog-preview-link-p'."
   :group 'org-static-blog
+  :type '(boolean)
   :safe t)
 
 (defcustom org-static-blog-preview-convert-titles t
@@ -160,6 +164,12 @@ your blog with emacs, org-mode and org-static-blog.
 (defcustom org-static-blog-preview-ellipsis "(...)"
   "The HTML appended to the preview if some part of the post is hidden."
   :group 'org-static-blog
+  :safe t)
+
+(defcustom org-static-blog-preview-link-p nil
+  "Whether to make the preview ellipsis a link to the article's page."
+  :group 'org-static-blog
+  :type '(boolean)
   :safe t)
 
 ;; localization support
@@ -401,7 +411,11 @@ Preamble and Postamble are excluded, too."
               (if (equal first-paragraph-end taglist-start)
                   ;; if these equal, that means there's only one paragraph
                   ""
-                org-static-blog-preview-ellipsis)
+                (concat (when org-static-blog-preview-link-p
+                          (format "<a href=\"%s\">"
+                                  (org-static-blog-get-post-url post-filename)))
+                        org-static-blog-preview-ellipsis
+                        (when org-static-blog-preview-link-p "</a>\n")))
               (buffer-substring-no-properties
                taglist-start
                taglist-end)))))
