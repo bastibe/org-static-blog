@@ -49,66 +49,67 @@
 
 (defcustom org-static-blog-publish-url "https://example.com/"
   "URL of the blog."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-publish-title "Example.com"
   "Title of the blog."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-publish-directory "~/blog/"
   "Directory where published HTML files are stored."
-  :group 'org-static-blog)
+  :type '(directory))
 
 (defcustom org-static-blog-posts-directory "~/blog/posts/"
   "Directory where published ORG files are stored.
 When publishing, posts are rendered as HTML, and included in the
 index, archive, tags, and RSS feed."
-  :group 'org-static-blog)
+  :type '(directory))
 
 (defcustom org-static-blog-drafts-directory "~/blog/drafts/"
   "Directory where unpublished ORG files are stored.
 When publishing, draft are rendered as HTML, but not included in
 the index, archive, tags, or RSS feed."
-  :group 'org-static-blog)
+  :type '(directory))
 
 (defcustom org-static-blog-index-file "index.html"
   "File name of the blog landing page.
 The index page contains the most recent
 `org-static-blog-index-length` full-text posts."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-index-length 5
   "Number of articles to include on index page."
-  :group 'org-static-blog
+  :type '(integer)
   :safe t)
 
 (defcustom org-static-blog-archive-file "archive.html"
   "File name of the list of all blog posts.
 The archive page lists all posts as headlines."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-tags-file "tags.html"
   "File name of the list of all blog posts by tag.
 The tags page lists all posts as headlines."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-enable-tags nil
   "Show tags below posts, and generate tag pages."
   :group 'org-static-blog
+  :type '(boolean)
   :safe t)
 
 (defcustom org-static-blog-enable-deprecation-warning t
   "Show deprecation warnings."
-  :group 'org-static-blog)
+  :type '(boolean))
 
 (defcustom org-static-blog-rss-file "rss.xml"
   "File name of the RSS feed."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-rss-extra ""
@@ -117,34 +118,33 @@ This information is placed right before the sequence of posts.
 You can add an icon for the feed, or advertise that you built
 your blog with emacs, org-mode and org-static-blog.
 "
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 
 (defcustom org-static-blog-page-header ""
   "HTML to put in the <head> of each page."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-page-preamble ""
   "HTML to put before the content of each page."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-page-postamble ""
   "HTML to put after the content of each page."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-post-comments ""
   "HTML code for comments to put after each blog post."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
-
 
 (defcustom org-static-blog-langcode "en"
   "Language code for the blog content."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-use-preview nil
@@ -152,23 +152,21 @@ your blog with emacs, org-mode and org-static-blog.
 
 See also `org-static-blog-preview-ellipsis' and
 `org-static-blog-preview-link-p'."
-  :group 'org-static-blog
   :type '(boolean)
   :safe t)
 
 (defcustom org-static-blog-preview-convert-titles t
   "When preview is enabled, convert <h1> to <h2> for the previews."
-  :group 'org-static-blog
+  :type '(boolean)
   :safe t)
 
 (defcustom org-static-blog-preview-ellipsis "(...)"
   "The HTML appended to the preview if some part of the post is hidden."
-  :group 'org-static-blog
+  :type '(string)
   :safe t)
 
 (defcustom org-static-blog-preview-link-p nil
   "Whether to make the preview ellipsis a link to the article's page."
-  :group 'org-static-blog
   :type '(boolean)
   :safe t)
 
