@@ -375,48 +375,42 @@ e.g. `(('foo' 'file1.org' 'file2.org') ('bar' 'file2.org'))`"
     tag-tree))
 
 (defun org-static-blog-get-preview (post-filename)
-  "Get the rendered HTML body without headers from POST-FILENAME.
+  "Get title, date, tags from POST-FILENAME and get the first paragraph from the rendered HTML.
 If the HTML body contains multiple paragraphs, include only the first paragraph,
 and display an ellipsis.
 Preamble and Postamble are excluded, too."
   (with-temp-buffer
     (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
-    (let ((title-start)
-          (first-paragraph-end)
-          (taglist-start)
-          (taglist-end))
+    (let ((post-title)
+          (post-date)
+          (post-taglist)
+          (post-ellipsis "")
+          (first-paragraph-start)
+          (first-paragraph-end))
+      (setq post-title (org-static-blog-get-title post-filename))
+      (setq post-date (org-static-blog-get-date post-filename))
+      (setq post-taglist (org-static-blog-post-taglist post-filename))
+      ;; Find where the first paragraph ends and starts
       (goto-char (point-min))
-      (setq title-start (search-forward "<div id=\"content\">"))
-      (when org-static-blog-preview-convert-titles
-        (search-forward "<h1 class=\"post-title\">")
-        (replace-match "<h2 class=\"post-title\">")
-        (search-forward "</h1>")
-        (replace-match "</h2>"))
       (when (search-forward "<p>" nil t)
-        (search-forward "</p>")) ;; Find where the first paragraph ends
-      (setq first-paragraph-end (point))
-      (goto-char (point-max))
-      (search-backward "<div id=\"postamble\" class=\"status\">")
-      (search-backward "<div id=\"comments\">" nil t)
-      (setq taglist-end (search-backward "</div>"))
-      ;; We also include the taglist, which is between the paragraphs and postamble
-      (search-backward "<div class=\"taglist\">")
-      (search-backward ">") ;; eat the returns/white spaces
-      (setq taglist-start (+ (point) 1))
-      (concat (buffer-substring-no-properties
-               title-start
-               first-paragraph-end)
-              (if (equal first-paragraph-end taglist-start)
-                  ;; if these equal, that means there's only one paragraph
-                  ""
-                (concat (when org-static-blog-preview-link-p
-                          (format "<a href=\"%s\">"
-                                  (org-static-blog-get-post-url post-filename)))
-                        org-static-blog-preview-ellipsis
-                        (when org-static-blog-preview-link-p "</a>\n")))
-              (buffer-substring-no-properties
-               taglist-start
-               taglist-end)))))
+        (search-forward "</p>")
+        (setq first-paragraph-end (point))
+        (search-backward "<p>")
+        (setq first-paragraph-start (point))
+        (goto-char first-paragraph-end)
+        (when (search-forward "<p>" nil t)
+          (setq post-ellipsis (concat (when org-static-blog-preview-link-p
+                                        (format "<a href=\"%s\">" (org-static-blog-get-post-url post-filename)))
+                                      org-static-blog-preview-ellipsis
+                                      (when org-static-blog-preview-link-p "</a>\n")))))
+      ;; Put the substrings together.
+      (concat
+       (format "<h2 class=\"post-title\"><a href=\"%s\">%s</a></h2>" (org-static-blog-get-post-url post-filename) post-title)
+       (format-time-string (concat "<div class=\"post-date\">" (org-static-blog-gettext 'date-format) "</div>") post-date)
+       (buffer-substring-no-properties first-paragraph-start first-paragraph-end)
+       post-ellipsis
+       (format "<div class=\"taglist\">%s</div>" post-taglist)))))
+
 
 (defun org-static-blog-get-body (post-filename &optional exclude-title)
   "Get the rendered HTML body without headers from POST-FILENAME.
