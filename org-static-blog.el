@@ -249,11 +249,11 @@ See also `org-static-blog-preview-ellipsis' and
   "Return localized text.
 Depends on org-static-blog-langcode and org-static-blog-texts."
   (let* ((text-node (assoc text-id org-static-blog-texts))
-	 (text-lang-node (if text-node
-			     (assoc org-static-blog-langcode text-node)
-			   nil)))
+         (text-lang-node (if text-node
+                             (assoc org-static-blog-langcode text-node)
+                           nil)))
     (if text-lang-node
-	(cdr text-lang-node)
+        (cdr text-lang-node)
       (concat "[" (symbol-name text-id) ":" org-static-blog-langcode "]"))))
 
 
@@ -305,9 +305,9 @@ unconditionally."
   (require 'seq)
   (make-directory (file-name-directory file) t)
   (car (seq-filter
-         (lambda (buf)
-           (string= (with-current-buffer buf buffer-file-name) file))
-         (buffer-list))))
+        (lambda (buf)
+          (string= (with-current-buffer buf buffer-file-name) file))
+        (buffer-list))))
 
 ;; This macro is needed for many of the following functions.
 (defmacro org-static-blog-with-find-file (file contents &rest body)
@@ -318,7 +318,7 @@ existed before)."
      (let ((current-buffer (current-buffer))
            (buffer-exists (org-static-blog-file-buffer ,file))
            (result nil)
-	   (contents ,contents))
+           (contents ,contents))
        (if buffer-exists
            (switch-to-buffer buffer-exists)
          (find-file ,file))
@@ -338,8 +338,8 @@ existed before)."
       (insert-file-contents post-filename)
       (goto-char (point-min))
       (if (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$" nil t)
-	  (date-to-time (match-string 1))
-	(time-since 0)))))
+          (date-to-time (match-string 1))
+        (time-since 0)))))
 
 (defun org-static-blog-get-title (post-filename)
   "Extract the `#+title:` from POST-FILENAME."
@@ -358,9 +358,9 @@ existed before)."
       (goto-char (point-min))
       (if (search-forward-regexp "^\\#\\+filetags:[ ]*:\\(.*\\):$" nil t)
           (split-string (match-string 1) ":")
-	(if (search-forward-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$" nil t)
+        (if (search-forward-regexp "^\\#\\+filetags:[ ]*\\(.+\\)$" nil t)
             (split-string (match-string 1))
-	  )))))
+          )))))
 
 (defun org-static-blog-get-tag-tree ()
   "Return an association list of tags to filenames.
@@ -452,7 +452,7 @@ will return 'https://example.com/archive.html'."
 This function concatenates publish URL and generated custom filepath to the
 published HTML version of the post."
   (org-static-blog-get-absolute-url
-          (org-static-blog-get-post-public-path post-filename)))
+   (org-static-blog-get-post-public-path post-filename)))
 
 (defun org-static-blog-get-post-public-path (post-filename)
   "Returns post filepath in public directory.
@@ -554,18 +554,18 @@ The index, archive, tags, and RSS feed are not updated."
         (org-html-html5-fancy t))
     (save-excursion
       (let ((current-buffer (current-buffer))
-	    (buffer-exists (org-static-blog-file-buffer post-filename))
-	    (result nil))
-	(if buffer-exists
-	    (switch-to-buffer buffer-exists)
-	  (find-file post-filename))
-	(setq result
-	      (org-export-as 'org-static-blog-post-bare nil nil nil nil))
-	(basic-save-buffer)
-	(unless buffer-exists
-	  (kill-buffer))
-	(switch-to-buffer current-buffer)
-	result))))
+            (buffer-exists (org-static-blog-file-buffer post-filename))
+            (result nil))
+        (if buffer-exists
+            (switch-to-buffer buffer-exists)
+          (find-file post-filename))
+        (setq result
+              (org-export-as 'org-static-blog-post-bare nil nil nil nil))
+        (basic-save-buffer)
+        (unless buffer-exists
+          (kill-buffer))
+        (switch-to-buffer current-buffer)
+        result))))
 
 (org-export-define-derived-backend 'org-static-blog-post-bare 'html
   :translate-alist '((template . (lambda (contents info) contents))))
@@ -586,7 +586,7 @@ posts as full text posts."
   "Assemble a page that contains multiple posts one after another.
 Posts are sorted in descending time."
   (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date y)
-                                                                  (org-static-blog-get-date x)))))
+                                                                       (org-static-blog-get-date x)))))
   (org-static-blog-with-find-file
    pub-filename
    (concat
@@ -629,7 +629,7 @@ This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
    "<div class=\"post-date\">" (format-time-string (org-static-blog-gettext 'date-format)
-						   (org-static-blog-get-date post-filename))
+                                                   (org-static-blog-get-date post-filename))
    "</div>"
    "<h1 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
@@ -680,16 +680,16 @@ machine-readable format."
     (org-static-blog-with-find-file
      rss-filename
      (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-	     "<rss version=\"2.0\">\n"
-	     "<channel>\n"
-	     "<title><![CDATA[" org-static-blog-publish-title "]]></title>\n"
-	     "<description><![CDATA[" org-static-blog-publish-title "]]></description>\n"
-	     "<link>" org-static-blog-publish-url "</link>\n"
-	     "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n"
+             "<rss version=\"2.0\">\n"
+             "<channel>\n"
+             "<title><![CDATA[" org-static-blog-publish-title "]]></title>\n"
+             "<description><![CDATA[" org-static-blog-publish-title "]]></description>\n"
+             "<link>" org-static-blog-publish-url "</link>\n"
+             "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n"
              org-static-blog-rss-extra
-	     (apply 'concat (mapcar 'cdr rss-items))
-	     "</channel>\n"
-	     "</rss>\n"))))
+             (apply 'concat (mapcar 'cdr rss-items))
+             "</channel>\n"
+             "</rss>\n"))))
 
 (defun org-static-blog-get-rss-item (post-filename)
   "Assemble RSS item from post-filename.
@@ -722,8 +722,8 @@ blog post, but no post body."
         (archive-entries nil)
         (post-filenames (org-static-blog-get-post-filenames)))
     (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p
-                                                        (org-static-blog-get-date y)
-                                                        (org-static-blog-get-date x)))))
+                                                             (org-static-blog-get-date y)
+                                                             (org-static-blog-get-date x)))))
     (org-static-blog-with-find-file
      archive-filename
      (concat
@@ -778,10 +778,10 @@ archive headline."
   "Assemble single TAG for all filenames."
   (let ((post-filenames (cdr tag)))
     (setq post-filenames
-	  (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date x)
-						     (org-static-blog-get-date y)))))
+          (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date x)
+                                                          (org-static-blog-get-date y)))))
     (concat "<h1 class=\"tags-title\">" (org-static-blog-gettext 'posts-tagged) " \"" (downcase (car tag)) "\":</h1>\n"
-	    (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames)))))
+            (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames)))))
 
 (defun org-static-blog-assemble-tags-archive ()
   "Assemble the blog tag archive page.
@@ -868,11 +868,11 @@ choose."
     (find-file (concat
                 (if draft
                     org-static-blog-drafts-directory
-                    org-static-blog-posts-directory)
+                  org-static-blog-posts-directory)
                 (read-string (org-static-blog-gettext 'filename)
-			     (concat (format-time-string "%Y-%m-%d-" (current-time))
-				     (replace-regexp-in-string "\s" "-" (downcase title))
-				     ".org"))))
+                             (concat (format-time-string "%Y-%m-%d-" (current-time))
+                                     (replace-regexp-in-string "\s" "-" (downcase title))
+                                     ".org"))))
     (insert "#+title: " title "\n"
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
             "#+filetags: ")))
