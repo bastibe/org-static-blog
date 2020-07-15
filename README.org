@@ -144,6 +144,19 @@ the appearance of the ~#preamble~, the ~#content~, and the
 To write posts, you can now call ~org-static-blog-create-new-post~,
 and render your blog with ~org-static-blog-publish~.
 
+Each post is an org-mode file such as
+
+#+begin_src org-mode
+#+title: How to Write a Blog Post
+#+date: <2020-07-03 08:57>
+#+filetags: computers emacs blog
+
+Step one: Install ~org-static-blog~. \\
+Step Two: Execute ~M-x org-static-blog-create-new-post~ and write the content. \\
+Step Three: Execute ~M-x org-static-blog-publish~ and upload to your webhost. \\
+Done.
+#+end_src
+
 You can find more complete examples by looking at my [[https://github.com/bastibe/.emacs.d/blob/master/init.el#L670][init.el]] and the
 [[https://github.com/bastibe/bastibe.github.com][repository]] for my blog ([[http://bastibe.de/][bastibe.de]]) itself to see an example of how to
 use =org-static-blog= in practice.
