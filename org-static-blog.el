@@ -632,7 +632,7 @@ Modify this function if you want to change a posts headline."
    (format-time-string "%d %b %Y" (org-static-blog-get-date post-filename))
    (if org-static-blog-use-semantic-html "</time>" "</div>")
    "<h1 class=\"post-title\">"
-   "<a href=\"" (org-static-blog-get-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
+   "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h1>\n</header>\n"))
 
 
