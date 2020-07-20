@@ -664,7 +664,8 @@ followed by the HTML code for comments."
   "Assemble the blog RSS feed.
 The RSS-feed is an XML file that contains every blog post in a
 machine-readable format."
-  (let ((rss-filename (concat org-static-blog-publish-directory org-static-blog-rss-file))
+  (let ((system-time-locale "en_US.utf-8") ; force dates to render as per RSS spec
+        (rss-filename (concat org-static-blog-publish-directory org-static-blog-rss-file))
         (rss-items nil))
     (dolist (post-filename (org-static-blog-get-post-filenames))
       (let ((rss-date (org-static-blog-get-date post-filename))
@@ -704,7 +705,8 @@ The HTML content is taken from the rendered HTML post."
    (org-static-blog-get-post-url post-filename)
    "</link>\n"
    "  <pubDate>"
-   (format-time-string "%a, %d %b %Y %H:%M:%S %z" (org-static-blog-get-date post-filename))
+   (let ((system-time-locale "en_US.utf-8")) ; force dates to render as per RSS spec
+     (format-time-string "%a, %d %b %Y %H:%M:%S %z" (org-static-blog-get-date post-filename)))
    "</pubDate>\n"
    "</item>\n"))
 
