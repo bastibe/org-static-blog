@@ -218,6 +218,14 @@ Other org-static-blog blogs:
   Support for "preview" slugs on index page (Thank you, K. Scarlet)
   Various bugfixes (Thank you, Matthew Bauer, luhuaei, neeasade, Yauhen Makei, Winny, zsxh)
   Translations in RU, BY, FR (Thank you, Yauhen Makei, Théo Jacquin)
+- 2020-07-20 (v1.4.0):
+  Adds a command to create drafts (Thank you, Massimo Lauria)
+  Adds optional RSS info (Thank you, Massimo Lauria)
+  Restructures preamble and postamble to be more consistent (Thank you, Massimo Lauria)
+  Translations in IT, ES (Thank you, Massimo Lauria, Alberto Álvarez)
+  Option to make ellipsis link to full post (Thank you, jaor)
+  Improves preview generation (Thank you, Allo)
+  Render RSS dates as per RFT-822 and the RSS spec
 
 * LICENSE
 
