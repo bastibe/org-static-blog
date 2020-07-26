@@ -428,12 +428,12 @@ Preamble and Postamble are excluded, too."
            (progn (search-forward "<h1 class=\"post-title\">")
                   (search-forward "</h1>"))
          (search-forward
-          (if org-static-blog-use-semantic-html "<main>" "<div id=\"content\">" )))
+          (if org-static-blog-use-semantic-html "<main>" "<div class=\"content\">" )))
        (point))
      (progn
        (goto-char (point-max))
        (search-backward
-        (if org-static-blog-use-semantic-html "<footer>" "<div id=\"postamble\" class=\"status\">" ))
+        (if org-static-blog-use-semantic-html "<footer>" "<div class=\"postamble status\">" ))
        (search-backward
         (if org-static-blog-use-semantic-html "</main>" "</div>" ))
        (point)))))
@@ -534,15 +534,15 @@ The index, archive, tags, and RSS feed are not updated."
     org-static-blog-page-header
     "</head>\n"
     "<body>\n"
-    (if org-static-blog-use-semantic-html "<header>\n" "<div id=\"preamble\" class=\"status\">\n")
+    (if org-static-blog-use-semantic-html "<header>\n" "<div class=\"preamble status\">\n")
     org-static-blog-page-preamble
     (if org-static-blog-use-semantic-html "</header>\n" "</div>\n")
-    (if org-static-blog-use-semantic-html "<main>\n" "<div id=\"content\">\n" )
+    (if org-static-blog-use-semantic-html "<main>\n" "<div class=\"content\">\n" )
     (org-static-blog-post-preamble post-filename)
     (org-static-blog-render-post-content post-filename)
     (org-static-blog-post-postamble post-filename)
     (if org-static-blog-use-semantic-html "</main>\n" "</div>\n" )
-    (if org-static-blog-use-semantic-html "<footer>" "<div id=\"postamble\" class=\"status\">" )
+    (if org-static-blog-use-semantic-html "<footer>" "<div class=\"postamble status\">" )
     org-static-blog-page-postamble
     (if org-static-blog-use-semantic-html "</footer>\n" "</div>\n")
     "</body>\n"
@@ -602,10 +602,10 @@ Posts are sorted in descending time."
     org-static-blog-page-header
     "</head>\n"
     "<body>\n"
-    (if org-static-blog-use-semantic-html "<header>\n" "<div id=\"preamble\" class=\"status\">\n" )
+    (if org-static-blog-use-semantic-html "<header>\n" "<div class=\"preamble status\">\n" )
     org-static-blog-page-preamble
     (if org-static-blog-use-semantic-html "</header>\n" "</div>\n" )
-    (if org-static-blog-use-semantic-html "<main>\n" "<div id=\"content\">\n" ))
+    (if org-static-blog-use-semantic-html "<main>\n" "<div class=\"content\">\n" ))
    (if front-matter
        (insert front-matter))
    (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date y)
@@ -662,7 +662,7 @@ followed by the HTML code for comments."
           "</div>"
           (if (string= org-static-blog-post-comments "")
               ""
-            (concat "\n<div id=\"comments\">"
+            (concat "\n<div class=\"comments\">"
                     org-static-blog-post-comments
                     "</div>"))))
 
@@ -739,10 +739,10 @@ blog post, but no post body."
       org-static-blog-page-header
       "</head>\n"
       "<body>\n"
-      (if org-static-blog-use-semantic-html "<header>\n" "<div id=\"preamble\" class=\"status\">\n")
+      (if org-static-blog-use-semantic-html "<header>\n" "<div class=\"preamble status\">\n")
       org-static-blog-page-preamble
       (if org-static-blog-use-semantic-html "</header>\n" "</div>\n")
-      (if org-static-blog-use-semantic-html "<main>\n" "<div id=\"content\">\n" )
+      (if org-static-blog-use-semantic-html "<main>\n" "<div class=\"content\">\n" )
       "<h1 class=\"title\">Archive</h1>\n")
      (dolist (post-filename (sort post-filenames (lambda (x y) (time-less-p
                                                                 (org-static-blog-get-date y)
@@ -805,10 +805,10 @@ blog post, sorted by tags, but no post body."
       org-static-blog-page-header
       "</head>\n"
       "<body>\n"
-      (if org-static-blog-use-semantic-html "<header>\n" "<div id=\"preamble\" class=\"status\">\n")
+      (if org-static-blog-use-semantic-html "<header>\n" "<div class=\"preamble status\">\n")
       org-static-blog-page-preamble
       (if org-static-blog-use-semantic-html "</header>\n" "</div>\n")
-      (if org-static-blog-use-semantic-html "<main>\n" "<div id=\"content\">\n")
+      (if org-static-blog-use-semantic-html "<main>\n" "<div class=\"content\">\n")
       "<h1 class=\"title\">Tags</h1>\n")
      (dolist (tag (sort tag-tree (lambda (x y) (string-greaterp (car y) (car x)))))
        (insert "<h1 class=\"tags-title\">Posts tagged \"" (downcase (car tag)) "\":</h1>\n")
