@@ -245,6 +245,10 @@ See also `org-static-blog-preview-ellipsis' and
      ("es" . "Nombre del archivo: ")
      ("fr" . "Nom du fichier :"))))
 
+(defun concat-to-dir (dir filename)
+  "Concat filename to another path interpreted as a directory."
+  (concat (file-name-as-directory dir) filename))
+
 (defun org-static-blog-gettext (text-id)
   "Return localized text.
 Depends on org-static-blog-langcode and org-static-blog-texts."
@@ -287,8 +291,8 @@ unconditionally."
 
 (defun org-static-blog-matching-publish-filename (post-filename)
   "Generate HTML file name for POST-FILENAME."
-  (concat org-static-blog-publish-directory
-          (org-static-blog-get-post-public-path post-filename)))
+  (concat-to-dir org-static-blog-publish-directory
+		 (org-static-blog-get-post-public-path post-filename)))
 
 (defun org-static-blog-get-post-filenames ()
   "Returns a list of all posts."
@@ -438,7 +442,7 @@ Preamble and Postamble are excluded, too."
 For example, when `org-static-blog-publish-url` is set to 'https://example.com/'
 and `relative-url` is passed as 'archive.html' then the function
 will return 'https://example.com/archive.html'."
-  (concat org-static-blog-publish-url relative-url))
+  (concat-to-dir org-static-blog-publish-url relative-url))
 
 (defun org-static-blog-get-post-url (post-filename)
   "Returns absolute URL to the published POST-FILENAME.
@@ -573,7 +577,7 @@ posts as full text posts."
     (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date x)
                                                                          (org-static-blog-get-date y)))))
     (org-static-blog-assemble-multipost-page
-     (concat org-static-blog-publish-directory org-static-blog-index-file)
+     (concat-to-dir org-static-blog-publish-directory org-static-blog-index-file)
      (last post-filenames org-static-blog-index-length))))
 
 (defun org-static-blog-assemble-multipost-page (pub-filename post-filenames &optional front-matter)
@@ -665,7 +669,7 @@ followed by the HTML code for comments."
 The RSS-feed is an XML file that contains every blog post in a
 machine-readable format."
   (let ((system-time-locale "en_US.utf-8") ; force dates to render as per RSS spec
-        (rss-filename (concat org-static-blog-publish-directory org-static-blog-rss-file))
+        (rss-filename (concat-to-dir org-static-blog-publish-directory org-static-blog-rss-file))
         (rss-items nil))
     (dolist (post-filename (org-static-blog-get-post-filenames))
       (let ((rss-date (org-static-blog-get-date post-filename))
@@ -714,7 +718,7 @@ The HTML content is taken from the rendered HTML post."
   "Re-render the blog archive page.
 The archive page contains single-line links and dates for every
 blog post, but no post body."
-  (let ((archive-filename (concat org-static-blog-publish-directory org-static-blog-archive-file))
+  (let ((archive-filename (concat-to-dir org-static-blog-publish-directory org-static-blog-archive-file))
         (archive-entries nil)
         (post-filenames (org-static-blog-get-post-filenames)))
     (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p
@@ -766,7 +770,7 @@ archive headline."
   (org-static-blog-assemble-tags-archive)
   (dolist (tag (org-static-blog-get-tag-tree))
     (org-static-blog-assemble-multipost-page
-     (concat org-static-blog-publish-directory "tag-" (downcase (car tag)) ".html")
+     (concat-to-dir org-static-blog-publish-directory "tag-" (downcase (car tag)) ".html")
      (cdr tag)
      (concat "<h1 class=\"title\">" (org-static-blog-gettext 'posts-tagged) " \"" (car tag) "\":</h1>"))))
 
@@ -783,7 +787,7 @@ archive headline."
   "Assemble the blog tag archive page.
 The archive page contains single-line links and dates for every
 blog post, sorted by tags, but no post body."
-  (let ((tags-archive-filename (concat org-static-blog-publish-directory org-static-blog-tags-file))
+  (let ((tags-archive-filename (concat-to-dir org-static-blog-publish-directory org-static-blog-tags-file))
         (tag-tree (org-static-blog-get-tag-tree)))
     (setq tag-tree (sort tag-tree (lambda (x y) (string-greaterp (car y) (car x)))))
     (org-static-blog-with-find-file
