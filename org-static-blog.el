@@ -472,15 +472,8 @@ Works with both posts and drafts directories.
 For example, when `org-static-blog-posts-directory` is set to '~/blog/posts'
 and `post-filename` is passed as '~/blog/posts/my-life-update.org' then the function
 will return 'my-life-update.html'."
-  (replace-regexp-in-string ".org$" ".html"
-                            (replace-regexp-in-string
-                             (concat "^\\("
-                                     (file-truename org-static-blog-posts-directory)
-                                     "\\|"
-                                     (file-truename org-static-blog-drafts-directory)
-                                     "\\)")
-                             ""
-                             (file-truename post-filename))))
+  (concat (file-name-sans-extension (file-name-nondirectory post-filename))
+	  ".html"))
 
 (defun org-static-blog-generate-post-path (post-filename post-datetime)
   "Returns post public path based on POST-FILENAME and POST-DATETIME.
