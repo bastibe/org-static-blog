@@ -770,7 +770,8 @@ archive headline."
   (org-static-blog-assemble-tags-archive)
   (dolist (tag (org-static-blog-get-tag-tree))
     (org-static-blog-assemble-multipost-page
-     (concat-to-dir org-static-blog-publish-directory "tag-" (downcase (car tag)) ".html")
+     (concat-to-dir org-static-blog-publish-directory
+		    (concat "tag-" (downcase (car tag)) ".html"))
      (cdr tag)
      (concat "<h1 class=\"title\">" (org-static-blog-gettext 'posts-tagged) " \"" (car tag) "\":</h1>"))))
 
