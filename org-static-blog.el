@@ -807,7 +807,7 @@ only a suggestion; You can choose any other file name if you so
 choose."
   (interactive)
   (let ((title (read-string (org-static-blog-gettext 'title))))
-    (find-file (concat
+    (find-file (concat-to-dir
                 (if draft
                     org-static-blog-drafts-directory
                     org-static-blog-posts-directory)
