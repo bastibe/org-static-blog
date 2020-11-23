@@ -249,6 +249,33 @@ See also `org-static-blog-preview-ellipsis' and
   "Concat filename to another path interpreted as a directory."
   (concat (file-name-as-directory dir) filename))
 
+(defun org-static-blog-template (tTitle tContent)
+  "Create the template that is used to generate the static pages."
+  (concat
+   "<!DOCTYPE html>\n"
+   "<html lang=\"" org-static-blog-langcode "\">\n"
+   "<head>\n"
+   "<meta charset=\"UTF-8\">\n"
+   "<link rel=\"alternate\"\n"
+   "      type=\"application/rss+xml\"\n"
+   "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
+   "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
+   "<title>" tTitle "</title>\n"
+   org-static-blog-page-header
+   "</head>\n"
+   "<body>\n"
+   "<div id=\"preamble\" class=\"status\">"
+   org-static-blog-page-preamble
+   "</div>\n"
+   "<div id=\"content\">\n"
+   tContent
+   "</div>\n"
+   "<div id=\"postamble\" class=\"status\">"
+   org-static-blog-page-postamble
+   "</div>\n"
+   "</body>\n"
+   "</html>\n"))
+
 (defun org-static-blog-gettext (text-id)
   "Return localized text.
 Depends on org-static-blog-langcode and org-static-blog-texts."
@@ -472,15 +499,8 @@ Works with both posts and drafts directories.
 For example, when `org-static-blog-posts-directory` is set to '~/blog/posts'
 and `post-filename` is passed as '~/blog/posts/my-life-update.org' then the function
 will return 'my-life-update.html'."
-  (replace-regexp-in-string ".org$" ".html"
-                            (replace-regexp-in-string
-                             (concat "^\\("
-                                     (file-truename org-static-blog-posts-directory)
-                                     "\\|"
-                                     (file-truename org-static-blog-drafts-directory)
-                                     "\\)")
-                             ""
-                             (file-truename post-filename))))
+  (concat (file-name-sans-extension (file-name-nondirectory post-filename))
+	  ".html"))
 
 (defun org-static-blog-generate-post-path (post-filename post-datetime)
   "Returns post public path based on POST-FILENAME and POST-DATETIME.
@@ -519,32 +539,13 @@ The index, archive, tags, and RSS feed are not updated."
   (interactive "f")
   (org-static-blog-with-find-file
    (org-static-blog-matching-publish-filename post-filename)
-   (concat
-    "<!DOCTYPE html>\n"
-    "<html lang=\"" org-static-blog-langcode "\">\n"
-    "<head>\n"
-    "<meta charset=\"UTF-8\">\n"
-    "<link rel=\"alternate\"\n"
-    "      type=\"application/rss+xml\"\n"
-    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
-    "      title=\"RSS feed for " org-static-blog-publish-url "\"/>\n"
-    "<title>" (org-static-blog-get-title post-filename) "</title>\n"
-    org-static-blog-page-header
-    "</head>\n"
-    "<body>\n"
-    "<div id=\"preamble\" class=\"status\">\n"
-    org-static-blog-page-preamble
-    "</div>\n"
-    "<div id=\"content\">\n"
-    (org-static-blog-post-preamble post-filename)
-    (org-static-blog-render-post-content post-filename)
-    (org-static-blog-post-postamble post-filename)
-    "</div>\n"
-    "<div id=\"postamble\" class=\"status\">"
-    org-static-blog-page-postamble
-    "</div>\n"
-    "</body>\n"
-    "</html>\n")))
+   (org-static-blog-template
+    (org-static-blog-get-title post-filename)
+    (concat
+     (org-static-blog-post-preamble post-filename)
+     (org-static-blog-render-post-content post-filename)
+     (org-static-blog-post-postamble post-filename)))))
+
 
 (defun org-static-blog-render-post-content (post-filename)
   "Render blog content as bare HTML without header."
@@ -587,23 +588,9 @@ Posts are sorted in descending time."
                                                                   (org-static-blog-get-date x)))))
   (org-static-blog-with-find-file
    pub-filename
+   (org-static-blog-template
+    org-static-blog-publish-title
    (concat
-    "<!DOCTYPE html>\n"
-    "<html lang=\"" org-static-blog-langcode "\">\n"
-    "<head>\n"
-    "<meta charset=\"UTF-8\">\n"
-    "<link rel=\"alternate\"\n"
-    "      type=\"application/rss+xml\"\n"
-    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
-    "      title=\"RSS feed for " org-static-blog-publish-url "\"/>\n"
-    "<title>" org-static-blog-publish-title "</title>\n"
-    org-static-blog-page-header
-    "</head>\n"
-    "<body>\n"
-    "<div id=\"preamble\" class=\"status\">"
-    org-static-blog-page-preamble
-    "</div>\n"
-    "<div id=\"content\">\n"
     (when front-matter front-matter)
     (apply 'concat (mapcar
                     (if org-static-blog-use-preview
@@ -611,13 +598,7 @@ Posts are sorted in descending time."
                       'org-static-blog-get-body) post-filenames))
     "<div id=\"archive\">\n"
     "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
-    "</div>\n"
-    "</div>\n"
-    "<div id=\"postamble\" class=\"status\">"
-    org-static-blog-page-postamble
-    "</div>\n"
-    "</body>\n"
-    "</html>\n")))
+    "</div>\n"))))
 
 
 
@@ -726,31 +707,11 @@ blog post, but no post body."
                                                         (org-static-blog-get-date x)))))
     (org-static-blog-with-find-file
      archive-filename
-     (concat
-      "<!DOCTYPE html>\n"
-      "<html lang=\"" org-static-blog-langcode "\">\n"
-      "<head>\n"
-      "<meta charset=\"UTF-8\">\n"
-      "<link rel=\"alternate\"\n"
-      "      type=\"application/rss+xml\"\n"
-      "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
-      "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
-      "<title>" org-static-blog-publish-title "</title>\n"
-      org-static-blog-page-header
-      "</head>\n"
-      "<body>\n"
-      "<div id=\"preamble\" class=\"status\">\n"
-      org-static-blog-page-preamble
-      "</div>\n"
-      "<div id=\"content\">\n"
-      "<h1 class=\"title\">" (org-static-blog-gettext 'archive) "</h1>\n"
-      (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames))
-      "</div>\n"
-      "<div id=\"postamble\" class=\"status\">"
-      org-static-blog-page-postamble
-      "</div>\n"
-      "</body>\n"
-      "</html>"))))
+     (org-static-blog-template
+      org-static-blog-publish-title
+      (concat
+       "<h1 class=\"title\">" (org-static-blog-gettext 'archive) "</h1>\n"
+       (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames)))))))
 
 (defun org-static-blog-get-post-summary (post-filename)
   "Assemble post summary for an archive page.
@@ -770,7 +731,8 @@ archive headline."
   (org-static-blog-assemble-tags-archive)
   (dolist (tag (org-static-blog-get-tag-tree))
     (org-static-blog-assemble-multipost-page
-     (concat-to-dir org-static-blog-publish-directory "tag-" (downcase (car tag)) ".html")
+     (concat-to-dir org-static-blog-publish-directory
+		    (concat "tag-" (downcase (car tag)) ".html"))
      (cdr tag)
      (concat "<h1 class=\"title\">" (org-static-blog-gettext 'posts-tagged) " \"" (car tag) "\":</h1>"))))
 
@@ -792,31 +754,11 @@ blog post, sorted by tags, but no post body."
     (setq tag-tree (sort tag-tree (lambda (x y) (string-greaterp (car y) (car x)))))
     (org-static-blog-with-find-file
      tags-archive-filename
-     (concat
-      "<!DOCTYPE html>\n"
-      "<html lang=\"" org-static-blog-langcode "\">\n"
-      "<head>\n"
-      "<meta charset=\"UTF-8\">\n"
-      "<link rel=\"alternate\"\n"
-      "      type=\"application/rss+xml\"\n"
-      "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
-      "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
-      "<title>" org-static-blog-publish-title "</title>\n"
-      org-static-blog-page-header
-      "</head>\n"
-      "<body>\n"
-      "<div id=\"preamble\" class=\"status\">"
-      org-static-blog-page-preamble
-      "</div>\n"
-      "<div id=\"content\">\n"
-      "<h1 class=\"title\">" (org-static-blog-gettext 'tags) "</h1>\n"
-      (apply 'concat (mapcar 'org-static-blog-assemble-tags-archive-tag tag-tree))
-      "</div>\n"
-      "<div id=\"postamble\" class=\"status\">"
-      org-static-blog-page-postamble
-      "</div>\n"
-      "</body>\n"
-      "</html>\n"))))
+     (org-static-blog-template
+      org-static-blog-publish-title
+      (concat
+       "<h1 class=\"title\">" (org-static-blog-gettext 'tags) "</h1>\n"
+       (apply 'concat (mapcar 'org-static-blog-assemble-tags-archive-tag tag-tree)))))))
 
 (defun org-static-blog-open-previous-post ()
   "Opens previous blog post."
@@ -865,7 +807,7 @@ only a suggestion; You can choose any other file name if you so
 choose."
   (interactive)
   (let ((title (read-string (org-static-blog-gettext 'title))))
-    (find-file (concat
+    (find-file (concat-to-dir
                 (if draft
                     org-static-blog-drafts-directory
                     org-static-blog-posts-directory)
