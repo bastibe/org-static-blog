@@ -607,12 +607,12 @@ Posts are sorted in descending time."
 This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
-   "<div class=\"post-date\">" (format-time-string (org-static-blog-gettext 'date-format)
-						   (org-static-blog-get-date post-filename))
-   "</div>"
    "<h1 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
-   "</h1>\n"))
+   "</h1>\n"
+   "<div class=\"post-date\">" (format-time-string (org-static-blog-gettext 'date-format)
+						   (org-static-blog-get-date post-filename))
+   "</div>\n"))
 
 
 (defun org-static-blog-post-taglist (post-filename)
@@ -719,12 +719,12 @@ This function is called for every post on the archive and
 tags-archive page. Modify this function if you want to change an
 archive headline."
   (concat
-   "<div class=\"post-date\">"
-   (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
-   "</div>"
    "<h2 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
-   "</h2>\n"))
+   "</h2>\n"
+   "<div class=\"post-date\">"
+   (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
+   "</div>\n"))
 
 (defun org-static-blog-assemble-tags ()
   "Render the tag archive and tag pages."
