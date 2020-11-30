@@ -309,6 +309,16 @@ unconditionally."
     (if org-static-blog-enable-tags
         (org-static-blog-assemble-tags))))
 
+(defun org-static-blog-clean ()
+  "Remove all *.html files and *.xml files in
+org-static-blog-publish-directory"
+  (interactive)
+  (let* ((html (directory-files org-static-blog-publish-directory nil "\\.html$"))
+	 (xml (directory-files org-static-blog-publish-directory nil "\\.xml$"))
+	 (dlist (append html xml)))
+    (dolist (element dlist)
+      (delete-file (concat-to-dir org-static-blog-publish-directory element)))))
+
 (defun org-static-blog-needs-publishing-p (post-filename)
   "Check whether POST-FILENAME was changed since last render."
   (let ((pub-filename
