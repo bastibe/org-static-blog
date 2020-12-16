@@ -499,7 +499,7 @@ Works with both posts and drafts directories.
 For example, when `org-static-blog-posts-directory` is set to '~/blog/posts'
 and `post-filename` is passed as '~/blog/posts/my-life-update.org' then the function
 will return 'my-life-update.html'."
-  (concat (file-name-sans-extension (file-name-nondirectory post-filename))
+  (concat (file-name-sans-extension (file-relative-name post-filename org-static-blog-posts-directory))
 	  ".html"))
 
 (defun org-static-blog-generate-post-path (post-filename post-datetime)
