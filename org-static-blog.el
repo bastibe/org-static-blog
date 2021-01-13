@@ -121,6 +121,11 @@ your blog with emacs, org-mode and org-static-blog.
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-rss-max-entries nil
+  "Maximum number of entries in the RSS feed.
+If nil (the default), all existing posts are included."
+  :type '(integer)
+  :safe t)
 
 (defcustom org-static-blog-page-header ""
   "HTML to put in the <head> of each page."
@@ -657,6 +662,10 @@ machine-readable format."
             (rss-text (org-static-blog-get-rss-item post-filename)))
         (add-to-list 'rss-items (cons rss-date rss-text))))
     (setq rss-items (sort rss-items (lambda (x y) (time-less-p (car y) (car x)))))
+    (when (and org-static-blog-rss-max-entries
+               (> org-static-blog-rss-max-entries 0))
+      (let ((excess (- (length rss-items) org-static-blog-rss-max-entries)))
+        (when (> excess 0) (setq rss-items (nbutlast rss-items excess)))))
     (org-static-blog-with-find-file
      rss-filename
      (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
