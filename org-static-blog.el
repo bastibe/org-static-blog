@@ -504,8 +504,10 @@ Works with both posts and drafts directories.
 For example, when `org-static-blog-posts-directory` is set to '~/blog/posts'
 and `post-filename` is passed as '~/blog/posts/my-life-update.org' then the function
 will return 'my-life-update.html'."
-  (concat (file-name-sans-extension (file-relative-name post-filename org-static-blog-posts-directory))
-	  ".html"))
+  (let ((post-base-dir (cond ((string-prefix-p org-static-blog-posts-directory post-filename) org-static-blog-posts-directory)
+                             ((string-prefix-p org-static-blog-drafts-directory post-filename) org-static-blog-drafts-directory))))
+    (concat (file-name-sans-extension (file-relative-name post-filename post-base-dir))
+	    ".html")))
 
 (defun org-static-blog-generate-post-path (post-filename post-datetime)
   "Returns post public path based on POST-FILENAME and POST-DATETIME.
