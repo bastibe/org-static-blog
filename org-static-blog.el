@@ -112,6 +112,12 @@ The tags page lists all posts as headlines."
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-rss-excluded-tag nil
+  "Posts with this tag won't be included in the RSS feeds."
+  :type '(choice (const :tag "None" nil)
+                 (string :tag "Tag name"))
+  :safe t)
+
 (defcustom org-static-blog-rss-extra ""
   "Extra information for the RSS feed header.
 This information is placed right before the sequence of posts.
@@ -404,7 +410,7 @@ e.g. `(('foo' 'file1.org' 'file2.org') ('bar' 'file2.org'))`"
   (let ((tag-tree '()))
     (dolist (post-filename (org-static-blog-get-post-filenames))
       (let ((tags (org-static-blog-get-tags post-filename)))
-        (dolist (tag tags)
+        (dolist (tag (remove org-static-blog-rss-excluded-tag tags))
           (if (assoc-string tag tag-tree t)
               (push post-filename (cdr (assoc-string tag tag-tree t)))
             (push (cons tag (list post-filename)) tag-tree)))))
@@ -626,12 +632,14 @@ Modify this function if you want to change a posts headline."
   "Returns the tag list of the post.
 This part will be attached at the end of the post, after
 the taglist, in a <div id=\"taglist\">...</div> block."
-  (let ((taglist-content ""))
-    (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
+  (let ((taglist-content "")
+        (tags (remove org-static-blog-rss-excluded-tag
+                      (org-static-blog-get-tags post-filename))))
+    (when (and tags org-static-blog-enable-tags)
       (setq taglist-content (concat "<a href=\""
                                     (org-static-blog-get-absolute-url org-static-blog-tags-file)
                                     "\">" (org-static-blog-gettext 'tags) "</a>: "))
-      (dolist (tag (org-static-blog-get-tags post-filename))
+      (dolist (tag tags)
         (setq taglist-content (concat taglist-content "<a href=\""
                                       (org-static-blog-get-absolute-url (concat "tag-" (downcase tag) ".html"))
                                       "\">" tag "</a> "))))
@@ -662,7 +670,10 @@ machine-readable format."
     (dolist (post-filename (org-static-blog-get-post-filenames))
       (let ((rss-date (org-static-blog-get-date post-filename))
             (rss-text (org-static-blog-get-rss-item post-filename)))
-        (add-to-list 'rss-items (cons rss-date rss-text))))
+        (when (or (null org-static-blog-rss-excluded-tag)
+                  (not (member org-static-blog-rss-excluded-tag
+                               (org-static-blog-get-tags post-filename))))
+          (add-to-list 'rss-items (cons rss-date rss-text)))))
     (setq rss-items (sort rss-items (lambda (x y) (time-less-p (car y) (car x)))))
     (when (and org-static-blog-rss-max-entries
                (> org-static-blog-rss-max-entries 0))
