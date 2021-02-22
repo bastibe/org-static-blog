@@ -148,6 +148,11 @@ If nil (the default), all existing posts are included."
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-index-front-matter ""
+  "HTML to put at the beginning of the index page."
+  :type '(string)
+  :safe t)
+
 (defcustom org-static-blog-post-comments ""
   "HTML code for comments to put after each blog post."
   :type '(string)
@@ -592,7 +597,8 @@ posts as full text posts."
                                                                          (org-static-blog-get-date y)))))
     (org-static-blog-assemble-multipost-page
      (concat-to-dir org-static-blog-publish-directory org-static-blog-index-file)
-     (last post-filenames org-static-blog-index-length))))
+     (last post-filenames org-static-blog-index-length)
+     org-static-blog-index-front-matter)))
 
 (defun org-static-blog-assemble-multipost-page (pub-filename post-filenames &optional front-matter)
   "Assemble a page that contains multiple posts one after another.
