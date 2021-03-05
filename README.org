@@ -231,6 +231,11 @@ Other org-static-blog blogs:
   Option to make ellipsis link to full post (Thank you, jaor)
   Improves preview generation (Thank you, Allo)
   Render RSS dates as per RFT-822 and the RSS spec
+- 2020-03-05 (v1.5.0)
+  Better awareness for posts in subdirectories (Thank you, Justin Abrahms)
+  New custom variable org-static-blog-rss-max-entries (Thank you, jao)
+  Can now exclude some posts from RSS feeds (Thank you, jao)
+  New custom variable for index page header (Thank you, Bruno Deremble)
 
 * LICENSE
 
