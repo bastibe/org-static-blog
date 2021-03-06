@@ -133,6 +133,17 @@ If nil (the default), all existing posts are included."
   :type '(integer)
   :safe t)
 
+(defcustom org-static-blog-enable-tag-rss nil
+  "Whether to generate per tag RSS feeds.
+
+When this flag is set, an RSS file with name given by prefixing
+`org-static-blog-rss-file' with '<tag>-' is created for each
+existing tag.  The options `org-static-blog-rss-extra',
+`org-static-blog-rss-max-entries' and
+`org-static-blog-rss-excluded-tag' are also used to construct
+per-tag RSS feeds."
+  :type '(boolean))
+
 (defcustom org-static-blog-page-header ""
   "HTML to put in the <head> of each page."
   :type '(string)
@@ -664,38 +675,65 @@ followed by the HTML code for comments."
                     org-static-blog-post-comments
                     "</div>"))))
 
+(defun org-static-blog--prune-items (items)
+  "Limit, if needed, the items to be included in an RSS feed."
+  (if (and org-static-blog-rss-max-entries (> org-static-blog-rss-max-entries 0))
+      (let ((excess (- (length items) org-static-blog-rss-max-entries)))
+        (if (> excess 0) (butlast items excess) items))
+    items))
+
+(defun org-static-blog--rss-filename (&optional tag)
+  "Full path to the RSS file for the given TAG."
+  (concat-to-dir org-static-blog-publish-directory
+                 (concat tag (when tag "-") org-static-blog-rss-file)))
+
+(defun org-static-blog--write-rss (items &optional tag)
+  "Generates an RSS file for the given TAG, or for all tags is TAG is nil."
+  (let ((title (format "%s%s"
+                       org-static-blog-publish-title
+                       (if tag (concat " - " tag) "")))
+        (url (format "%s%s"
+                     org-static-blog-publish-url
+                     (if tag (concat "/tag-" (downcase tag) ".html") "")))
+        (items (sort items (lambda (x y) (time-less-p (car y) (car x))))))
+    (org-static-blog-with-find-file
+     (org-static-blog--rss-filename tag)
+     (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+	     "<rss version=\"2.0\">\n"
+	     "<channel>\n"
+	     "<title><![CDATA[" title "]]></title>\n"
+	     "<description><![CDATA[" title "]]></description>\n"
+	     "<link>" url "</link>\n"
+	     "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z"
+                                                   (current-time))
+             "</lastBuildDate>\n"
+             org-static-blog-rss-extra
+	     (apply 'concat (mapcar 'cdr (org-static-blog--prune-items items)))
+	     "</channel>\n"
+	     "</rss>\n"))))
+
 (defun org-static-blog-assemble-rss ()
   "Assemble the blog RSS feed.
 The RSS-feed is an XML file that contains every blog post in a
 machine-readable format."
   (let ((system-time-locale "en_US.utf-8") ; force dates to render as per RSS spec
-        (rss-filename (concat-to-dir org-static-blog-publish-directory org-static-blog-rss-file))
-        (rss-items nil))
+        (rss-items nil)
+        (rss-tag-items nil))
     (dolist (post-filename (org-static-blog-get-post-filenames))
       (let ((rss-date (org-static-blog-get-date post-filename))
-            (rss-text (org-static-blog-get-rss-item post-filename)))
+            (rss-text (org-static-blog-get-rss-item post-filename))
+            (tags (org-static-blog-get-tags post-filename)))
         (when (or (null org-static-blog-rss-excluded-tag)
-                  (not (member org-static-blog-rss-excluded-tag
-                               (org-static-blog-get-tags post-filename))))
-          (add-to-list 'rss-items (cons rss-date rss-text)))))
-    (setq rss-items (sort rss-items (lambda (x y) (time-less-p (car y) (car x)))))
-    (when (and org-static-blog-rss-max-entries
-               (> org-static-blog-rss-max-entries 0))
-      (let ((excess (- (length rss-items) org-static-blog-rss-max-entries)))
-        (when (> excess 0) (setq rss-items (nbutlast rss-items excess)))))
-    (org-static-blog-with-find-file
-     rss-filename
-     (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-	     "<rss version=\"2.0\">\n"
-	     "<channel>\n"
-	     "<title><![CDATA[" org-static-blog-publish-title "]]></title>\n"
-	     "<description><![CDATA[" org-static-blog-publish-title "]]></description>\n"
-	     "<link>" org-static-blog-publish-url "</link>\n"
-	     "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n"
-             org-static-blog-rss-extra
-	     (apply 'concat (mapcar 'cdr rss-items))
-	     "</channel>\n"
-	     "</rss>\n"))))
+                  (not (member org-static-blog-rss-excluded-tag tags)))
+          (let ((item (cons rss-date rss-text)))
+            (add-to-list 'rss-items item)
+            (when org-static-blog-enable-tag-rss
+              (dolist (tag tags)
+                (let ((items (cons item (cdr (assoc tag rss-tag-items)))))
+                  (setf (alist-get tag rss-tag-items nil t 'string=) items))))))))
+    (org-static-blog--write-rss rss-items)
+    (message "%s" rss-tag-items)
+    (dolist (x rss-tag-items) (org-static-blog--write-rss (cdr x) (car x)))))
 
 (defun org-static-blog-get-rss-item (post-filename)
   "Assemble RSS item from post-filename.
