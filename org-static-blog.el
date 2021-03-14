@@ -406,7 +406,9 @@ existed before)."
       (insert-file-contents post-filename)
       (goto-char (point-min))
       (when (search-forward-regexp "^\\#\\+description:[ ]*\\(.+\\)$" nil t)
-        (match-string 1)))))
+        (let ((description (string-trim (match-string 1))))
+          (unless (zerop (length description))
+            description))))))
 
 (defun org-static-blog-get-tags (post-filename)
   "Extract the `#+filetags:` from POST-FILENAME as list of strings."
