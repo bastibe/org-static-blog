@@ -265,13 +265,15 @@ See also `org-static-blog-preview-ellipsis' and
   "Concat filename to another path interpreted as a directory."
   (concat (file-name-as-directory dir) filename))
 
-(defun org-static-blog-template (tTitle tContent)
+(defun org-static-blog-template (tTitle tContent &optional tDescription)
   "Create the template that is used to generate the static pages."
   (concat
    "<!DOCTYPE html>\n"
    "<html lang=\"" org-static-blog-langcode "\">\n"
    "<head>\n"
    "<meta charset=\"UTF-8\">\n"
+   (when tDescription
+     (format "<meta name=\"description\" content=\"%s\">\n" tDescription))
    "<link rel=\"alternate\"\n"
    "      type=\"application/rss+xml\"\n"
    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
@@ -396,6 +398,15 @@ existed before)."
       (goto-char (point-min))
       (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$")
       (match-string 1))))
+
+(defun org-static-blog-get-description (post-filename)
+  "Extract the `#+description:` from POST-FILENAME."
+  (let ((case-fold-search t))
+    (with-temp-buffer
+      (insert-file-contents post-filename)
+      (goto-char (point-min))
+      (when (search-forward-regexp "^\\#\\+description:[ ]*\\(.+\\)$" nil t)
+        (match-string 1)))))
 
 (defun org-static-blog-get-tags (post-filename)
   "Extract the `#+filetags:` from POST-FILENAME as list of strings."
@@ -562,7 +573,8 @@ The index, archive, tags, and RSS feed are not updated."
     (concat
      (org-static-blog-post-preamble post-filename)
      (org-static-blog-render-post-content post-filename)
-     (org-static-blog-post-postamble post-filename)))))
+     (org-static-blog-post-postamble post-filename))
+    (org-static-blog-get-description post-filename))))
 
 
 (defun org-static-blog-render-post-content (post-filename)
