@@ -859,6 +859,7 @@ choose."
 				     ".org"))))
     (insert "#+title: " title "\n"
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
+            "#+description: \n"
             "#+filetags: ")))
 
 ;;;###autoload
