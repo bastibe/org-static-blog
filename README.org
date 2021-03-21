@@ -6,7 +6,14 @@
 Static blog generators are a dime a dozen. This is one more, which
 focuses on being simple. All files are simple org-mode files in a
 directory. The only requirement is that every org file must have a
-=#+TITLE= and a =#+DATE=, and optionally, =#+FILETAGS=.
+=#+TITLE= and a =#+DATE=, and optionally, =#+FILETAGS= and =#+DESCRIPTION=.
+
+=#+FILETAGS= set the tags for the post, which can be delimited by
+colons in the form of =#+FILETAGS: :foo bar:baz:=, or by whitespaces
+in the form of =#+FILETAGS: foo bar=. And you can put a short summary
+in =#+DESCRIPTION=, which will be converted to a HTML
+~<meta name="description" >~ tag, it's good for SEO as described in
+Wikipedia's [[https://en.wikipedia.org/wiki/Meta_element#The_description_attribute][Meta element]].
 
 This file is also available from marmalade and melpa-stable.
 
