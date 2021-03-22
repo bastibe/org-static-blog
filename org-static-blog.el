@@ -207,6 +207,11 @@ See also `org-static-blog-preview-ellipsis' and
   :type '(boolean)
   :safe t)
 
+(defcustom org-static-blog-preview-date-first-p nil
+  "If t, print post dates before title in the preview view."
+  :type '(boolean)
+  :safe t)
+
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
@@ -492,16 +497,21 @@ Preamble and Postamble are excluded, too."
                       org-static-blog-preview-ellipsis
                       (when org-static-blog-preview-link-p "</a>\n"))))
       ;; Put the substrings together.
-      (concat
-       (format "<h2 class=\"post-title\"><a href=\"%s\">%s</a></h2>"
-               (org-static-blog-get-post-url post-filename) post-title)
-       (format-time-string (concat "<div class=\"post-date\">"
-                                   (org-static-blog-gettext 'date-format)
-                                   "</div>")
-                           post-date)
-       (buffer-substring-no-properties preview-start preview-end)
-       post-ellipsis
-       (format "<div class=\"taglist\">%s</div>" post-taglist)))))
+      (let ((title-link
+             (format "<h2 class=\"post-title\"><a href=\"%s\">%s</a></h2>"
+                     (org-static-blog-get-post-url post-filename) post-title))
+            (date-link
+             (format-time-string (concat "<div class=\"post-date\">"
+                                         (org-static-blog-gettext 'date-format)
+                                         "</div>")
+                                 post-date)))
+        (concat
+         (if org-static-blog-preview-date-first-p
+             (concat date-link title-link)
+           (concat title-link date-link))
+         (buffer-substring-no-properties preview-start preview-end)
+         post-ellipsis
+         (format "<div class=\"taglist\">%s</div>" post-taglist))))))
 
 
 (defun org-static-blog-get-body (post-filename &optional exclude-title)
