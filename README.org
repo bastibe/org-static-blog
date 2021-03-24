@@ -33,8 +33,11 @@ For org-static-blog, a blog consists of six parts:
 - The index page contains the last few blog posts on a single page.
   The number of entries on the index page can be customized using
   =org-static-blog-index-length=.
-- Optionally show a preview of one paragraph instead of full post on index
-  =org-static-blog-use-preview=.
+- Optionally show a preview of the post (instead of the full post) on
+  the index page setting =org-static-blog-use-preview= to t.  The region
+  of the post used as a preview is, by default, its first paragraph,
+  but can be fine-tuned using =org-static-blog-preview-start= and
+  =org-static-blog-preview-end.=
 - The archive page lists the publishing dates and headlines of every
   blog post.
 - The RSS feed is a machine-readable XML file that contains every blog
@@ -47,6 +50,8 @@ For org-static-blog, a blog consists of six parts:
   page is created that lists the publishing dates and headlines of
   every blog post, sorted by tags. This feature is only enabled if you
   set =org-static-blog-enable-tags= to =t=.
+- It is also possible to create per-tag RSS feeds.  This feature is
+  only enabled when you set =org-static-blog-enable-tag-rss= to t.
 
 Every HTML page in org-static-blog can be customized in the following
 ways:
@@ -67,10 +72,12 @@ ways:
   of =org-static-blog-post-comments=  is inserted  at the end  of each
   blog post. Use this to add a comment box.
 
-You    can    customize   the    RSS    feed    output   by    setting
-=org-static-blog-rss-extra=. Its  content is  placed right  before the
-sequence of posts. For  example you can add an RSS  icon for the feed,
-or advertise that you built your blog with org-static-blog.
+You can customize the RSS feed output by setting
+=org-static-blog-rss-extra=. Its content is placed right before the
+sequence of posts. For example you can add an RSS icon for the feed,
+or advertise that you built your blog with org-static-blog.  You can
+also limit the number of entries in the feed via
+=org-static-blog-rss-max-entries=.
 
 
 There are some static texts like "/Other posts/", "/Tags/" etc that

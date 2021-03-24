@@ -177,18 +177,26 @@ per-tag RSS feeds."
 (defcustom org-static-blog-use-preview nil
   "Use preview versions of posts on multipost pages.
 
-See also `org-static-blog-preview-ellipsis' and
-`org-static-blog-preview-link-p'."
+See also `org-static-blog-preview-start',
+`org-static-blog-preview-end', `org-static-blog-preview-ellipsis'
+and `org-static-blog-preview-link-p'."
   :type '(boolean)
   :safe t)
 
 (defcustom org-static-blog-preview-start nil
-  "Marker indicating the beginning of a post's preview."
+  "Marker indicating the beginning of a post's preview.
+
+When set to nil, we look for the first occurence of <p> in the
+generated HTML.  See also `org-static-blog-preview-end'."
   :type '(choice (const :tag "First paragraph" nil) (string))
   :safe t)
 
 (defcustom org-static-blog-preview-end nil
-  "Marker indicating the end of a post's preview."
+  "Marker indicating the end of a post's preview.
+
+When set to nil, we look for the first occurence of </p> after
+`org-static-blog-preview-start' (or the first <p> if that is nil)
+in the generated HTML."
   :type '(choice (const :tag "First paragraph" nil) (string))
   :safe t)
 
@@ -198,7 +206,11 @@ See also `org-static-blog-preview-ellipsis' and
   :safe t)
 
 (defcustom org-static-blog-preview-ellipsis "(...)"
-  "The HTML appended to the preview if some part of the post is hidden."
+  "The HTML appended to the preview if some part of the post is hidden.
+
+The contents shown in the preview is determined by the values of
+the variables `org-static-blog-preview-start' and
+`org-static-blog-preview-end'."
   :type '(string)
   :safe t)
 
@@ -469,11 +481,11 @@ e.g. `(('foo' 'file1.org' 'file2.org') ('bar' 'file2.org'))`"
         (let ((start (match-beginning 0)))
           (or (search-forward org-static-blog-preview-end nil t)
               (search-forward "</p>" nil t))
-          (cons start (point))))
+          (buffer-substring-no-properties start (point))))
     (when (search-forward (or org-static-blog-preview-start "<p>") nil t)
       (let ((start (match-beginning 0)))
         (search-forward "</p>")
-        (cons start (point))))))
+        (buffer-substring-no-properties start (point))))))
 
 (defun org-static-blog-get-preview (post-filename)
   "Get title, date, tags from POST-FILENAME and get the first paragraph from the rendered HTML.
@@ -482,14 +494,12 @@ and display an ellipsis.
 Preamble and Postamble are excluded, too."
   (with-temp-buffer
     (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
-    (let* ((post-title (org-static-blog-get-title post-filename))
-           (post-date (org-static-blog-get-date post-filename))
-           (post-taglist (org-static-blog-post-taglist post-filename))
-           (post-ellipsis "")
-           (prev-region (org-static-blog--preview-region))
-           (preview-start (car prev-region))
-           (preview-end (cdr prev-region)))
-      (when (and preview-end (search-forward "<p>" nil t))
+    (let ((post-title (org-static-blog-get-title post-filename))
+          (post-date (org-static-blog-get-date post-filename))
+          (post-taglist (org-static-blog-post-taglist post-filename))
+          (post-ellipsis "")
+          (preview-region (org-static-blog--preview-region)))
+      (when (and preview-region (search-forward "<p>" nil t))
         (setq post-ellipsis
               (concat (when org-static-blog-preview-link-p
                         (format "<a href=\"%s\">"
@@ -509,7 +519,7 @@ Preamble and Postamble are excluded, too."
          (if org-static-blog-preview-date-first-p
              (concat date-link title-link)
            (concat title-link date-link))
-         (buffer-substring-no-properties preview-start preview-end)
+         preview-region
          post-ellipsis
          (format "<div class=\"taglist\">%s</div>" post-taglist))))))
 
