@@ -130,7 +130,7 @@ your blog with emacs, org-mode and org-static-blog.
 (defcustom org-static-blog-rss-max-entries nil
   "Maximum number of entries in the RSS feed.
 If nil (the default), all existing posts are included."
-  :type '(integer)
+  :type '(choice (const nil) integer)
   :safe t)
 
 (defcustom org-static-blog-enable-tag-rss nil
@@ -177,9 +177,27 @@ per-tag RSS feeds."
 (defcustom org-static-blog-use-preview nil
   "Use preview versions of posts on multipost pages.
 
-See also `org-static-blog-preview-ellipsis' and
-`org-static-blog-preview-link-p'."
+See also `org-static-blog-preview-start',
+`org-static-blog-preview-end', `org-static-blog-preview-ellipsis'
+and `org-static-blog-preview-link-p'."
   :type '(boolean)
+  :safe t)
+
+(defcustom org-static-blog-preview-start nil
+  "Marker indicating the beginning of a post's preview.
+
+When set to nil, we look for the first occurence of <p> in the
+generated HTML.  See also `org-static-blog-preview-end'."
+  :type '(choice (const :tag "First paragraph" nil) (string))
+  :safe t)
+
+(defcustom org-static-blog-preview-end nil
+  "Marker indicating the end of a post's preview.
+
+When set to nil, we look for the first occurence of </p> after
+`org-static-blog-preview-start' (or the first <p> if that is nil)
+in the generated HTML."
+  :type '(choice (const :tag "First paragraph" nil) (string))
   :safe t)
 
 (defcustom org-static-blog-preview-convert-titles t
@@ -188,12 +206,21 @@ See also `org-static-blog-preview-ellipsis' and
   :safe t)
 
 (defcustom org-static-blog-preview-ellipsis "(...)"
-  "The HTML appended to the preview if some part of the post is hidden."
+  "The HTML appended to the preview if some part of the post is hidden.
+
+The contents shown in the preview is determined by the values of
+the variables `org-static-blog-preview-start' and
+`org-static-blog-preview-end'."
   :type '(string)
   :safe t)
 
 (defcustom org-static-blog-preview-link-p nil
   "Whether to make the preview ellipsis a link to the article's page."
+  :type '(boolean)
+  :safe t)
+
+(defcustom org-static-blog-preview-date-first-p nil
+  "If t, print post dates before title in the preview view."
   :type '(boolean)
   :safe t)
 
@@ -445,6 +472,21 @@ e.g. `(('foo' 'file1.org' 'file2.org') ('bar' 'file2.org'))`"
             (push (cons tag (list post-filename)) tag-tree)))))
     tag-tree))
 
+(defun org-static-blog--preview-region ()
+  "Find the start and end of the preview in the current buffer."
+  (goto-char (point-min))
+  (if org-static-blog-preview-end
+      (when (or (search-forward (or org-static-blog-preview-start "<p>") nil t)
+                (search-forward "<p>" nil t))
+        (let ((start (match-beginning 0)))
+          (or (search-forward org-static-blog-preview-end nil t)
+              (search-forward "</p>" nil t))
+          (buffer-substring-no-properties start (point))))
+    (when (search-forward (or org-static-blog-preview-start "<p>") nil t)
+      (let ((start (match-beginning 0)))
+        (search-forward "</p>")
+        (buffer-substring-no-properties start (point))))))
+
 (defun org-static-blog-get-preview (post-filename)
   "Get title, date, tags from POST-FILENAME and get the first paragraph from the rendered HTML.
 If the HTML body contains multiple paragraphs, include only the first paragraph,
@@ -452,35 +494,34 @@ and display an ellipsis.
 Preamble and Postamble are excluded, too."
   (with-temp-buffer
     (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
-    (let ((post-title)
-          (post-date)
-          (post-taglist)
+    (let ((post-title (org-static-blog-get-title post-filename))
+          (post-date (org-static-blog-get-date post-filename))
+          (post-taglist (org-static-blog-post-taglist post-filename))
           (post-ellipsis "")
-          (first-paragraph-start)
-          (first-paragraph-end))
-      (setq post-title (org-static-blog-get-title post-filename))
-      (setq post-date (org-static-blog-get-date post-filename))
-      (setq post-taglist (org-static-blog-post-taglist post-filename))
-      ;; Find where the first paragraph ends and starts
-      (goto-char (point-min))
-      (when (search-forward "<p>" nil t)
-        (search-forward "</p>")
-        (setq first-paragraph-end (point))
-        (search-backward "<p>")
-        (setq first-paragraph-start (point))
-        (goto-char first-paragraph-end)
-        (when (search-forward "<p>" nil t)
-          (setq post-ellipsis (concat (when org-static-blog-preview-link-p
-                                        (format "<a href=\"%s\">" (org-static-blog-get-post-url post-filename)))
-                                      org-static-blog-preview-ellipsis
-                                      (when org-static-blog-preview-link-p "</a>\n")))))
+          (preview-region (org-static-blog--preview-region)))
+      (when (and preview-region (search-forward "<p>" nil t))
+        (setq post-ellipsis
+              (concat (when org-static-blog-preview-link-p
+                        (format "<a href=\"%s\">"
+                                (org-static-blog-get-post-url post-filename)))
+                      org-static-blog-preview-ellipsis
+                      (when org-static-blog-preview-link-p "</a>\n"))))
       ;; Put the substrings together.
-      (concat
-       (format "<h2 class=\"post-title\"><a href=\"%s\">%s</a></h2>" (org-static-blog-get-post-url post-filename) post-title)
-       (format-time-string (concat "<div class=\"post-date\">" (org-static-blog-gettext 'date-format) "</div>") post-date)
-       (buffer-substring-no-properties first-paragraph-start first-paragraph-end)
-       post-ellipsis
-       (format "<div class=\"taglist\">%s</div>" post-taglist)))))
+      (let ((title-link
+             (format "<h2 class=\"post-title\"><a href=\"%s\">%s</a></h2>"
+                     (org-static-blog-get-post-url post-filename) post-title))
+            (date-link
+             (format-time-string (concat "<div class=\"post-date\">"
+                                         (org-static-blog-gettext 'date-format)
+                                         "</div>")
+                                 post-date)))
+        (concat
+         (if org-static-blog-preview-date-first-p
+             (concat date-link title-link)
+           (concat title-link date-link))
+         preview-region
+         post-ellipsis
+         (format "<div class=\"taglist\">%s</div>" post-taglist))))))
 
 
 (defun org-static-blog-get-body (post-filename &optional exclude-title)
