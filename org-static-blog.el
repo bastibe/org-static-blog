@@ -234,7 +234,8 @@ the variables `org-static-blog-preview-start' and
      ("it" . "Altri articoli")
      ("es" . "Otros artículos")
      ("fr" . "Autres articles")
-     ("zh" . "其他帖子"))
+     ("zh" . "其他帖子")
+     ("ja" . "他の投稿"))
     (date-format
      ("en" . "%d %b %Y")
      ("pl" . "%Y-%m-%d")
@@ -243,7 +244,8 @@ the variables `org-static-blog-preview-start' and
      ("it" . "%d/%m/%Y")
      ("es" . "%d/%m/%Y")
      ("fr" . "%d-%m-%Y")
-     ("zh" . "%Y-%m-%d"))
+     ("zh" . "%Y-%m-%d")
+     ("ja" . "%Y/%m/%d"))
     (tags
      ("en" . "Tags")
      ("pl" . "Tagi")
@@ -252,7 +254,8 @@ the variables `org-static-blog-preview-start' and
      ("it" . "Categorie")
      ("es" . "Categoría")
      ("fr" . "Tags")
-     ("zh" . "标签"))
+     ("zh" . "标签")
+     ("ja" . "タグ"))
     (archive
      ("en" . "Archive")
      ("pl" . "Archiwum")
@@ -261,7 +264,8 @@ the variables `org-static-blog-preview-start' and
      ("it" . "Archivio")
      ("es" . "Archivo")
      ("fr" . "Archive")
-     ("zh" . "归档"))
+     ("zh" . "归档")
+     ("ja" . "アーカイブ"))
     (posts-tagged
      ("en" . "Posts tagged")
      ("pl" . "Wpisy z tagiem")
@@ -270,7 +274,8 @@ the variables `org-static-blog-preview-start' and
      ("it" . "Articoli nella categoria")
      ("es" . "Artículos de la categoría")
      ("fr" . "Articles tagués")
-     ("zh" . "打标签的帖子"))
+     ("zh" . "打标签的帖子")
+     ("ja" . "タグ付けされた投稿"))
     (no-prev-post
      ("en" . "There is no previous post")
      ("pl" . "Poprzedni wpis nie istnieje")
@@ -279,7 +284,8 @@ the variables `org-static-blog-preview-start' and
      ("it" . "Non c'è nessun articolo precedente")
      ("es" . "No existe un artículo precedente")
      ("fr" . "Il n'y a pas d'article précédent")
-     ("zh" . "无更旧的帖子"))
+     ("zh" . "无更旧的帖子")
+     ("ja" . "前の投稿はありません"))
     (no-next-post
      ("en" . "There is no next post")
      ("pl" . "Następny wpis nie istnieje")
@@ -288,7 +294,8 @@ the variables `org-static-blog-preview-start' and
      ("it" . "Non c'è nessun articolo successivo")
      ("es" . "No hay artículo siguiente")
      ("fr" . "Il n'y a pas d'article suivants")
-     ("zh" . "无更新的帖子"))
+     ("zh" . "无更新的帖子")
+     ("ja" . "次の投稿はありません"))
     (title
      ("en" . "Title: ")
      ("pl" . "Tytuł: ")
@@ -297,7 +304,8 @@ the variables `org-static-blog-preview-start' and
      ("it" . "Titolo: ")
      ("es" . "Título: ")
      ("fr" . "Titre : ")
-     ("zh" . "标题："))
+     ("zh" . "标题：")
+     ("ja" . "タイトル: "))
     (filename
      ("en" . "Filename: ")
      ("pl" . "Nazwa pliku: ")
@@ -306,7 +314,8 @@ the variables `org-static-blog-preview-start' and
      ("it" . "Nome del file: ")
      ("es" . "Nombre del archivo: ")
      ("fr" . "Nom du fichier :")
-     ("zh" . "文件名："))))
+     ("zh" . "文件名：")
+     ("ja" . "ファイル名: "))))
 
 (defun concat-to-dir (dir filename)
   "Concat filename to another path interpreted as a directory."
