@@ -108,91 +108,111 @@ your problem right now/. Please be civil.
 
 * Examples
 
-This minimal configuration should be added to your /init.el/, and will
-set up a minimal org-static-blog for the URL https://staticblog.org,
-which will be saved in the directory ~/projects/blog/.
+** Minimal Configuration
+   This minimal configuration should be added to your /init.el/, and will
+   set up a minimal org-static-blog for the URL https://staticblog.org,
+   which will be saved in the directory ~/projects/blog/.
 
-#+begin_src elisp
-(setq org-static-blog-publish-title "My Static Org Blog")
-(setq org-static-blog-publish-url "https://staticblog.org/")
-(setq org-static-blog-publish-directory "~/projects/blog/")
-(setq org-static-blog-posts-directory "~/projects/blog/posts/")
-(setq org-static-blog-drafts-directory "~/projects/blog/drafts/")
-(setq org-static-blog-enable-tags t)
-(setq org-export-with-toc nil)
-(setq org-export-with-section-numbers nil)
+   #+begin_src elisp
+     (setq org-static-blog-publish-title "My Static Org Blog")
+     (setq org-static-blog-publish-url "https://staticblog.org/")
+     (setq org-static-blog-publish-directory "~/projects/blog/")
+     (setq org-static-blog-posts-directory "~/projects/blog/posts/")
+     (setq org-static-blog-drafts-directory "~/projects/blog/drafts/")
+     (setq org-static-blog-enable-tags t)
+     (setq org-export-with-toc nil)
+     (setq org-export-with-section-numbers nil)
 
-;; This header is inserted into the <head> section of every page:
-;;   (you will need to create the style sheet at
-;;    ~/projects/blog/static/style.css
-;;    and the favicon at
-;;    ~/projects/blog/static/favicon.ico)
-(setq org-static-blog-page-header
-"<meta name=\"author\" content=\"John Dow\">
-<meta name=\"referrer\" content=\"no-referrer\">
-<link href= \"static/style.css\" rel=\"stylesheet\" type=\"text/css\" />
-<link rel=\"icon\" href=\"static/favicon.ico\">")
+     ;; This header is inserted into the <head> section of every page:
+     ;;   (you will need to create the style sheet at
+     ;;    ~/projects/blog/static/style.css
+     ;;    and the favicon at
+     ;;    ~/projects/blog/static/favicon.ico)
+     (setq org-static-blog-page-header
+           "<meta name=\"author\" content=\"John Dow\">
+     <meta name=\"referrer\" content=\"no-referrer\">
+     <link href= \"static/style.css\" rel=\"stylesheet\" type=\"text/css\" />
+     <link rel=\"icon\" href=\"static/favicon.ico\">")
 
-;; This preamble is inserted at the beginning of the <body> of every page:
-;;   This particular HTML creates a <div> with a simple linked headline
-(setq org-static-blog-page-preamble
-"<div class=\"header\">
-  <a href=\"https://staticblog.org\">My Static Org Blog</a>
-</div>")
+     ;; This preamble is inserted at the beginning of the <body> of every page:
+     ;;   This particular HTML creates a <div> with a simple linked headline
+     (setq org-static-blog-page-preamble
+           "<div class=\"header\">
+       <a href=\"https://staticblog.org\">My Static Org Blog</a>
+     </div>")
 
-;; This postamble is inserted at the end of the <body> of every page:
-;;   This particular HTML creates a <div> with a link to the archive page
-;;   and a licensing stub.
-(setq org-static-blog-page-postamble
-"<div id=\"archive\">
-  <a href=\"https://staticblog.org/archive.html\">Other posts</a>
-</div>
-<center><a rel=\"license\" href=\"https://creativecommons.org/licenses/by-sa/3.0/\"><img alt=\"Creative Commons License\" style=\"border-width:0\" src=\"https://i.creativecommons.org/l/by-sa/3.0/88x31.png\" /></a><br /><span xmlns:dct=\"https://purl.org/dc/terms/\" href=\"https://purl.org/dc/dcmitype/Text\" property=\"dct:title\" rel=\"dct:type\">bastibe.de</span> by <a xmlns:cc=\"https://creativecommons.org/ns#\" href=\"https://bastibe.de\" property=\"cc:attributionName\" rel=\"cc:attributionURL\">Bastian Bechtold</a> is licensed under a <a rel=\"license\" href=\"https://creativecommons.org/licenses/by-sa/3.0/\">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.</center>")
+     ;; This postamble is inserted at the end of the <body> of every page:
+     ;;   This particular HTML creates a <div> with a link to the archive page
+     ;;   and a licensing stub.
+     (setq org-static-blog-page-postamble
+           "<div id=\"archive\">
+       <a href=\"https://staticblog.org/archive.html\">Other posts</a>
+     </div>
+     <center><a rel=\"license\" href=\"https://creativecommons.org/licenses/by-sa/3.0/\"><img alt=\"Creative Commons License\" style=\"border-width:0\" src=\"https://i.creativecommons.org/l/by-sa/3.0/88x31.png\" /></a><br /><span xmlns:dct=\"https://purl.org/dc/terms/\" href=\"https://purl.org/dc/dcmitype/Text\" property=\"dct:title\" rel=\"dct:type\">bastibe.de</span> by <a xmlns:cc=\"https://creativecommons.org/ns#\" href=\"https://bastibe.de\" property=\"cc:attributionName\" rel=\"cc:attributionURL\">Bastian Bechtold</a> is licensed under a <a rel=\"license\" href=\"https://creativecommons.org/licenses/by-sa/3.0/\">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.</center>")
 
-;; This HTML code is inserted into the index page between the preamble and
-;;   the blog posts
-(setq org-static-blog-index-front-matter
-"<h1> Welcome to my blog </h1>\n")
-#+end_src
+     ;; This HTML code is inserted into the index page between the preamble and
+     ;;   the blog posts
+     (setq org-static-blog-index-front-matter
+           "<h1> Welcome to my blog </h1>\n")
+   #+end_src
 
-In order for this to work, you will also need to create a style sheet
-at /~/projects/blog/static/style.css/, which might for example change
-the appearance of the ~#preamble~, the ~#content~, and the
-~#postamble~.
+   In order for this to work, you will also need to create a style sheet
+   at /~/projects/blog/static/style.css/, which might for example change
+   the appearance of the ~#preamble~, the ~#content~, and the
+   ~#postamble~.
 
-To write posts, you can now call ~org-static-blog-create-new-post~,
-and render your blog with ~org-static-blog-publish~.
+   To write posts, you can now call ~org-static-blog-create-new-post~,
+   and render your blog with ~org-static-blog-publish~.
 
-Each post is an org-mode file such as
+   Each post is an org-mode file such as
 
-#+begin_src org-mode
-#+title: How to Write a Blog Post
-#+date: <2020-07-03 08:57>
-#+filetags: computers emacs blog
+   #+begin_src org-mode
+ #+title: How to Write a Blog Post
+ #+date: <2020-07-03 08:57>
+ #+filetags: computers emacs blog
 
-Step one: Install ~org-static-blog~. \\
-Step Two: Execute ~M-x org-static-blog-create-new-post~ and write the content. \\
-Step Three: Execute ~M-x org-static-blog-publish~ and upload to your webhost. \\
-Done.
-#+end_src
+ Step one: Install ~org-static-blog~. \\
+ Step Two: Execute ~M-x org-static-blog-create-new-post~ and write the content. \\
+ Step Three: Execute ~M-x org-static-blog-publish~ and upload to your webhost. \\
+ Done.
+   #+end_src
 
-You can find more complete examples by looking at my [[https://github.com/bastibe/.emacs.d/blob/master/init.el#L670][init.el]] and the
-[[https://github.com/bastibe/bastibe.github.com][repository]] for my blog ([[http://bastibe.de/][bastibe.de]]) itself to see an example of how to
-use =org-static-blog= in practice.
+   You can find more complete examples by looking at my [[https://github.com/bastibe/.emacs.d/blob/master/init.el#L670][init.el]] and the
+   [[https://github.com/bastibe/bastibe.github.com][repository]] for my blog ([[http://bastibe.de/][bastibe.de]]) itself to see an example of how to
+   use =org-static-blog= in practice.
 
-Other org-static-blog blogs:
-- [[http://cat-v.mit.edu/][cat-v.mit.edu]]
-- [[https://zngguvnf.org/][zngguvnf.org]]
-- [[https://matthewbauer.us/blog/][matthewbauer.us/blog/]]
-- [[http://lisper.pl/][lisper.pl]]
-- [[https://jao.io/blog/2020-02-11-simplicity.html][jao's programming musings]]
-- [[https://whatacold.github.io/][whatacold.github.io]]
-- [[https://massimolauria.net/blog/][Hard Theorems]]
-- [[https://f-santos.gitlab.io/][f-santos.gitlab.io]]
-- [[https://alhassy.github.io/][Life & Computing Science]]
-  * Clickable headlines, banner, floating toc, Disqus comments, styling, ..., see the [[https://alhassy.github.io/AlBasmala][writeup]]
-- [[https://xgqt.gitlab.io/blog/][xgqt.gitlab.io/blog]]
-- Please open a pull request to add your blog, here!
+*** Other org-static-blog blogs:
+    - [[http://cat-v.mit.edu/][cat-v.mit.edu]]
+    - [[https://zngguvnf.org/][zngguvnf.org]]
+    - [[https://matthewbauer.us/blog/][matthewbauer.us/blog/]]
+    - [[http://lisper.pl/][lisper.pl]]
+    - [[https://jao.io/blog/2020-02-11-simplicity.html][jao's programming musings]]
+    - [[https://whatacold.github.io/][whatacold.github.io]]
+    - [[https://massimolauria.net/blog/][Hard Theorems]]
+    - [[https://f-santos.gitlab.io/][f-santos.gitlab.io]]
+    - [[https://alhassy.github.io/][Life & Computing Science]]
+      * Clickable headlines, banner, floating toc, Disqus comments, styling, ..., see the [[https://alhassy.github.io/AlBasmala][writeup]]
+    - [[https://xgqt.gitlab.io/blog/][xgqt.gitlab.io/blog]]
+    - Please open a pull request to add your blog, here!
+   
+** Features
+*** Hide some subtrees when publishing
+    - Background
+      When publishing some posts, we may not want to publish the more private or unfinished parts of the subtrees. So maybe we can use tags to identify these subtrees and ignore them during the posting process.
+    - Usage
+      - Set the corresponding tags
+        Set the tag to ignore subtrees with =org-static-blog-no-post-tag=, default is =nonpost=.
+      - Posting
+        The parts containing this tag will be automatically ignored during the posting process.
+    - Example
+      - If you have an org-mode file containing =tree-1=, =tree-2=, =tree-3=. and only want to publish =tree-1= and =tree-3=, then the file would look like this
+      #+begin_src org-mode
+       * tree-1
+       * tree-2 :nonpost:
+       * tree-3
+      #+end_src
+      - Then the file will automatically ignore =tree-2= subtrees with the =nonpost= tag when it is published.
+
 
 * Known Issues
 
