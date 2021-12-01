@@ -193,6 +193,7 @@ your problem right now/. Please be civil.
     - [[https://alhassy.github.io/][Life & Computing Science]]
       * Clickable headlines, banner, floating toc, Disqus comments, styling, ..., see the [[https://alhassy.github.io/AlBasmala][writeup]]
     - [[https://xgqt.gitlab.io/blog/][xgqt.gitlab.io/blog]]
+    - [[https://wangz.me][wangz.me]]
     - Please open a pull request to add your blog, here!
    
 ** Features
