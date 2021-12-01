@@ -214,6 +214,11 @@ the variables `org-static-blog-preview-start' and
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-no-post-tag "nonpost"
+  "Do not pushlish the subtree with this tag or property."
+  :type '(string)
+  :safe t)
+
 (defcustom org-static-blog-preview-link-p nil
   "Whether to make the preview ellipsis a link to the article's page."
   :type '(boolean)
@@ -653,18 +658,23 @@ The index, archive, tags, and RSS feed are not updated."
         (org-html-html5-fancy t))
     (save-excursion
       (let ((current-buffer (current-buffer))
-	    (buffer-exists (org-static-blog-file-buffer post-filename))
-	    (result nil))
-	(if buffer-exists
-	    (switch-to-buffer buffer-exists)
-	  (find-file post-filename))
-	(setq result
-	      (org-export-as 'org-static-blog-post-bare nil nil nil nil))
-	(basic-save-buffer)
-	(unless buffer-exists
-	  (kill-buffer))
-	(switch-to-buffer current-buffer)
-	result))))
+            (buffer-exists (org-static-blog-file-buffer post-filename))
+            (result nil))
+        (with-temp-buffer
+          (if buffer-exists
+              (insert-buffer-substring buffer-exists)
+            (insert-file-contents post-filename))
+          (org-mode)
+          (goto-char (point-min))
+          (org-map-entries
+           (lambda ()
+             (setq org-map-continue-from (point))
+             (org-cut-subtree))
+           org-static-blog-no-post-tag)
+          (setq result
+                (org-export-as 'org-static-blog-post-bare nil nil nil nil))
+          (switch-to-buffer current-buffer)
+          result)))))
 
 (org-export-define-derived-backend 'org-static-blog-post-bare 'html
   :translate-alist '((template . (lambda (contents info) contents))))
