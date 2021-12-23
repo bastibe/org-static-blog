@@ -172,6 +172,7 @@ Other org-static-blog blogs:
 - [[https://f-santos.gitlab.io/][f-santos.gitlab.io]]
 - [[https://alhassy.github.io/][Life & Computing Science]]
   * Clickable headlines, banner, floating toc, Disqus comments, styling, ..., see the [[https://alhassy.github.io/AlBasmala][writeup]]
+- [[https://justin.abrah.ms/][Justin Abrahms]]
 - Please open a pull request to add your blog, here!
 
 * Known Issues
