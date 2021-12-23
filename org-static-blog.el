@@ -6,7 +6,7 @@
 ;; luhuaei, zngguvnf, Qiantan Hong, Jonas Bernoulli, Théo Jacquin,
 ;; K. Scarlet, zsxh
 ;; URL: https://github.com/bastibe/org-static-blog
-;; Version: 1.4.0
+;; Version: 1.5.0
 ;; Package-Requires: ((emacs "24.3"))
 
 ;;; Commentary:
@@ -44,7 +44,7 @@
 
 (defgroup org-static-blog nil
   "Settings for a static blog generator using org-mode"
-  :version "1.4.0"
+  :version "1.5.0"
   :group 'applications)
 
 (defcustom org-static-blog-publish-url "https://example.com/"
@@ -112,6 +112,12 @@ The tags page lists all posts as headlines."
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-rss-excluded-tag nil
+  "Posts with this tag won't be included in the RSS feeds."
+  :type '(choice (const :tag "None" nil)
+                 (string :tag "Tag name"))
+  :safe t)
+
 (defcustom org-static-blog-rss-extra ""
   "Extra information for the RSS feed header.
 This information is placed right before the sequence of posts.
@@ -121,6 +127,22 @@ your blog with emacs, org-mode and org-static-blog.
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-rss-max-entries nil
+  "Maximum number of entries in the RSS feed.
+If nil (the default), all existing posts are included."
+  :type '(choice (const nil) integer)
+  :safe t)
+
+(defcustom org-static-blog-enable-tag-rss nil
+  "Whether to generate per tag RSS feeds.
+
+When this flag is set, an RSS file with name given by prefixing
+`org-static-blog-rss-file' with '<tag>-' is created for each
+existing tag.  The options `org-static-blog-rss-extra',
+`org-static-blog-rss-max-entries' and
+`org-static-blog-rss-excluded-tag' are also used to construct
+per-tag RSS feeds."
+  :type '(boolean))
 
 (defcustom org-static-blog-page-header ""
   "HTML to put in the <head> of each page."
@@ -137,6 +159,11 @@ your blog with emacs, org-mode and org-static-blog.
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-index-front-matter ""
+  "HTML to put at the beginning of the index page."
+  :type '(string)
+  :safe t)
+
 (defcustom org-static-blog-post-comments ""
   "HTML code for comments to put after each blog post."
   :type '(string)
@@ -150,9 +177,27 @@ your blog with emacs, org-mode and org-static-blog.
 (defcustom org-static-blog-use-preview nil
   "Use preview versions of posts on multipost pages.
 
-See also `org-static-blog-preview-ellipsis' and
-`org-static-blog-preview-link-p'."
+See also `org-static-blog-preview-start',
+`org-static-blog-preview-end', `org-static-blog-preview-ellipsis'
+and `org-static-blog-preview-link-p'."
   :type '(boolean)
+  :safe t)
+
+(defcustom org-static-blog-preview-start nil
+  "Marker indicating the beginning of a post's preview.
+
+When set to nil, we look for the first occurence of <p> in the
+generated HTML.  See also `org-static-blog-preview-end'."
+  :type '(choice (const :tag "First paragraph" nil) (string))
+  :safe t)
+
+(defcustom org-static-blog-preview-end nil
+  "Marker indicating the end of a post's preview.
+
+When set to nil, we look for the first occurence of </p> after
+`org-static-blog-preview-start' (or the first <p> if that is nil)
+in the generated HTML."
+  :type '(choice (const :tag "First paragraph" nil) (string))
   :safe t)
 
 (defcustom org-static-blog-preview-convert-titles t
@@ -161,12 +206,26 @@ See also `org-static-blog-preview-ellipsis' and
   :safe t)
 
 (defcustom org-static-blog-preview-ellipsis "(...)"
-  "The HTML appended to the preview if some part of the post is hidden."
+  "The HTML appended to the preview if some part of the post is hidden.
+
+The contents shown in the preview is determined by the values of
+the variables `org-static-blog-preview-start' and
+`org-static-blog-preview-end'."
+  :type '(string)
+  :safe t)
+
+(defcustom org-static-blog-no-post-tag "nonpost"
+  "Do not pushlish the subtree with this tag or property."
   :type '(string)
   :safe t)
 
 (defcustom org-static-blog-preview-link-p nil
   "Whether to make the preview ellipsis a link to the article's page."
+  :type '(boolean)
+  :safe t)
+
+(defcustom org-static-blog-preview-date-first-p nil
+  "If t, print post dates before title in the preview view."
   :type '(boolean)
   :safe t)
 
@@ -179,7 +238,9 @@ See also `org-static-blog-preview-ellipsis' and
      ("by" . "Іншыя публікацыі")
      ("it" . "Altri articoli")
      ("es" . "Otros artículos")
-     ("fr" . "Autres articles"))
+     ("fr" . "Autres articles")
+     ("zh" . "其他帖子")
+     ("ja" . "他の投稿"))
     (date-format
      ("en" . "%d %b %Y")
      ("pl" . "%Y-%m-%d")
@@ -187,7 +248,9 @@ See also `org-static-blog-preview-ellipsis' and
      ("by" . "%d.%m.%Y")
      ("it" . "%d/%m/%Y")
      ("es" . "%d/%m/%Y")
-     ("fr" . "%d-%m-%Y"))
+     ("fr" . "%d-%m-%Y")
+     ("zh" . "%Y-%m-%d")
+     ("ja" . "%Y/%m/%d"))
     (tags
      ("en" . "Tags")
      ("pl" . "Tagi")
@@ -195,7 +258,9 @@ See also `org-static-blog-preview-ellipsis' and
      ("by" . "Ярлыкі")
      ("it" . "Categorie")
      ("es" . "Categoría")
-     ("fr" . "Tags"))
+     ("fr" . "Tags")
+     ("zh" . "标签")
+     ("ja" . "タグ"))
     (archive
      ("en" . "Archive")
      ("pl" . "Archiwum")
@@ -203,7 +268,9 @@ See also `org-static-blog-preview-ellipsis' and
      ("by" . "Архіў")
      ("it" . "Archivio")
      ("es" . "Archivo")
-     ("fr" . "Archive"))
+     ("fr" . "Archive")
+     ("zh" . "归档")
+     ("ja" . "アーカイブ"))
     (posts-tagged
      ("en" . "Posts tagged")
      ("pl" . "Wpisy z tagiem")
@@ -211,7 +278,9 @@ See also `org-static-blog-preview-ellipsis' and
      ("by" . "Публікацыі")
      ("it" . "Articoli nella categoria")
      ("es" . "Artículos de la categoría")
-     ("fr" . "Articles tagués"))
+     ("fr" . "Articles tagués")
+     ("zh" . "打标签的帖子")
+     ("ja" . "タグ付けされた投稿"))
     (no-prev-post
      ("en" . "There is no previous post")
      ("pl" . "Poprzedni wpis nie istnieje")
@@ -219,7 +288,9 @@ See also `org-static-blog-preview-ellipsis' and
      ("by" . "Няма папярэдняй публікацыі")
      ("it" . "Non c'è nessun articolo precedente")
      ("es" . "No existe un artículo precedente")
-     ("fr" . "Il n'y a pas d'article précédent"))
+     ("fr" . "Il n'y a pas d'article précédent")
+     ("zh" . "无更旧的帖子")
+     ("ja" . "前の投稿はありません"))
     (no-next-post
      ("en" . "There is no next post")
      ("pl" . "Następny wpis nie istnieje")
@@ -227,7 +298,9 @@ See also `org-static-blog-preview-ellipsis' and
      ("by" . "Няма наступнай публікацыі")
      ("it" . "Non c'è nessun articolo successivo")
      ("es" . "No hay artículo siguiente")
-     ("fr" . "Il n'y a pas d'article suivants"))
+     ("fr" . "Il n'y a pas d'article suivants")
+     ("zh" . "无更新的帖子")
+     ("ja" . "次の投稿はありません"))
     (title
      ("en" . "Title: ")
      ("pl" . "Tytuł: ")
@@ -235,7 +308,9 @@ See also `org-static-blog-preview-ellipsis' and
      ("by" . "Загаловак: ")
      ("it" . "Titolo: ")
      ("es" . "Título: ")
-     ("fr" . "Titre : "))
+     ("fr" . "Titre : ")
+     ("zh" . "标题：")
+     ("ja" . "タイトル: "))
     (filename
      ("en" . "Filename: ")
      ("pl" . "Nazwa pliku: ")
@@ -243,19 +318,23 @@ See also `org-static-blog-preview-ellipsis' and
      ("by" . "Імя файла: ")
      ("it" . "Nome del file: ")
      ("es" . "Nombre del archivo: ")
-     ("fr" . "Nom du fichier :"))))
+     ("fr" . "Nom du fichier :")
+     ("zh" . "文件名：")
+     ("ja" . "ファイル名: "))))
 
 (defun concat-to-dir (dir filename)
   "Concat filename to another path interpreted as a directory."
   (concat (file-name-as-directory dir) filename))
 
-(defun org-static-blog-template (tTitle tContent)
+(defun org-static-blog-template (tTitle tContent &optional tDescription)
   "Create the template that is used to generate the static pages."
   (concat
    "<!DOCTYPE html>\n"
    "<html lang=\"" org-static-blog-langcode "\">\n"
    "<head>\n"
    "<meta charset=\"UTF-8\">\n"
+   (when tDescription
+     (format "<meta name=\"description\" content=\"%s\">\n" tDescription))
    "<link rel=\"alternate\"\n"
    "      type=\"application/rss+xml\"\n"
    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
@@ -381,6 +460,17 @@ existed before)."
       (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$")
       (match-string 1))))
 
+(defun org-static-blog-get-description (post-filename)
+  "Extract the `#+description:` from POST-FILENAME."
+  (let ((case-fold-search t))
+    (with-temp-buffer
+      (insert-file-contents post-filename)
+      (goto-char (point-min))
+      (when (search-forward-regexp "^\\#\\+description:[ ]*\\(.+\\)$" nil t)
+        (let ((description (string-trim (match-string 1))))
+          (unless (zerop (length description))
+            description))))))
+
 (defun org-static-blog-get-tags (post-filename)
   "Extract the `#+filetags:` from POST-FILENAME as list of strings."
   (let ((case-fold-search t))
@@ -399,11 +489,26 @@ e.g. `(('foo' 'file1.org' 'file2.org') ('bar' 'file2.org'))`"
   (let ((tag-tree '()))
     (dolist (post-filename (org-static-blog-get-post-filenames))
       (let ((tags (org-static-blog-get-tags post-filename)))
-        (dolist (tag tags)
+        (dolist (tag (remove org-static-blog-rss-excluded-tag tags))
           (if (assoc-string tag tag-tree t)
               (push post-filename (cdr (assoc-string tag tag-tree t)))
             (push (cons tag (list post-filename)) tag-tree)))))
     tag-tree))
+
+(defun org-static-blog--preview-region ()
+  "Find the start and end of the preview in the current buffer."
+  (goto-char (point-min))
+  (if org-static-blog-preview-end
+      (when (or (search-forward (or org-static-blog-preview-start "<p>") nil t)
+                (search-forward "<p>" nil t))
+        (let ((start (match-beginning 0)))
+          (or (search-forward org-static-blog-preview-end nil t)
+              (search-forward "</p>" nil t))
+          (buffer-substring-no-properties start (point))))
+    (when (search-forward (or org-static-blog-preview-start "<p>") nil t)
+      (let ((start (match-beginning 0)))
+        (search-forward "</p>")
+        (buffer-substring-no-properties start (point))))))
 
 (defun org-static-blog-get-preview (post-filename)
   "Get title, date, tags from POST-FILENAME and get the first paragraph from the rendered HTML.
@@ -412,35 +517,34 @@ and display an ellipsis.
 Preamble and Postamble are excluded, too."
   (with-temp-buffer
     (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
-    (let ((post-title)
-          (post-date)
-          (post-taglist)
+    (let ((post-title (org-static-blog-get-title post-filename))
+          (post-date (org-static-blog-get-date post-filename))
+          (post-taglist (org-static-blog-post-taglist post-filename))
           (post-ellipsis "")
-          (first-paragraph-start)
-          (first-paragraph-end))
-      (setq post-title (org-static-blog-get-title post-filename))
-      (setq post-date (org-static-blog-get-date post-filename))
-      (setq post-taglist (org-static-blog-post-taglist post-filename))
-      ;; Find where the first paragraph ends and starts
-      (goto-char (point-min))
-      (when (search-forward "<p>" nil t)
-        (search-forward "</p>")
-        (setq first-paragraph-end (point))
-        (search-backward "<p>")
-        (setq first-paragraph-start (point))
-        (goto-char first-paragraph-end)
-        (when (search-forward "<p>" nil t)
-          (setq post-ellipsis (concat (when org-static-blog-preview-link-p
-                                        (format "<a href=\"%s\">" (org-static-blog-get-post-url post-filename)))
-                                      org-static-blog-preview-ellipsis
-                                      (when org-static-blog-preview-link-p "</a>\n")))))
+          (preview-region (org-static-blog--preview-region)))
+      (when (and preview-region (search-forward "<p>" nil t))
+        (setq post-ellipsis
+              (concat (when org-static-blog-preview-link-p
+                        (format "<a href=\"%s\">"
+                                (org-static-blog-get-post-url post-filename)))
+                      org-static-blog-preview-ellipsis
+                      (when org-static-blog-preview-link-p "</a>\n"))))
       ;; Put the substrings together.
-      (concat
-       (format "<h2 class=\"post-title\"><a href=\"%s\">%s</a></h2>" (org-static-blog-get-post-url post-filename) post-title)
-       (format-time-string (concat "<div class=\"post-date\">" (org-static-blog-gettext 'date-format) "</div>") post-date)
-       (buffer-substring-no-properties first-paragraph-start first-paragraph-end)
-       post-ellipsis
-       (format "<div class=\"taglist\">%s</div>" post-taglist)))))
+      (let ((title-link
+             (format "<h2 class=\"post-title\"><a href=\"%s\">%s</a></h2>"
+                     (org-static-blog-get-post-url post-filename) post-title))
+            (date-link
+             (format-time-string (concat "<div class=\"post-date\">"
+                                         (org-static-blog-gettext 'date-format)
+                                         "</div>")
+                                 post-date)))
+        (concat
+         (if org-static-blog-preview-date-first-p
+             (concat date-link title-link)
+           (concat title-link date-link))
+         preview-region
+         post-ellipsis
+         (format "<div class=\"taglist\">%s</div>" post-taglist))))))
 
 
 (defun org-static-blog-get-body (post-filename &optional exclude-title)
@@ -544,7 +648,8 @@ The index, archive, tags, and RSS feed are not updated."
     (concat
      (org-static-blog-post-preamble post-filename)
      (org-static-blog-render-post-content post-filename)
-     (org-static-blog-post-postamble post-filename)))))
+     (org-static-blog-post-postamble post-filename))
+    (org-static-blog-get-description post-filename))))
 
 
 (defun org-static-blog-render-post-content (post-filename)
@@ -553,18 +658,23 @@ The index, archive, tags, and RSS feed are not updated."
         (org-html-html5-fancy t))
     (save-excursion
       (let ((current-buffer (current-buffer))
-	    (buffer-exists (org-static-blog-file-buffer post-filename))
-	    (result nil))
-	(if buffer-exists
-	    (switch-to-buffer buffer-exists)
-	  (find-file post-filename))
-	(setq result
-	      (org-export-as 'org-static-blog-post-bare nil nil nil nil))
-	(basic-save-buffer)
-	(unless buffer-exists
-	  (kill-buffer))
-	(switch-to-buffer current-buffer)
-	result))))
+            (buffer-exists (org-static-blog-file-buffer post-filename))
+            (result nil))
+        (with-temp-buffer
+          (if buffer-exists
+              (insert-buffer-substring buffer-exists)
+            (insert-file-contents post-filename))
+          (org-mode)
+          (goto-char (point-min))
+          (org-map-entries
+           (lambda ()
+             (setq org-map-continue-from (point))
+             (org-cut-subtree))
+           org-static-blog-no-post-tag)
+          (setq result
+                (org-export-as 'org-static-blog-post-bare nil nil nil nil))
+          (switch-to-buffer current-buffer)
+          result)))))
 
 (org-export-define-derived-backend 'org-static-blog-post-bare 'html
   :translate-alist '((template . (lambda (contents info) contents))))
@@ -579,7 +689,8 @@ posts as full text posts."
                                                                          (org-static-blog-get-date y)))))
     (org-static-blog-assemble-multipost-page
      (concat-to-dir org-static-blog-publish-directory org-static-blog-index-file)
-     (last post-filenames org-static-blog-index-length))))
+     (last post-filenames org-static-blog-index-length)
+     org-static-blog-index-front-matter)))
 
 (defun org-static-blog-assemble-multipost-page (pub-filename post-filenames &optional front-matter)
   "Assemble a page that contains multiple posts one after another.
@@ -619,12 +730,14 @@ Modify this function if you want to change a posts headline."
   "Returns the tag list of the post.
 This part will be attached at the end of the post, after
 the taglist, in a <div id=\"taglist\">...</div> block."
-  (let ((taglist-content ""))
-    (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
+  (let ((taglist-content "")
+        (tags (remove org-static-blog-rss-excluded-tag
+                      (org-static-blog-get-tags post-filename))))
+    (when (and tags org-static-blog-enable-tags)
       (setq taglist-content (concat "<a href=\""
                                     (org-static-blog-get-absolute-url org-static-blog-tags-file)
                                     "\">" (org-static-blog-gettext 'tags) "</a>: "))
-      (dolist (tag (org-static-blog-get-tags post-filename))
+      (dolist (tag tags)
         (setq taglist-content (concat taglist-content "<a href=\""
                                       (org-static-blog-get-absolute-url (concat "tag-" (downcase tag) ".html"))
                                       "\">" tag "</a> "))))
@@ -645,31 +758,65 @@ followed by the HTML code for comments."
                     org-static-blog-post-comments
                     "</div>"))))
 
+(defun org-static-blog--prune-items (items)
+  "Limit, if needed, the items to be included in an RSS feed."
+  (if (and org-static-blog-rss-max-entries (> org-static-blog-rss-max-entries 0))
+      (let ((excess (- (length items) org-static-blog-rss-max-entries)))
+        (if (> excess 0) (butlast items excess) items))
+    items))
+
+(defun org-static-blog--rss-filename (&optional tag)
+  "Full path to the RSS file for the given TAG."
+  (concat-to-dir org-static-blog-publish-directory
+                 (concat tag (when tag "-") org-static-blog-rss-file)))
+
+(defun org-static-blog--write-rss (items &optional tag)
+  "Generates an RSS file for the given TAG, or for all tags is TAG is nil."
+  (let ((title (format "%s%s"
+                       org-static-blog-publish-title
+                       (if tag (concat " - " tag) "")))
+        (url (format "%s%s"
+                     org-static-blog-publish-url
+                     (if tag (concat "/tag-" (downcase tag) ".html") "")))
+        (items (sort items (lambda (x y) (time-less-p (car y) (car x))))))
+    (org-static-blog-with-find-file
+     (org-static-blog--rss-filename tag)
+     (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+	     "<rss version=\"2.0\">\n"
+	     "<channel>\n"
+	     "<title><![CDATA[" title "]]></title>\n"
+	     "<description><![CDATA[" title "]]></description>\n"
+	     "<link>" url "</link>\n"
+	     "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z"
+                                                   (current-time))
+             "</lastBuildDate>\n"
+             org-static-blog-rss-extra
+	     (apply 'concat (mapcar 'cdr (org-static-blog--prune-items items)))
+	     "</channel>\n"
+	     "</rss>\n"))))
+
 (defun org-static-blog-assemble-rss ()
   "Assemble the blog RSS feed.
 The RSS-feed is an XML file that contains every blog post in a
 machine-readable format."
   (let ((system-time-locale "en_US.utf-8") ; force dates to render as per RSS spec
-        (rss-filename (concat-to-dir org-static-blog-publish-directory org-static-blog-rss-file))
-        (rss-items nil))
+        (rss-items nil)
+        (rss-tag-items nil))
     (dolist (post-filename (org-static-blog-get-post-filenames))
       (let ((rss-date (org-static-blog-get-date post-filename))
-            (rss-text (org-static-blog-get-rss-item post-filename)))
-        (add-to-list 'rss-items (cons rss-date rss-text))))
-    (setq rss-items (sort rss-items (lambda (x y) (time-less-p (car y) (car x)))))
-    (org-static-blog-with-find-file
-     rss-filename
-     (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-	     "<rss version=\"2.0\">\n"
-	     "<channel>\n"
-	     "<title><![CDATA[" org-static-blog-publish-title "]]></title>\n"
-	     "<description><![CDATA[" org-static-blog-publish-title "]]></description>\n"
-	     "<link>" org-static-blog-publish-url "</link>\n"
-	     "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)) "</lastBuildDate>\n"
-             org-static-blog-rss-extra
-	     (apply 'concat (mapcar 'cdr rss-items))
-	     "</channel>\n"
-	     "</rss>\n"))))
+            (rss-text (org-static-blog-get-rss-item post-filename))
+            (tags (org-static-blog-get-tags post-filename)))
+        (when (or (null org-static-blog-rss-excluded-tag)
+                  (not (member org-static-blog-rss-excluded-tag tags)))
+          (let ((item (cons rss-date rss-text)))
+            (add-to-list 'rss-items item)
+            (when org-static-blog-enable-tag-rss
+              (dolist (tag tags)
+                (let ((items (cons item (cdr (assoc tag rss-tag-items)))))
+                  (setf (alist-get tag rss-tag-items nil t 'string=) items))))))))
+    (org-static-blog--write-rss rss-items)
+    (message "%s" rss-tag-items)
+    (dolist (x rss-tag-items) (org-static-blog--write-rss (cdr x) (car x)))))
 
 (defun org-static-blog-get-rss-item (post-filename)
   "Assemble RSS item from post-filename.
@@ -817,6 +964,7 @@ choose."
 				     ".org"))))
     (insert "#+title: " title "\n"
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
+            "#+description: \n"
             "#+filetags: ")))
 
 ;;;###autoload
