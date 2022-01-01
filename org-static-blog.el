@@ -782,13 +782,13 @@ followed by the HTML code for comments."
     (org-static-blog-with-find-file
      (org-static-blog--rss-filename tag)
      (concat "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-	     "<rss version=\"2.0\">\n"
+	     "<rss version=\"2.0\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n"
 	     "<channel>\n"
 	     "<title><![CDATA[" title "]]></title>\n"
 	     "<description><![CDATA[" title "]]></description>\n"
 	     "<link>" url "</link>\n"
-	     "<lastBuildDate>" (format-time-string "%a, %d %b %Y %H:%M:%S %z"
-                                                   (current-time))
+	     "<lastBuildDate>" (let ((system-time-locale "C")) ; force dates to render as per RSS spec
+				 (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)))
              "</lastBuildDate>\n"
              org-static-blog-rss-extra
 	     (apply 'concat (mapcar 'cdr (org-static-blog--prune-items items)))
@@ -834,10 +834,13 @@ The HTML content is taken from the rendered HTML post."
                                   "  <category><![CDATA[" tag "]]></category>\n"))))
      categories)
    "  <link>"
-   (org-static-blog-get-post-url post-filename)
+   (url-encode-url (org-static-blog-get-post-url post-filename))
    "</link>\n"
+   "  <guid>"
+   (url-encode-url (org-static-blog-get-post-url post-filename))
+   "</guid>\n"
    "  <pubDate>"
-   (let ((system-time-locale "en_US.utf-8")) ; force dates to render as per RSS spec
+   (let ((system-time-locale "C")) ; force dates to render as per RSS spec
      (format-time-string "%a, %d %b %Y %H:%M:%S %z" (org-static-blog-get-date post-filename)))
    "</pubDate>\n"
    "</item>\n"))
