@@ -39,6 +39,7 @@
 
 ;;; Code:
 
+(require 'cl-extra)
 (require 'org)
 (require 'ox-html)
 
@@ -923,7 +924,7 @@ blog post, sorted by tags, but no post body."
                       (file-name-nondirectory current-post)
                       (file-name-nondirectory (car posts)))))
       (setq posts (cdr posts)))
-    (if (> (list-length posts) 1)
+    (if (> (cl-list-length posts) 1)
         (find-file (cadr posts))
       (message (org-static-blog-gettext 'no-prev-post)))))
 
@@ -940,7 +941,7 @@ blog post, sorted by tags, but no post body."
                       (file-name-nondirectory current-post)
                       (file-name-nondirectory (car posts)))))
       (setq posts (cdr posts)))
-    (if (> (list-length posts) 1)
+    (if (> (cl-list-length posts) 1)
         (find-file (cadr posts))
       (message (org-static-blog-gettext 'no-next-post)))))
 
