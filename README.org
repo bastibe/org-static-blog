@@ -196,7 +196,7 @@ your problem right now/. Please be civil.
     - [[https://wangz.me][wangz.me]]
     - [[https://justin.abrah.ms/][Justin Abrahms]]
     - Please open a pull request to add your blog, here!
-   
+
 ** Features
 *** Hide some subtrees when publishing
     - Background
@@ -272,6 +272,12 @@ your problem right now/. Please be civil.
   New custom variable org-static-blog-rss-max-entries (Thank you, jao)
   Can now exclude some posts from RSS feeds (Thank you, jao)
   New custom variable for index page header (Thank you, Bruno Deremble)
+- 2022-05-05 (v1.6.0)
+  Adds ~#+description~ support that fills the description meta tag (Thank you, Guangwang Huang)
+  Adds optional post slugs, and date before title (Thank you, jao)
+  Correct date encoding in RSS and various RSS fixes (Thank you, Agnessa Bubowska)
+  Ability to not publish subtrees by tag (Thank you, wangz)
+  Fixes some warnings related to Emacs 28 (Thank you, Maciej Barć)
 
 * LICENSE
 
