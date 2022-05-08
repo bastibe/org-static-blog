@@ -119,6 +119,12 @@ The tags page lists all posts as headlines."
                  (string :tag "Tag name"))
   :safe t)
 
+(defcustom org-static-blog-no-comments-tag nil
+  "Posts with this tag won't include comments."
+  :type '(choice (const :tag "None" nil)
+                 (string :tag "Tag name"))
+  :safe t)
+
 (defcustom org-static-blog-rss-extra ""
   "Extra information for the RSS feed header.
 This information is placed right before the sequence of posts.
@@ -735,8 +741,9 @@ Modify this function if you want to change a posts headline."
 This part will be attached at the end of the post, after
 the taglist, in a <div id=\"taglist\">...</div> block."
   (let ((taglist-content "")
-        (tags (remove org-static-blog-rss-excluded-tag
-                      (org-static-blog-get-tags post-filename))))
+        (tags (remove org-static-blog-no-comments-tag
+                      (remove org-static-blog-rss-excluded-tag
+                              (org-static-blog-get-tags post-filename)))))
     (when (and tags org-static-blog-enable-tags)
       (setq taglist-content (concat "<a href=\""
                                     (org-static-blog-get-absolute-url org-static-blog-tags-file)
@@ -747,7 +754,6 @@ the taglist, in a <div id=\"taglist\">...</div> block."
                                       "\">" tag "</a> "))))
     taglist-content))
 
-
 (defun org-static-blog-post-postamble (post-filename)
   "Returns the tag list and comment box at the end of a post.
 This function is called for every post and the returned string is
@@ -756,7 +762,8 @@ followed by the HTML code for comments."
   (concat "<div class=\"taglist\">"
           (org-static-blog-post-taglist post-filename)
           "</div>"
-          (if (string= org-static-blog-post-comments "")
+          (if (or (string= org-static-blog-post-comments "")
+                  (member org-static-blog-no-comments-tag (org-static-blog-get-tags post-filename)))
               ""
             (concat "\n<div id=\"comments\">"
                     org-static-blog-post-comments
