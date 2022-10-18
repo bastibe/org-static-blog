@@ -592,17 +592,17 @@ published HTML version of the post."
 
 (defun org-static-blog-get-post-public-path (post-filename)
   "Returns post filepath in public directory.
-
-This function retrieves relative path to the post file in posts or drafts
-directories, the date of the post from its contents and then passes it to
-`org-static-blog-generate-post-path` to generate custom filepath for the published
-HTML version of the post."
-  (let ((root-dir
-         (if (string-prefix-p (file-truename org-static-blog-posts-directory)
-                              (file-truename post-filename))
-             org-static-blog-posts-directory
-           org-static-blog-drafts-directory)))
-      (concat (file-name-sans-extension (file-relative-name post-filename root-dir)) ".html")))
+  This function retrieves relative path to the post file in posts
+  or drafts directories, the date of the post from its contents and
+  then passes it to `org-static-blog-generate-post-path` to
+  generate custom filepath for the published HTML version of the
+  post."
+  (let* ((true-post-filename (file-truename post-filename))
+         (true-posts-directory (file-truename org-static-blog-posts-directory))
+         (root-dir (if (string-prefix-p true-posts-directory true-post-filename)
+                       true-posts-directory
+                     (file-truename org-static-blog-drafts-directory))))
+    (concat (file-name-sans-extension (file-relative-name true-post-filename root-dir)) ".html"))))
 
 (defun org-static-blog-get-relative-path (post-filename)
   "Removes absolute directory path from POST-FILENAME and changes file extention
