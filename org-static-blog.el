@@ -602,7 +602,7 @@ published HTML version of the post."
          (root-dir (if (string-prefix-p true-posts-directory true-post-filename)
                        true-posts-directory
                      (file-truename org-static-blog-drafts-directory))))
-    (concat (file-name-sans-extension (file-relative-name true-post-filename root-dir)) ".html"))))
+    (concat (file-name-sans-extension (file-relative-name true-post-filename root-dir)) ".html")))
 
 (defun org-static-blog-get-relative-path (post-filename)
   "Removes absolute directory path from POST-FILENAME and changes file extention
