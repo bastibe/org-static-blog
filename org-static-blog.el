@@ -570,8 +570,8 @@ Preamble and Postamble are excluded, too."
      (progn
        (goto-char (point-max))
        (search-backward "<div id=\"postamble\" class=\"status\">")
-       (search-backward "<div id=\"comments\">" nil t)
        (search-backward "</div>")
+       (search-backward "<div id=\"comments\">" nil t)
        (point)))))
 
 (defun org-static-blog-get-absolute-url (relative-url)
