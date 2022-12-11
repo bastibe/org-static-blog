@@ -557,7 +557,7 @@ Preamble and Postamble are excluded, too."
 (defun org-static-blog-get-post-content (post-filename &optional exclude-title)
   "Get the rendered HTML body without headers from POST-FILENAME.
 Preamble and Postamble are excluded, too."
-  ;; NB! the following code assumes the post is using default template.
+  ;; NB! The following code assumes the post is using default template.
   ;; See: org-static-blog-publish-file
   (with-temp-buffer
     (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
@@ -571,11 +571,10 @@ Preamble and Postamble are excluded, too."
        (point))
      (progn
        (goto-char (point-max))
-       ;; search backward for the post content (by org-static-blog-render-post-content).
+       ;; Search backward for the post content (by org-static-blog-render-post-content).
        ;; See: org-static-blog-template
        (search-backward "<div id=\"postamble\" class=\"status\">")
        (search-backward "</div>")
-       ;; org-static-blog-template
        ;; If comments section exists, it is then one div backward.
        ;; See: org-static-blog-post-postamble
        (search-backward "<div id=\"comments\">" nil t)
