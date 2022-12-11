@@ -554,9 +554,11 @@ Preamble and Postamble are excluded, too."
          (format "<div class=\"taglist\">%s</div>" post-taglist))))))
 
 
-(defun org-static-blog-get-body (post-filename &optional exclude-title)
+(defun org-static-blog-get-post-content (post-filename &optional exclude-title)
   "Get the rendered HTML body without headers from POST-FILENAME.
 Preamble and Postamble are excluded, too."
+  ;; NB! the following code assumes the post is using default template.
+  ;; See: org-static-blog-publish-file
   (with-temp-buffer
     (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
     (buffer-substring-no-properties
@@ -569,8 +571,13 @@ Preamble and Postamble are excluded, too."
        (point))
      (progn
        (goto-char (point-max))
+       ;; search backward for the post content (by org-static-blog-render-post-content).
+       ;; See: org-static-blog-template
        (search-backward "<div id=\"postamble\" class=\"status\">")
        (search-backward "</div>")
+       ;; org-static-blog-template
+       ;; If comments section exists, it is then one div backward.
+       ;; See: org-static-blog-post-postamble
        (search-backward "<div id=\"comments\">" nil t)
        (point)))))
 
@@ -716,7 +723,7 @@ Posts are sorted in descending time."
     (apply 'concat (mapcar
                     (if org-static-blog-use-preview
                         'org-static-blog-get-preview
-                      'org-static-blog-get-body) post-filenames))
+                      'org-static-blog-get-post-content) post-filenames))
     "<div id=\"archive\">\n"
     "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
     "</div>\n"))))
@@ -836,7 +843,7 @@ The HTML content is taken from the rendered HTML post."
    "<item>\n"
    "  <title><![CDATA[" (org-static-blog-get-title post-filename) "]]></title>\n"
    "  <description><![CDATA["
-   (org-static-blog-get-body post-filename t) ; exclude headline!
+   (org-static-blog-get-post-content post-filename t) ; exclude headline!
    "]]></description>\n"
    (let ((categories ""))
      (when (and (org-static-blog-get-tags post-filename) org-static-blog-enable-tags)
