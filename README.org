@@ -133,6 +133,7 @@ your problem right now/. Please be civil.
      (setq org-static-blog-page-header
            "<meta name=\"author\" content=\"John Dow\">
      <meta name=\"referrer\" content=\"no-referrer\">
+     <meta name=\"viewport\" content=\"initial-scale=1,width=device-width,minimum-scale=1\">
      <link href= \"static/style.css\" rel=\"stylesheet\" type=\"text/css\" />
      <link rel=\"icon\" href=\"static/favicon.ico\">")
 
