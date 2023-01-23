@@ -599,10 +599,7 @@ published HTML version of the post."
 (defun org-static-blog-get-post-public-path (post-filename)
   "Returns post filepath in public directory.
   This function retrieves relative path to the post file in posts
-  or drafts directories, the date of the post from its contents and
-  then passes it to `org-static-blog-generate-post-path` to
-  generate custom filepath for the published HTML version of the
-  post."
+  or drafts directories to published HTML version of the post."
   (let* ((true-post-filename (file-truename post-filename))
          (true-posts-directory (file-truename org-static-blog-posts-directory))
          (root-dir (if (string-prefix-p true-posts-directory true-post-filename)
@@ -621,36 +618,6 @@ and `post-filename` is passed as '~/blog/posts/my-life-update.org' then the func
 will return 'my-life-update.html'."
   (concat (file-name-sans-extension (file-relative-name post-filename org-static-blog-posts-directory))
 	  ".html"))
-
-(defun org-static-blog-generate-post-path (post-filename post-datetime)
-  "Returns post public path based on POST-FILENAME and POST-DATETIME.
-
-By default, this function returns post filepath unmodified, so script will
-replicate file and directory structure of posts and drafts directories.
-
-Override this function if you want to generate custom post URLs different
-from how they are stored in posts and drafts directories.
-
-For example, there is a post in posts directory with the
-file path `hobby/charity-coding.org` and dated `<2019-08-20 Tue>`.
-
-In this case, the function will receive following argument values:
-- post-filename: 'hobby/charity-coding'
-- post-datetime: datetime of <2019-08-20 Tue>
-
-and by default will return 'hobby/charity-coding', so that the path
-to HTML file in publish directory will be 'hobby/charity-coding.html'.
-
-If this function is overriden with something like this:
-
-(defun org-static-blog-generate-post-path (post-filename post-datetime)
-  (concat (format-time-string \"%Y/%m/%d\" post-datetime)
-          \"/\"
-          (file-name-nondirectory post-filename)))
-
-Then the output will be '2019/08/20/charity-coding' and this will be
-the path to the HTML file in publish directory and the url for the post."
-  post-filename)
 
 ;;;###autoload
 (defun org-static-blog-publish-file (post-filename)
