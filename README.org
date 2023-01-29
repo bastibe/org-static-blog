@@ -115,6 +115,7 @@ your problem right now/. Please be civil.
    set up a minimal org-static-blog for the URL https://staticblog.org,
    which will be saved in the directory ~/projects/blog/.
 
+*** Emacs Lisp
    #+begin_src elisp
      (setq org-static-blog-publish-title "My Static Org Blog")
      (setq org-static-blog-publish-url "https://staticblog.org/")
@@ -157,6 +158,68 @@ your problem right now/. Please be civil.
      ;;   the blog posts
      (setq org-static-blog-index-front-matter
            "<h1> Welcome to my blog </h1>\n")
+   #+end_src
+
+*** Org Mode
+   #+begin_src org
+   # This header is inserted into the <head> section of every page:
+   #   (you will need to create the style sheet at
+   #    ~/projects/blog/static/style.css
+   #    and the favicon at
+   #    ~/projects/blog/static/favicon.ico)
+   ,#+name: org-static-blog-page-header
+   ,#+begin_export html
+   <meta name="author" content="John Dow">
+   <meta name="referrer" content="no-referrer">
+   <meta name="viewport" content="initial-scale=1,width=device-width,minimum-scale=1">
+   <link href= "static/style.css" rel="stylesheet" type="text/css" />
+   <link rel="icon" href="static/favicon.ico">
+   ,#+end_export
+
+   # This preamble is inserted at the beginning of the <body> of every page:
+   #   This particular HTML creates a <div> with a simple linked headline
+   ,#+name: org-static-blog-page-preamble
+   ,#+begin_export html
+   <div class="header">
+     <a href="https://staticblog.org">My Static Org Blog</a>
+   </div>
+   ,#+end_export
+
+   # This postamble is inserted at the end of the <body> of every page:
+   #   This particular HTML creates a <div> with a link to the archive page
+   #   and a licensing stub.
+   ,#+name: org-static-blog-page-postamble
+   ,#+begin_export html
+   <div id="archive">
+     <a href="https://staticblog.org/archive.html">Other posts</a>
+   </div>
+   <center>
+     <a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br />
+     <span xmlns:dct="https://purl.org/dc/terms/" href="https://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">bastibe.de</span> by <a xmlns:cc="https://creativecommons.org/ns#" href="https://bastibe.de" property="cc:attributionName" rel="cc:attributionURL">Bastian Bechtold</a> is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.
+   </center>
+   ,#+end_export
+
+   # This HTML code is inserted into the index page between the preamble and
+   #   the blog posts
+   ,#+name: org-static-blog-index-front-matter
+   ,#+begin_export html
+   <h1> Welcome to my blog </h1><br />
+   ,#+end_export
+
+   ,#+begin_src emacs-lisp :var page-header=org-static-blog-page-header page-preamble=org-static-blog-page-preamble page-postamble=org-static-blog-page-postamble index-front-matter=org-static-blog-index-front-matter :results none
+   (setq org-static-blog-publish-title "My Static Org Blog")
+   (setq org-static-blog-publish-url "https://staticblog.org/")
+   (setq org-static-blog-publish-directory "~/projects/blog/")
+   (setq org-static-blog-posts-directory "~/projects/blog/posts/")
+   (setq org-static-blog-drafts-directory "~/projects/blog/drafts/")
+   (setq org-static-blog-enable-tags t)
+   (setq org-export-with-toc nil)
+   (setq org-export-with-section-numbers nil)
+   (setq org-static-blog-page-header page-header)
+   (setq org-static-blog-page-preamble page-preamble)
+   (setq org-static-blog-page-postamble page-postamble)
+   (setq org-static-blog-index-front-matter index-front-matter)
+   ,#+end_src
    #+end_src
 
    In order for this to work, you will also need to create a style sheet
