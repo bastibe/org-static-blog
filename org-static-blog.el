@@ -435,6 +435,7 @@ existed before)."
      (let ((current-buffer (current-buffer))
            (buffer-exists (org-static-blog-file-buffer ,file))
            (result nil)
+           (auto-insert nil)
 	   (contents ,contents))
        (if buffer-exists
            (switch-to-buffer buffer-exists)
