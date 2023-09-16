@@ -236,6 +236,11 @@ the variables `org-static-blog-preview-start' and
   :type '(boolean)
   :safe t)
 
+(defcustom org-static-blog-suggested-filename-cleaning-regexp "\s"
+  "Regexp used to clean the suggested filename."
+  :type'(string)
+  :safe t)
+
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
@@ -947,10 +952,11 @@ choose."
     (find-file (concat-to-dir
                 (if draft
                     org-static-blog-drafts-directory
-                    org-static-blog-posts-directory)
+                  org-static-blog-posts-directory)
                 (read-string (org-static-blog-gettext 'filename)
 			     (concat (format-time-string "%Y-%m-%d-" (current-time))
-				     (replace-regexp-in-string "\s" "-" (downcase title))
+				     (replace-regexp-in-string org-static-blog-suggested-filename-cleaning-regexp
+							       "-" (downcase title))
 				     ".org"))))
     (insert "#+title: " title "\n"
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
