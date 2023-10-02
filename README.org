@@ -217,6 +217,25 @@ your problem right now/. Please be civil.
       #+end_src
       - Then the file will automatically ignore =tree-2= subtrees with the =nonpost= tag when it is published.
 
+*** Extended cleaning of the suggested filename
+
+If you regularly find yourself editing the suggested filename when creating new
+posts, e.g. replacing slashes (`/`), then you can modify the value of
+`org-static-blog-suggested-filename-cleaning-regexp`. With its default value,
+`"\s"`, it only replaces whitespace.
+
+For example, a post with the title "Using bastibe/org-static-blog for your blog"
+would, with the default result in a suggested filename of
+`2023-10-02-using-bastibe/org-static-blog-for-your-blog.org`. If the value of
+`org-static-blog-suggested-filename-cleaning-regexp` is changed like this
+
+```
+(setq org-static-blog-suggested-filename-cleaning-regexp (rx (or "/" (in white)))
+```
+
+the `/` will be replaced too and the suggested filename will be
+`2023-10-02-using-bastibe-org-static-blog-for-your-blog.org`.
+
 * Known Issues
 
 - Org-static-blog is a pure static site generator. As such, it does
