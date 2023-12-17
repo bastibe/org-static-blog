@@ -241,6 +241,13 @@ the variables `org-static-blog-preview-start' and
   :type'(string)
   :safe t)
 
+(defcustom org-static-blog-image ""
+  "Default image to be used as Open Graph image for posts.
+
+It can be overridden with the `#+image` property in specfic posts."
+  :type '(string)
+  :safe t)
+
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
@@ -338,7 +345,7 @@ the variables `org-static-blog-preview-start' and
   "Concat filename to another path interpreted as a directory."
   (concat (file-name-as-directory dir) filename))
 
-(defun org-static-blog-template (tTitle tContent &optional tDescription)
+(defun org-static-blog-template (tTitle tContent &optional tDescription tImage)
   "Create the template that is used to generate the static pages."
   (concat
    "<!DOCTYPE html>\n"
@@ -352,6 +359,15 @@ the variables `org-static-blog-preview-start' and
    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
    "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
    "<title>" tTitle "</title>\n"
+   "<meta property=\"og:title\" content=\"" tTitle "\">\n"
+   "<meta property=\"og:type\" content=\"article\" />\n"
+   "<meta name=\"twitter:card\" content=\"summary_large_image\">\n"
+   (when tDescription
+     (format "<meta property=\"og:description\" content=\"%s\">\n" tDescription))
+   (if tImage
+       (format "<meta property=\"og:image\" content=\"%s\">\n" tImage)
+     (when (> (length org-static-blog-image) 0)
+	 (format "<meta property=\"og:image\" content=\"%s\">\n" org-static-blog-image)))
    org-static-blog-page-header
    "</head>\n"
    "<body>\n"
@@ -485,6 +501,17 @@ existed before)."
         (let ((description (string-trim (match-string 1))))
           (unless (zerop (length description))
             description))))))
+
+(defun org-static-blog-get-image (post-filename)
+  "Extract the `#+image:` from POST-FILENAME."
+  (let ((case-fold-search t))
+    (with-temp-buffer
+      (insert-file-contents post-filename)
+      (goto-char (point-min))
+      (when (search-forward-regexp "^\\#\\+image:[ ]*\\(.+\\)$" nil t)
+        (let ((image (string-trim (match-string 1))))
+          (unless (zerop (length image))
+            image))))))
 
 (defun org-static-blog-get-tags (post-filename)
   "Extract the `#+filetags:` from POST-FILENAME as list of strings."
@@ -640,7 +667,8 @@ The index, archive, tags, and RSS feed are not updated."
      (org-static-blog-post-preamble post-filename)
      (org-static-blog-render-post-content post-filename)
      (org-static-blog-post-postamble post-filename))
-    (org-static-blog-get-description post-filename))))
+    (org-static-blog-get-description post-filename)
+    (org-static-blog-get-image post-filename))))
 
 
 (defun org-static-blog-render-post-content (post-filename)
