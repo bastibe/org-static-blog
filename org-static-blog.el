@@ -241,10 +241,17 @@ the variables `org-static-blog-preview-start' and
   :type'(string)
   :safe t)
 
-(defcustom org-static-blog-image ""
-  "Default image to be used as Open Graph image for posts.
+(defcustom org-static-blog-enable-og-tags nil
+  "Whether to generate Open Graph Protocol meta tags"
+  :group 'org-static-blog
+  :type '(boolean)
+  :safe t)
 
-It can be overridden with the `#+image` property in specfic posts."
+(defcustom org-static-blog-image ""
+  "Default image relative url to be used as Open Graph image for posts.
+
+Only if og tags are enabled. It can be overridden with the
+`#+image` property in specfic posts."
   :type '(string)
   :safe t)
 
@@ -345,7 +352,7 @@ It can be overridden with the `#+image` property in specfic posts."
   "Concat filename to another path interpreted as a directory."
   (concat (file-name-as-directory dir) filename))
 
-(defun org-static-blog-template (tTitle tContent &optional tDescription tImage)
+(defun org-static-blog-template (tTitle tContent &optional tDescription tImage tUrl)
   "Create the template that is used to generate the static pages."
   (concat
    "<!DOCTYPE html>\n"
@@ -359,15 +366,21 @@ It can be overridden with the `#+image` property in specfic posts."
    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
    "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
    "<title>" tTitle "</title>\n"
-   "<meta property=\"og:title\" content=\"" tTitle "\">\n"
-   "<meta property=\"og:type\" content=\"article\" />\n"
-   "<meta name=\"twitter:card\" content=\"summary_large_image\">\n"
-   (when tDescription
-     (format "<meta property=\"og:description\" content=\"%s\">\n" tDescription))
-   (if tImage
-       (format "<meta property=\"og:image\" content=\"%s\">\n" tImage)
-     (when (> (length org-static-blog-image) 0)
-	 (format "<meta property=\"og:image\" content=\"%s\">\n" org-static-blog-image)))
+
+   (when org-static-blog-enable-og-tags
+     (concat
+      "<meta property=\"og:title\" content=\"" tTitle "\">\n"
+      "<meta property=\"og:type\" content=\"article\" />\n"
+      (when tDescription
+	(format "<meta property=\"og:description\" content=\"%s\">\n" tDescription))
+      (when tUrl
+	(format "<meta property=\"og:url\" content=\"%s\">\n" tUrl))
+      (if tImage
+	  (format "<meta property=\"og:image\" content=\"%s\">\n"
+		  (org-static-blog-get-absolute-url tImage))
+	(when (> (length org-static-blog-image) 0)
+	  (format "<meta property=\"og:image\" content=\"%s\">\n"
+		  (org-static-blog-get-absolute-url org-static-blog-image))))))
    org-static-blog-page-header
    "</head>\n"
    "<body>\n"
@@ -668,7 +681,8 @@ The index, archive, tags, and RSS feed are not updated."
      (org-static-blog-render-post-content post-filename)
      (org-static-blog-post-postamble post-filename))
     (org-static-blog-get-description post-filename)
-    (org-static-blog-get-image post-filename))))
+    (org-static-blog-get-image post-filename)
+    (org-static-blog-get-post-url post-filename))))
 
 
 (defun org-static-blog-render-post-content (post-filename)
