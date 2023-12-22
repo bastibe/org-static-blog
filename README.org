@@ -6,7 +6,8 @@
 Static blog generators are a dime a dozen. This is one more, which
 focuses on being simple. All files are simple org-mode files in a
 directory. The only requirement is that every org file must have a
-=#+TITLE= and a =#+DATE=, and optionally, =#+FILETAGS= and =#+DESCRIPTION=.
+=#+TITLE= and a =#+DATE=, and optionally, =#+FILETAGS=, =#+DESCRIPTION= and
+=#+IMAGE=.
 
 =#+FILETAGS= set the tags for the post, which can be delimited by
 colons in the form of =#+FILETAGS: :foo bar:baz:=, or by whitespaces
@@ -14,6 +15,12 @@ in the form of =#+FILETAGS: foo bar=. And you can put a short summary
 in =#+DESCRIPTION=, which will be converted to a HTML
 ~<meta name="description" >~ tag, it's good for SEO as described in
 Wikipedia's [[https://en.wikipedia.org/wiki/Meta_element#The_description_attribute][Meta element]].
+
+If =org-static-blog-enable-og-tags= is set to =t=, =#+DESCRIPTION= and
+=#+IMAGE= (it must be e a relative url) will generate the =og:description=
+and =og:image= meta properties that will be used in URL previews
+generated in social networks and similar sites (see [[https://ogp.me/][Open Graph
+Protocol]]).
 
 This file is also available from marmalade and melpa-stable.
 
@@ -50,6 +57,11 @@ For org-static-blog, a blog consists of six parts:
   page is created that lists the publishing dates and headlines of
   every blog post, sorted by tags. This feature is only enabled if you
   set =org-static-blog-enable-tags= to =t=.
+- If =org-static-blog-enable-og-tags= is set to =t=, all generated pages
+  will include some useful [[https://ogp.me/][Open Graph]] meta properties such as the
+  title, the description and an optional image. If no =#+IMAGE= property
+  is provided in a post, the default one specified in
+  =org-static-blog-image= will be used.
 - To disable comments for single blog posts, reserve a tag name as
   =org-static-blog-no-comments-tag= and tag the post with that tag.
 - It is also possible to create per-tag RSS feeds.  This feature is
@@ -197,6 +209,7 @@ your problem right now/. Please be civil.
       * Clickable headlines, banner, floating toc, Disqus comments, styling, ..., see the [[https://alhassy.github.io/AlBasmala][writeup]]
     - [[https://xgqt.gitlab.io/blog/][xgqt.gitlab.io/blog]]
     - [[https://justin.abrah.ms/][Justin Abrahms]]
+    - [[https://unmonoqueteclea.github.io/][unmonoqueteclea]]
     - Please open a pull request to add your blog, here!
 
 ** Features
