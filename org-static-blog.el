@@ -594,12 +594,14 @@ Preamble and Postamble are excluded, too."
                                          "</div>")
                                  post-date)))
         (concat
+         "<div class=\"post-preview\">"
          (if org-static-blog-preview-date-first-p
              (concat date-link title-link)
            (concat title-link date-link))
          preview-region
          post-ellipsis
-         (format "<div class=\"taglist\">%s</div>" post-taglist))))))
+         (format "<div class=\"taglist\">%s</div>" post-taglist)
+         "</div>")))))
 
 
 (defun org-static-blog-get-post-content (post-filename &optional exclude-title)
