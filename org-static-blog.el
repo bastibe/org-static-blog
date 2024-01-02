@@ -171,6 +171,16 @@ per-tag RSS feeds."
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-post-preamble-text ""
+  "HTML to put before every post"
+  :type '(string)
+  :safe t)
+
+(defcustom org-static-blog-post-postamble-text ""
+  "HTML to put before every post"
+  :type '(string)
+  :safe t)
+
 (defcustom org-static-blog-post-comments ""
   "HTML code for comments to put after each blog post."
   :type '(string)
@@ -751,6 +761,7 @@ Posts are sorted in descending time."
 This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
+   org-static-blog-post-preamble-text
    "<div class=\"post-date\">" (format-time-string (org-static-blog-gettext 'date-format)
 						   (org-static-blog-get-date post-filename))
    "</div>"
@@ -790,7 +801,9 @@ followed by the HTML code for comments."
               ""
             (concat "\n<div id=\"comments\">"
                     org-static-blog-post-comments
-                    "</div>"))))
+                    "</div>"))
+          org-static-blog-post-postamble-text))
+
 
 (defun org-static-blog--prune-items (items)
   "Limit, if needed, the items to be included in an RSS feed."
