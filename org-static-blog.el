@@ -499,7 +499,7 @@ existed before)."
     (with-temp-buffer
       (insert-file-contents post-filename)
       (goto-char (point-min))
-      (if (search-forward-regexp "^\\#\\+date:[ ]*<\\([^]>]+\\)>$" nil t)
+      (if (search-forward-regexp "^\\#\\+date:[ ]*[[<]?\\([^]>]+\\)[]>]?$" nil t)
 	  (date-to-time (match-string 1))
 	(time-since 0)))))
 
