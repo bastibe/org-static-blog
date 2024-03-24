@@ -197,18 +197,11 @@ your problem right now/. Please be civil.
    use =org-static-blog= in practice.
 
 *** Other org-static-blog blogs:
-    - [[http://cat-v.mit.edu/][cat-v.mit.edu]]
-    - [[https://zngguvnf.org/][zngguvnf.org]]
+    - [[https://zngguvnf.org/][zngguvnf.org]] ---see the [[https://zngguvnf.org/2017-07-13--blogging-with-org-static-blog.html][writeup]]
     - [[https://matthewbauer.us/blog/][matthewbauer.us/blog/]]
-    - [[http://lisper.pl/][lisper.pl]]
-    - [[https://jao.io/blog/2020-02-11-simplicity.html][jao's programming musings]]
-    - [[https://whatacold.github.io/][whatacold.github.io]]
-    - [[https://massimolauria.net/blog/][Hard Theorems]]
+    - [[https://jao.io/][jao's programming musings]]
     - [[https://f-santos.gitlab.io/][f-santos.gitlab.io]]
-    - [[https://alhassy.github.io/][Life & Computing Science]]
-      * Clickable headlines, banner, floating toc, Disqus comments, styling, ..., see the [[https://alhassy.github.io/AlBasmala][writeup]]
     - [[https://xgqt.gitlab.io/blog/][xgqt.gitlab.io/blog]]
-    - [[https://justin.abrah.ms/][Justin Abrahms]]
     - [[https://unmonoqueteclea.github.io/][unmonoqueteclea]]
     - Please open a pull request to add your blog, here!
 
