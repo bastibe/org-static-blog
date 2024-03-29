@@ -199,7 +199,7 @@ your problem right now/. Please be civil.
 *** Other org-static-blog blogs:
     - [[https://zngguvnf.org/][zngguvnf.org]] ---see the [[https://zngguvnf.org/2017-07-13--blogging-with-org-static-blog.html][writeup]]
     - [[https://matthewbauer.us/blog/][matthewbauer.us/blog/]]
-    - [[hhttps://jao.io/blog/simplicity-pays-off.html][jao's programming musings]]
+    - [[https://jao.io/blog/simplicity-pays-off.html][jao's programming musings]]
     - [[https://f-santos.gitlab.io/][f-santos.gitlab.io]]
     - [[https://xgqt.gitlab.io/blog/][xgqt.gitlab.io/blog]]
     - [[https://unmonoqueteclea.github.io/][unmonoqueteclea]]
