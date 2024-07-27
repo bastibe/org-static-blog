@@ -617,26 +617,27 @@ Preamble and Postamble are excluded, too."
 Preamble and Postamble are excluded, too."
   ;; NB! The following code assumes the post is using default template.
   ;; See: org-static-blog-publish-file
-  (with-temp-buffer
-    (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
-    (buffer-substring-no-properties
-     (progn
-       (goto-char (point-min))
-       (if exclude-title
-           (progn (search-forward "<h1 class=\"post-title\">")
-                  (search-forward "</h1>"))
-         (search-forward "<div id=\"content\">"))
-       (point))
-     (progn
-       (goto-char (point-max))
-       ;; Search backward for the post content (by org-static-blog-render-post-content).
-       ;; See: org-static-blog-template
-       (search-backward "<div id=\"postamble\" class=\"status\">")
-       (search-backward "</div>")
-       ;; If comments section exists, it is then one div backward.
-       ;; See: org-static-blog-post-postamble
-       (search-backward "<div id=\"comments\">" nil t)
-       (point)))))
+  (let ((publish-filename (org-static-blog-matching-publish-filename post-filename)))
+    (with-temp-buffer
+      (insert-file-contents publish-filename)
+      (buffer-substring-no-properties
+       (progn
+         (goto-char (point-min))
+         (if exclude-title
+             (progn (search-forward "<h1 class=\"post-title\">")
+                    (search-forward "</h1>"))
+           (search-forward "<div id=\"content\">"))
+         (point))
+       (progn
+         (goto-char (point-max))
+         ;; Search backward for the post content (by org-static-blog-render-post-content).
+         ;; See: org-static-blog-template
+         (search-backward "<div id=\"postamble\" class=\"status\">")
+         (search-backward "</div>")
+         ;; If comments section exists, it is then one div backward.
+         ;; See: org-static-blog-post-postamble
+         (search-backward "<div id=\"comments\">" nil t)
+         (point))))))
 
 (defun org-static-blog-get-absolute-url (relative-url)
   "Returns absolute URL based on the RELATIVE-URL passed to the function.
