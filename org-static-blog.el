@@ -362,7 +362,7 @@ Only if og tags are enabled. It can be overridden with the
   "Concat filename to another path interpreted as a directory."
   (concat (file-name-as-directory dir) filename))
 
-(defun org-static-blog-template (tTitle tContent &optional tDescription tImage tUrl)
+(defun org-static-blog-template (tTitle tContent &optional tMasto-id tDescription tImage tUrl)
   "Create the template that is used to generate the static pages."
   (concat
    "<!DOCTYPE html>\n"
@@ -376,7 +376,6 @@ Only if og tags are enabled. It can be overridden with the
    "      href=\"" (org-static-blog-get-absolute-url org-static-blog-rss-file) "\"\n"
    "      title=\"RSS feed for " org-static-blog-publish-url "\">\n"
    "<title>" tTitle "</title>\n"
-
    (when org-static-blog-enable-og-tags
      (concat
       "<meta property=\"og:title\" content=\"" tTitle "\">\n"
@@ -400,6 +399,14 @@ Only if og tags are enabled. It can be overridden with the
    "<div id=\"content\">\n"
    tContent
    "</div>\n"
+   (when tMasto-id
+     (format "<div id=\"comments\"><h2>Comments<h2></div>
+                   <a class=\"mastodon-thread\" target=\"_blank\"
+                      href=\"https://emacs.ch/@jameshowell/%s\"
+                      data-toot-id=\"%s\"
+                      data-exclude-post=\"true\"
+                   >Turn on JavaScript to view comments, or follow this link to the Mastodon thread</a>
+                <p>You can <a target=\"_blank\" href=\"https://emacs.ch/@jameshowell/%s\">add a comment on Mastodon</a>.</p>" tMasto-id tMasto-id tMasto-id))
    "<div id=\"postamble\" class=\"status\">"
    org-static-blog-page-postamble
    "</div>\n"
@@ -513,6 +520,16 @@ existed before)."
           (match-string 1)
         (warn "%s file does not have a title, using %s as the title" post-filename post-filename)
         post-filename))))
+
+(defun org-static-blog-get-masto-id (post-filename)
+  "Extract the `#+masto-id:` from POST-FILENAME."
+  (let ((case-fold-search t))
+    (with-temp-buffer
+      (insert-file-contents post-filename)
+      (goto-char (point-min))
+      (if (search-forward-regexp "^\\#\\+masto-id:[ ]*\\(.+\\)$" nil t)
+          (match-string 1)
+        nil))))
 
 (defun org-static-blog-get-description (post-filename)
   "Extract the `#+description:` from POST-FILENAME."
@@ -691,6 +708,7 @@ The index, archive, tags, and RSS feed are not updated."
      (org-static-blog-post-preamble post-filename)
      (org-static-blog-render-post-content post-filename)
      (org-static-blog-post-postamble post-filename))
+    (org-static-blog-get-masto-id post-filename)
     (org-static-blog-get-description post-filename)
     (org-static-blog-get-image post-filename)
     (org-static-blog-get-post-url post-filename))))
@@ -1017,7 +1035,9 @@ choose."
     (insert "#+title: " title "\n"
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
             "#+description: \n"
-            "#+filetags: ")))
+            "#+filetags: \n"
+            "#+masto-id: \n"
+            )))
 
 ;;;###autoload
 (defun org-static-blog-create-new-draft ()
