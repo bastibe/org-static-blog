@@ -161,6 +161,15 @@ per-tag RSS feeds."
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-mastodon-comments-block ""
+  "HTML to put after the content (but before the 'postamble')
+that will contain an Emfed (https://sampsyo.github.io/emfed/)
+link to a Mastodon post for comments.
+
+Note: the key %s in this string will be expanded in the
+exported HTML to the contents of the #+masto-id: header."
+  :type '(string))
+ 
 (defcustom org-static-blog-page-postamble ""
   "HTML to put after the content of each page."
   :type '(string)
@@ -400,13 +409,7 @@ Only if og tags are enabled. It can be overridden with the
    tContent
    "</div>\n"
    (when tMasto-id
-     (format "<div id=\"comments\"><h2>Comments<h2></div>
-                   <a class=\"mastodon-thread\" target=\"_blank\"
-                      href=\"https://emacs.ch/@jameshowell/%s\"
-                      data-toot-id=\"%s\"
-                      data-exclude-post=\"true\"
-                   >Turn on JavaScript to view comments, or follow this link to the Mastodon thread</a>
-                <p>You can <a target=\"_blank\" href=\"https://emacs.ch/@jameshowell/%s\">add a comment on Mastodon</a>.</p>" tMasto-id tMasto-id tMasto-id))
+     (format-spec org-static-blog-mastodon-comments-block `((?s . ,tMasto-id))))
    "<div id=\"postamble\" class=\"status\">"
    org-static-blog-page-postamble
    "</div>\n"
