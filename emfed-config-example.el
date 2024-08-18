@@ -1,3 +1,6 @@
+(setq org-static-blog-page-header
+        "<script type=\"module\" src=\"https://esm.sh/emfed@\"></script>")
+
 (setq org-static-blog-emfed-comments-block 
       "<div id=\"comments\"><h2>Comments<h2></div>
        <a class=\"mastodon-thread\" target=\"_blank\"
