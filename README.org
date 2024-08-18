@@ -203,6 +203,7 @@ your problem right now/. Please be civil.
     - [[https://f-santos.gitlab.io/][f-santos.gitlab.io]]
     - [[https://xgqt.gitlab.io/blog/][xgqt.gitlab.io/blog]]
     - [[https://unmonoqueteclea.github.io/][unmonoqueteclea]]
+    - [[https://chenyo-17.github.io/org-static-blog/][chenyo-17.github.io/org-static-blog]]
     - Please open a pull request to add your blog, here!
 
 ** Features
