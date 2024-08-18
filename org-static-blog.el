@@ -161,7 +161,7 @@ per-tag RSS feeds."
   :type '(string)
   :safe t)
 
-(defcustom org-static-blog-mastodon-comments-block ""
+(defcustom org-static-blog-emfed-comments-block ""
   "HTML to put after the content (but before the 'postamble')
 that will contain an Emfed (https://sampsyo.github.io/emfed/)
 link to a Mastodon post for comments.
