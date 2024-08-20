@@ -1042,6 +1042,40 @@ choose."
             "#+masto-id: \n"
             )))
 
+
+
+(defcustom org-static-blog-mastodon-access-token "q7FypdsKcCFa1oqaNW21ioLkezCim1lh6EhF3CjKbSQ"
+  "User's Mastodon access token.")
+
+(defcustom org-static-blog-mastodon-server "emacs.ch"
+  "User's Mastodon server.")
+
+(defun org-static-blog-create-mastodon-status (status-message)
+  "Post a new toot (\"status\") to Mastodon containing text
+STATUS-MESSAGE. Both `org-static-blog-mastodon-server' and
+`org-static-blog-mastodon-access-token' must be set appropriately.
+This function returns:
+
+- nil if posting fails
+- the Mastodon ID if posting succeeds."
+  (shell-command (concat "curl -s "    ;;; "silent," no progress bar
+                         "https://"
+                         org-static-blog-mastodon-server
+                         "/api/v1/statuses -H 'Authorization: Bearer "
+                         org-static-blog-mastodon-access-token
+                         "' -F 'status=" status-message "'")
+                 "*curl-output*" "*curl-errors*")
+  (let ((curl-output (with-current-buffer "*curl-output*" (buffer-string))))
+    (if (string= curl-output "")
+        (progn
+          (message "org-static-blog-create-mastodon-status: curl output was a null string")
+          nil)
+      (string-match "[0-9]\\{18\\}" curl-output)
+      (match-string 0 curl-output))))
+
+;;; (org-static-blog-create-mastodon-status "Testing: https://example.com")
+
+
 ;;;###autoload
 (defun org-static-blog-create-new-draft ()
   "Creates a new blog draft.
