@@ -1039,7 +1039,6 @@ choose."
             "#+date: " (format-time-string "<%Y-%m-%d %H:%M>") "\n"
             "#+description: \n"
             "#+filetags: \n"
-            "#+masto-id: \n"
             )))
 
 
@@ -1050,30 +1049,51 @@ choose."
 (defcustom org-static-blog-mastodon-server "emacs.ch"
   "User's Mastodon server.")
 
-(defun org-static-blog-create-mastodon-status (status-message)
-  "Post a new toot (\"status\") to Mastodon containing text
-STATUS-MESSAGE. Both `org-static-blog-mastodon-server' and
-`org-static-blog-mastodon-access-token' must be set appropriately.
-This function returns:
+;; (defun org-static-blog-create-mastodon-status (status-message)
+;;   "Post a new toot (\"status\") to Mastodon containing text
+;; STATUS-MESSAGE. Both `org-static-blog-mastodon-server' and
+;; `org-static-blog-mastodon-access-token' must be set appropriately.
+;; This function returns:
 
-- nil if posting fails
-- the Mastodon ID if posting succeeds."
-  (shell-command (concat "curl -s "    ;;; "silent," no progress bar
-                         "https://"
-                         org-static-blog-mastodon-server
-                         "/api/v1/statuses -H 'Authorization: Bearer "
-                         org-static-blog-mastodon-access-token
-                         "' -F 'status=" status-message "'")
-                 "*curl-output*" "*curl-errors*")
-  (let ((curl-output (with-current-buffer "*curl-output*" (buffer-string))))
-    (if (string= curl-output "")
-        (progn
-          (message "org-static-blog-create-mastodon-status: curl output was a null string")
-          nil)
-      (string-match "[0-9]\\{18\\}" curl-output)
-      (match-string 0 curl-output))))
+;; - nil if posting fails
+;; - the Mastodon ID if posting succeeds."
+;;   (shell-command (concat "curl -s "    ;;; "silent," no progress bar
+;;                          "https://"
+;;                          org-static-blog-mastodon-server
+;;                          "/api/v1/statuses -H 'Authorization: Bearer "
+;;                          org-static-blog-mastodon-access-token
+;;                          "' -F 'status=" status-message "'")
+;;                  "*curl-output*" "*curl-errors*")
+;;   (let ((curl-output (with-current-buffer "*curl-output*" (buffer-string))))
+;;     (string-match "[0-9]\\{18\\}" curl-output)
+;;     (match-string 0 curl-output)))
 
-;;; (org-static-blog-create-mastodon-status "Testing: https://example.com")
+;; (with-current-buffer "*curl-output*"
+;;   (goto-char (point-min))
+;;   (if (string-match "waters" (buffer-string))
+;;       (match-string 1))
+
+
+;; (org-static-blog-create-mastodon-status
+;;  (concat "<div>New blog post: "
+;; 	  "Testing the waters</div>"
+;; 	  "https://example.com"))
+
+
+
+;; (defun org-static-blog-insert-mastodon-id (id)
+;;   "Insert the ID of a Mastodon status into the \"#+MASTO-ID\"
+;; header of an org-static-blog draft or post. It will be
+;; embedded via Emfed as comments."
+;;   )
+
+;; (org-static-blog-insert-mastodon-id 
+;;  (org-static-blog-create-mastodon-status
+;;   (concat "New blog post:"
+;; 	  --post-title
+;; 	  --newline
+;; 	  --post-url)))
+
 
 
 ;;;###autoload
