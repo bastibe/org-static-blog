@@ -265,6 +265,11 @@ Only if og tags are enabled. It can be overridden with the
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-after-publish-hook nil
+  "Hook run after org-static-blog-publish."
+  :type 'hook
+  :safe t)
+
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
@@ -427,6 +432,11 @@ re-rendered.
 With a prefix argument, all blog posts are re-rendered
 unconditionally."
   (interactive "P")
+  (org-static-blog-publish-blog force-render)
+  (run-hooks 'org-static-blog-after-publish-hook))
+
+(defun org-static-blog-publish-blog (force-render)
+  "Renders the blog before \='org-static-blog-after-publish-hook\='."
   (dolist (file (append (org-static-blog-get-post-filenames)
                         (org-static-blog-get-draft-filenames)))
     (when (or force-render (org-static-blog-needs-publishing-p file))
