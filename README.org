@@ -307,9 +307,14 @@ the `/` will be replaced too and the suggested filename will be
   Correct date encoding in RSS and various RSS fixes (Thank you, Agnessa Bubowska)
   Ability to not publish subtrees by tag (Thank you, wangz)
   Fixes some warnings related to Emacs 28 (Thank you, Maciej Barć)
-- next
+- 2025-03-20 (v1.7.0)
   Fixes path related issues for drafts
   Optionally disables comments if a customizable tag is set
+  Adds viewport metadata to header (Thank you, Aze)
+  Various fixes to blog generation (Thank you, Aze)
+  Makes whitespace cleaning of filename suggestions customizable (Thank you, Magnus Therning)
+  Adds support for Open Graph meta tags (Thank you, Pablo González Carrizo)
+  Various bugfixes (Thank you, Dou Meishi, Musa Al-hassy, Alexis Purslane, chenyo, Johnny5, Miao ZhiCheng)
 
 * LICENSE
 
