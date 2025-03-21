@@ -39,6 +39,7 @@
 
 ;;; Code:
 
+(require 'cl-macs)
 (require 'cl-extra)
 (require 'org)
 (require 'ox-html)
@@ -265,6 +266,36 @@ Only if og tags are enabled. It can be overridden with the
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-use-semantic-html nil
+  "Use semantic html tags instead of <div>.
+
+Semantic html output is customizable via `org-static-blog-semantic-html-mapping'"
+  :type '(boolean)
+  :safe t)
+
+(defvar org-static-blog-semantic-html-mapping
+  '((preamble "header" "id=\"preamble\" class=\"status\"")
+    (postamble "footer" "id=\"postamble\" class=\"status\"")
+    (content "main" "")
+    (post-date "time" "datetime=\"%Y-%m-%d\"")
+    (article "article" ""))
+  "Mapping for the semantic html output activated by `org-static-blog-use-semantic-html'.
+
+The value must be an alist.
+The key of the alist must map to two values.
+The first value element is a string containing the name of the html node.
+The second value element is a string containing the attributes of the html node.
+If the html node should not have any attributes the second element must be
+the empty string.
+
+Recognized keys are:
+'preamble       Controls the parent node of the preamble.
+'postamble      Controls the parent node of the postamble.
+'content        Controls the parent node of the content.
+'post-date      Controls the rendering of post dates.
+                The node is formatted via `format-time-string'.
+'article        Controls the parent node of articles on multipost pages.")
+
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
@@ -394,27 +425,45 @@ Only if og tags are enabled. It can be overridden with the
    org-static-blog-page-header
    "</head>\n"
    "<body>\n"
-   "<div id=\"preamble\" class=\"status\">"
-   org-static-blog-page-preamble
-   "</div>\n"
-   "<div id=\"content\">\n"
-   tContent
-   "</div>\n"
-   "<div id=\"postamble\" class=\"status\">"
-   org-static-blog-page-postamble
-   "</div>\n"
+   (org-static-blog-wrap-node "<div id=\"preamble\" class=\"status\">"
+                              org-static-blog-page-preamble
+                              'preamble)
+   (org-static-blog-wrap-node "<div id=\"content\">\n"
+                              tContent
+                              'content)
+   (org-static-blog-wrap-node "<div id=\"postamble\" class=\"status\">"
+                              org-static-blog-page-postamble
+                              'postamble)
    "</body>\n"
    "</html>\n"))
+
+(defun org-static-blog-wrap-node (default-wrapper to-wrap semantic-mapping)
+       "Wrap node TO-WRAP in a parent node.
+Use DEFAULT-WRAPPER if `org-static-html-use-semantic-html' is nil,
+otherwise resolve and use SEMANTIC-MAPPING.
+
+This function is used to allow for rendering of semantic html.
+The function assumes that all parents nodes provided via DEFAULT-WRAPPER
+are divs, as is the case for the legacy non-semantic nodes."
+       (if org-static-blog-use-semantic-html
+           (cl-destructuring-bind (tag attributes)
+               (alist-get semantic-mapping org-static-blog-semantic-html-mapping)
+             (concat (format "<%s %s>" tag attributes)
+                     to-wrap
+                     (format "</%s>\n" tag)))
+         (concat "<div id=\"preamble\" class=\"status\">"
+                 to-wrap
+                 "</div>\n")))
 
 (defun org-static-blog-gettext (text-id)
   "Return localized text.
 Depends on org-static-blog-langcode and org-static-blog-texts."
   (let* ((text-node (assoc text-id org-static-blog-texts))
-	 (text-lang-node (if text-node
-			     (assoc org-static-blog-langcode text-node)
-			   nil)))
+	     (text-lang-node (if text-node
+			                 (assoc org-static-blog-langcode text-node)
+			               nil)))
     (if text-lang-node
-	(cdr text-lang-node)
+	    (cdr text-lang-node)
       (concat "[" (symbol-name text-id) ":" org-static-blog-langcode "]"))))
 
 
@@ -583,7 +632,6 @@ Preamble and Postamble are excluded, too."
   (with-temp-buffer
     (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
     (let ((post-title (org-static-blog-get-title post-filename))
-          (post-date (org-static-blog-get-date post-filename))
           (post-taglist (org-static-blog-post-taglist post-filename))
           (post-ellipsis "")
           (preview-region (org-static-blog--preview-region)))
@@ -599,10 +647,7 @@ Preamble and Postamble are excluded, too."
              (format "<h2 class=\"post-title\"><a href=\"%s\">%s</a></h2>"
                      (org-static-blog-get-post-url post-filename) post-title))
             (date-link
-             (format-time-string (concat "<div class=\"post-date\">"
-                                         (org-static-blog-gettext 'date-format)
-                                         "</div>")
-                                 post-date)))
+             (org-static-blog-post-date post-filename)))
         (concat
          (if org-static-blog-preview-date-first-p
              (concat date-link title-link)
@@ -763,13 +808,21 @@ This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
    org-static-blog-post-preamble-text
-   "<div class=\"post-date\">" (format-time-string (org-static-blog-gettext 'date-format)
-						   (org-static-blog-get-date post-filename))
-   "</div>"
+   (org-static-blog-post-date post-filename)
    "<h1 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h1>\n"))
 
+(defun org-static-blog-post-date (post-filename)
+  "Return the formatted post date of POST-FILENAME.
+This function is called whenever the date of a post is rendered.
+Modify this function if you want to change how post dates are rendered.
+If `org-static-blog-use-semantic-html' is non-nil the rendering
+can also be changed via `org-static-blog-semantic-html-mapping'"
+  (format-time-string (org-static-blog-wrap-node "<div class=\"post-date\">"
+                                                 (org-static-blog-gettext 'date-format)
+                                                 'post-date)
+                      (org-static-blog-get-date post-filename)))
 
 (defun org-static-blog-post-taglist (post-filename)
   "Returns the tag list of the post.
@@ -916,13 +969,17 @@ blog post, but no post body."
 This function is called for every post on the archive and
 tags-archive page. Modify this function if you want to change an
 archive headline."
-  (concat
-   "<div class=\"post-date\">"
-   (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
-   "</div>"
-   "<h2 class=\"post-title\">"
-   "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
-   "</h2>\n"))
+  (let ((post-summary
+         (concat
+          (org-static-blog-post-date post-filename)
+          "<h2 class=\"post-title\">"
+          "<a href=\"" (org-static-blog-get-post-url post-filename) "\">"
+          (org-static-blog-get-title post-filename)
+          "</a>"
+          "</h2>\n")))
+    (if org-static-blog-use-semantic-html
+        (org-static-blog-wrap-node nil post-summary 'article)
+      post-summary)))
 
 (defun org-static-blog-assemble-tags ()
   "Render the tag archive and tag pages."
