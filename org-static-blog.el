@@ -265,6 +265,11 @@ Only if og tags are enabled. It can be overridden with the
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-display-git-date nil
+  "Shows the date that a post was last edited."
+  :type '(boolean)
+  :safe t)
+
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
@@ -466,9 +471,9 @@ unconditionally."
   (require 'seq)
   (make-directory (file-name-directory file) t)
   (car (seq-filter
-         (lambda (buf)
-           (string= (with-current-buffer buf buffer-file-name) file))
-         (buffer-list))))
+        (lambda (buf)
+          (string= (with-current-buffer buf buffer-file-name) file))
+        (buffer-list))))
 
 ;; This macro is needed for many of the following functions.
 (defmacro org-static-blog-with-find-file (file contents &rest body)
@@ -653,7 +658,7 @@ will return 'https://example.com/archive.html'."
 This function concatenates publish URL and generated custom filepath to the
 published HTML version of the post."
   (org-static-blog-get-absolute-url
-          (org-static-blog-get-post-public-path post-filename)))
+   (org-static-blog-get-post-public-path post-filename)))
 
 (defun org-static-blog-get-post-public-path (post-filename)
   "Returns post filepath in public directory.
@@ -740,32 +745,37 @@ posts as full text posts."
   "Assemble a page that contains multiple posts one after another.
 Posts are sorted in descending time."
   (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date y)
-                                                                  (org-static-blog-get-date x)))))
+                                                                       (org-static-blog-get-date x)))))
   (org-static-blog-with-find-file
    pub-filename
    (org-static-blog-template
     org-static-blog-publish-title
-   (concat
-    (when front-matter front-matter)
-    (apply 'concat (mapcar
-                    (if org-static-blog-use-preview
-                        'org-static-blog-get-preview
-                      'org-static-blog-get-post-content) post-filenames))
-    "<div id=\"archive\">\n"
-    "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
-    "</div>\n"))))
+    (concat
+     (when front-matter front-matter)
+     (apply 'concat (mapcar
+                     (if org-static-blog-use-preview
+                         'org-static-blog-get-preview
+                       'org-static-blog-get-post-content) post-filenames))
+     "<div id=\"archive\">\n"
+     "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">" (org-static-blog-gettext 'other-posts) "</a>\n"
+     "</div>\n"))))
 
-
+(defun org-static-blog-get-edit-date (post-filename)
+  "Gets the date for the last revision of POST-FILENAME."
+  (let ((default-directory (locate-dominating-file post-filename ".git")))
+    (shell-command-to-string (concat "git log -1 --format=\"%ad\" --date=format:'%d %b %Y' -- " post-filename))))
 
 (defun org-static-blog-post-preamble (post-filename)
   "Returns the formatted date and headline of the post.
 This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
+  (message (org-static-blog-get-edit-date post-filename))
   (concat
    org-static-blog-post-preamble-text
-   "<div class=\"post-date\">" (format-time-string (org-static-blog-gettext 'date-format)
-						   (org-static-blog-get-date post-filename))
-   "</div>"
+   "<div class=\"edited-text\">Published: </div>" "<div class=\"post-date\">" (format-time-string (org-static-blog-gettext 'date-format)
+						                                                  (org-static-blog-get-date post-filename))
+   "</div>" (when org-static-blog-display-git-date
+              (concat "<div class=\"edited-text\">Last Edited: </div>" "<div class=\"post-git-date\">" (org-static-blog-get-edit-date post-filename) "</div>"))
    "<h1 class=\"post-title\">"
    "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
    "</h1>\n"))
@@ -901,8 +911,8 @@ blog post, but no post body."
         (archive-entries nil)
         (post-filenames (org-static-blog-get-post-filenames)))
     (setq post-filenames (sort post-filenames (lambda (x y) (time-less-p
-                                                        (org-static-blog-get-date y)
-                                                        (org-static-blog-get-date x)))))
+                                                             (org-static-blog-get-date y)
+                                                             (org-static-blog-get-date x)))))
     (org-static-blog-with-find-file
      archive-filename
      (org-static-blog-template
@@ -939,7 +949,7 @@ archive headline."
   (let ((post-filenames (cdr tag)))
     (setq post-filenames
 	  (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date x)
-						     (org-static-blog-get-date y)))))
+						          (org-static-blog-get-date y)))))
     (concat "<h1 class=\"tags-title\">" (org-static-blog-gettext 'posts-tagged) " \"" (downcase (car tag)) "\":</h1>\n"
 	    (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames)))))
 
