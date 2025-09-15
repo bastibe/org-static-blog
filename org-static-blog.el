@@ -926,13 +926,21 @@ blog post, but no post body."
 This function is called for every post on the archive and
 tags-archive page. Modify this function if you want to change an
 archive headline."
-  (concat
-   "<div class=\"post-date\">"
-   (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
-   "</div>"
-   "<h2 class=\"post-title\">"
-   "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
-   "</h2>\n"))
+  (if org-static-blog-preview-date-first-p
+      (concat
+       "<div class=\"post-date\">"
+       (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
+       "</div>"
+       "<h2 class=\"post-title\">"
+       "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
+       "</h2>\n")
+    (concat
+     "<h2 class=\"post-title\">"
+     "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
+     "</h2>\n"
+     "<div class=\"post-date\">"
+     (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
+     "</div>")))
 
 (defun org-static-blog-assemble-tags ()
   "Render the tag archive and tag pages."
