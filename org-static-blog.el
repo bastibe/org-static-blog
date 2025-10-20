@@ -764,8 +764,11 @@ Posts are sorted in descending time."
 
 (defun org-static-blog-get-edit-date (post-filename)
   "Gets the date for the last revision of POST-FILENAME."
-  (let ((default-directory (locate-dominating-file post-filename ".git")))
-    (shell-command-to-string (concat "git log -1 --format=\"%ad\" --date=format:'%d %b %Y' -- " post-filename))))
+  (let ((default-directory (locate-dominating-file post-filename ".git"))
+        (date-string (shell-command-to-string (concat "git log -1 --format=\"%ad\" --date=format:'%d %b %Y' -- " post-filename))))
+    (if (string-equal date-string "")
+        "n/a"
+      date-string)))
 
 (defun org-static-blog-post-preamble (post-filename)
   "Returns the formatted date and headline of the post.
