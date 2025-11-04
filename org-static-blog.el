@@ -877,7 +877,6 @@ machine-readable format."
                 (let ((items (cons item (cdr (assoc tag rss-tag-items)))))
                   (setf (alist-get tag rss-tag-items nil t 'string=) items))))))))
     (org-static-blog--write-rss rss-items)
-    (message "%s" rss-tag-items)
     (dolist (x rss-tag-items) (org-static-blog--write-rss (cdr x) (car x)))))
 
 (defun org-static-blog-get-rss-item (post-filename)
