@@ -774,7 +774,6 @@ Posts are sorted in descending time."
   "Returns the formatted date and headline of the post.
 This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
-  (message (org-static-blog-get-edit-date post-filename))
   (concat
    org-static-blog-post-preamble-text
    "<div class=\"edited-text\">Published: </div>" "<div class=\"post-date\">" (format-time-string (org-static-blog-gettext 'date-format)
