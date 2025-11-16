@@ -678,9 +678,10 @@ published HTML version of the post."
   or drafts directories to published HTML version of the post."
   (let* ((true-post-filename (file-truename post-filename))
          (true-posts-directory (file-truename org-static-blog-posts-directory))
-         (root-dir (if (string-prefix-p true-posts-directory true-post-filename)
-                       true-posts-directory
-                     (file-truename org-static-blog-drafts-directory))))
+         (true-drafts-directory (file-truename org-static-blog-drafts-directory))
+         (root-dir (cond ((string-prefix-p true-posts-directory true-post-filename) true-posts-directory)
+                         ((string-prefix-p true-drafts-directory true-post-filename) true-drafts-directory)
+                         (t org-static-blog-hidden-directory))))
     (concat (file-name-sans-extension (file-relative-name true-post-filename root-dir)) ".html")))
 
 (defun org-static-blog-get-relative-path (post-filename)
