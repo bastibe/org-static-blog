@@ -74,6 +74,12 @@ When publishing, draft are rendered as HTML, but not included in
 the index, archive, tags, or RSS feed."
   :type '(directory))
 
+(defcustom org-static-blog-hidden-directory "~/blog/hidden/"
+  "Same as the drafts directory, but can be tracked by git.
+When publishing, draft are rendered as HTML, but not included in
+the index, archive, tags, or RSS feed."
+  :type '(directory))
+
 (defcustom org-static-blog-index-file "index.html"
   "File name of the blog landing page.
 The index page contains the most recent
@@ -463,8 +469,12 @@ unconditionally."
 
 (defun org-static-blog-get-draft-filenames ()
   "Returns a list of all drafts."
-  (directory-files-recursively
-   org-static-blog-drafts-directory ".*\\.org$"))
+  (let ((files (directory-files-recursively
+                org-static-blog-drafts-directory ".*\\.org$")))
+    (if (bound-and-true-p org-static-blog-hidden-directory)
+        (append files
+                (directory-files-recursively
+                 org-static-blog-hidden-directory ".*\\.org$")))))
 
 (defun org-static-blog-file-buffer (file)
   "Return the buffer open with a full filepath, or nil."
