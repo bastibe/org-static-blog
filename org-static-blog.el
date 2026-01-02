@@ -964,7 +964,7 @@ archive headline."
      (concat-to-dir org-static-blog-publish-directory
 		    (concat "tag-" (downcase (car tag)) ".html"))
      (cdr tag)
-     (concat "<h1 class=\"title\">" (org-static-blog-gettext 'posts-tagged) " \"" (car tag) "\":</h1>"))))
+     (concat "<h1 class=\"title\">" (org-static-blog-gettext 'posts-tagged) " \“" (car tag) "\”:</h1>"))))
 
 (defun org-static-blog-assemble-tags-archive-tag (tag)
   "Assemble single TAG for all filenames."
