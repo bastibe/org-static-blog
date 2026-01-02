@@ -518,6 +518,25 @@ existed before)."
 	  (date-to-time (match-string 1))
 	(time-since 0)))))
 
+(defun org-static-blog-get-french-date (post-filename)
+  "Gets the date of POST-FILENAME in the French revolutionary calendar."
+  (let* ((date (org-static-blog-get-date post-filename))
+         (date-list (butlast (cdddr (decode-time date))
+                             3)))
+    (setq date (calendar-french-date-string (cons
+                                             (cadr date-list)
+                                             (cons (car date-list) (cddr date-list)))))
+    date
+    ))
+
+(defun org-static-blog-get-date-string (post-filename)
+  "Create the date string for POST-FILENAME."
+  (let ((gregorian-date (format-time-string
+                         (org-static-blog-gettext 'date-format)
+                         (org-static-blog-get-date post-filename)))
+        (french-date (org-static-blog-get-french-date post-filename)))
+    (concat gregorian-date " / " french-date)))
+
 (defun org-static-blog-get-title (post-filename)
   "Extract the `#+title:` from POST-FILENAME."
   (let ((case-fold-search t))
@@ -598,7 +617,7 @@ Preamble and Postamble are excluded, too."
   (with-temp-buffer
     (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
     (let ((post-title (org-static-blog-get-title post-filename))
-          (post-date (org-static-blog-get-date post-filename))
+          (post-date (org-static-blog-get-date-string post-filename))
           (post-taglist (org-static-blog-post-taglist post-filename))
           (post-ellipsis "")
           (preview-region (org-static-blog--preview-region)))
@@ -614,10 +633,10 @@ Preamble and Postamble are excluded, too."
              (format "<h2 class=\"post-title\"><a href=\"%s\">%s</a></h2>"
                      (org-static-blog-get-post-url post-filename) post-title))
             (date-link
-             (format-time-string (concat "<div class=\"post-date\">"
-                                         (org-static-blog-gettext 'date-format)
-                                         "</div>")
-                                 post-date)))
+             (concat "<div class=\"post-date\">"
+                     post-date
+                     "</div>")
+             ))
         (concat
          "<div class=\"post-box\">"
          (if org-static-blog-preview-date-first-p
@@ -787,8 +806,7 @@ This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
    org-static-blog-post-preamble-text
-   "<div class=\"edited-text\">Published: </div>" "<div class=\"post-date\">" (format-time-string (org-static-blog-gettext 'date-format)
-						                                                  (org-static-blog-get-date post-filename))
+   "<div class=\"edited-text\">Published: </div>" "<div class=\"post-date\">" (org-static-blog-get-date-string post-filename)
    "</div>" (when org-static-blog-display-git-date
               (concat "<div class=\"edited-text\">Last Edited: </div>" "<div class=\"post-git-date\">" (org-static-blog-get-edit-date post-filename) "</div>"))
    "<h1 class=\"post-title\">"
@@ -943,7 +961,7 @@ archive headline."
   (if org-static-blog-preview-date-first-p
       (concat
        "<div class=\"post-date\">"
-       (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
+       (org-static-blog-get-date-string post-filename)
        "</div>"
        "<h2 class=\"post-title\">"
        "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
@@ -953,7 +971,7 @@ archive headline."
      "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
      "</h2>\n"
      "<div class=\"post-date\">"
-     (format-time-string (org-static-blog-gettext 'date-format) (org-static-blog-get-date post-filename))
+     (org-static-blog-get-date-string post-filename)
      "</div>")))
 
 (defun org-static-blog-assemble-tags ()
