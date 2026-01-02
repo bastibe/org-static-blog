@@ -44,7 +44,7 @@
 (require 'ox-html)
 
 (defgroup org-static-blog nil
-  "Settings for a static blog generator using org-mode"
+  "Settings for a static blog generator using 'org-mode'."
   :version "1.6.0"
   :group 'applications)
 
