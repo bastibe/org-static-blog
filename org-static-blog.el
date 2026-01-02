@@ -825,11 +825,13 @@ the taglist, in a <div id=\"taglist\">...</div> block."
     (when (and tags org-static-blog-enable-tags)
       (setq taglist-content (concat "<a href=\""
                                     (org-static-blog-get-absolute-url org-static-blog-tags-file)
-                                    "\">" (org-static-blog-gettext 'tags) "</a>: "))
+                                    "\">" (org-static-blog-gettext 'tags) "</a>: "
+                                    "<tagtext>"))
       (dolist (tag tags)
         (setq taglist-content (concat taglist-content "<a href=\""
                                       (org-static-blog-get-absolute-url (concat "tag-" (downcase tag) ".html"))
-                                      "\">" tag "</a> "))))
+                                      "\">" tag "</a> ")))
+      (setq taglist-content (concat taglist-content "</tagtext>")))
     taglist-content))
 
 (defun org-static-blog-post-postamble (post-filename)
