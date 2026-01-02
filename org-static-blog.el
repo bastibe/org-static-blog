@@ -289,7 +289,7 @@ Only if og tags are enabled. It can be overridden with the
      ("zh" . "其他帖子")
      ("ja" . "他の投稿"))
     (date-format
-     ("en" . "%d %b %Y")
+     ("en" . "%d %B %Y")
      ("pl" . "%Y-%m-%d")
      ("ru" . "%d.%m.%Y")
      ("by" . "%d.%m.%Y")
