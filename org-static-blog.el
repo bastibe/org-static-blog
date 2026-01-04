@@ -526,8 +526,7 @@ existed before)."
     (setq date (calendar-french-date-string (cons
                                              (cadr date-list)
                                              (cons (car date-list) (cddr date-list)))))
-    date
-    ))
+    date))
 
 (defun org-static-blog-get-date-string (post-filename)
   "Create the date string for POST-FILENAME."
