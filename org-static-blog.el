@@ -991,7 +991,7 @@ archive headline."
     (setq post-filenames
 	  (sort post-filenames (lambda (x y) (time-less-p (org-static-blog-get-date x)
 						          (org-static-blog-get-date y)))))
-    (concat "<h1 class=\"tags-title\">" (org-static-blog-gettext 'posts-tagged) " \"" (downcase (car tag)) "\":</h1>\n"
+    (concat "<h1 class=\"tags-title\">" (org-static-blog-gettext 'posts-tagged) " \“" (downcase (car tag)) "\”:</h1>\n"
 	    (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames)))))
 
 (defun org-static-blog-assemble-tags-archive ()
