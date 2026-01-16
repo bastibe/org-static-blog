@@ -177,6 +177,11 @@ per-tag RSS feeds."
   :type '(string)
   :safe t)
 
+(defcustom org-static-blog-archive-front-matter ""
+  "HTML to put at the beginning of the archive page."
+  :type '(string)
+  :safe t)
+
 (defcustom org-static-blog-post-preamble-text ""
   "HTML to put before every post"
   :type '(string)
@@ -952,6 +957,7 @@ blog post, but no post body."
       org-static-blog-publish-title
       (concat
        "<h1 class=\"title\">" (org-static-blog-gettext 'archive) "</h1>\n"
+       org-static-blog-archive-front-matter "\n"
        (apply 'concat (mapcar 'org-static-blog-get-post-summary post-filenames)))))))
 
 (defun org-static-blog-get-post-summary (post-filename)
