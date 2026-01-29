@@ -736,31 +736,71 @@ The index, archive, tags, and RSS feed are not updated."
     (org-static-blog-get-image post-filename)
     (org-static-blog-get-post-url post-filename))))
 
-(defun org-static-blog--add-dcap-to-first-p (html)
-  "Return HTML with the first <p> element having class \"dcap\".
-If the first <p> already has a class attribute, append \"dcap\" to it
-unless it's already present."
-  (if (string-match "<p\\(\\s-+[^>]*\\)?>" html)
-      (let* ((attrs (match-string 1 html))
-             (start (match-beginning 0))
-             (end (match-end 0)))
-        (cond
-         ;; attrs present and contains a class attribute -> append dcap if needed
-         ((and attrs (string-match "class=[\"']\\([^\"']*\\)[\"']" attrs))
-          (let* ((class-val (match-string 1 attrs))
-                 (new-class (if (string-match-p "\\bdcap\\b" class-val)
-                                class-val
-                              (concat class-val " dcap")))
-                 (new-attrs (replace-regexp-in-string
-                             "class=[\"'][^\"']*[\"']"
-                             (format "class=\"%s\"" new-class)
-                             attrs)))
-            (concat (substring html 0 start) "<p" new-attrs ">" (substring html end))))
-         (attrs
-          (concat (substring html 0 start) "<p" attrs " class=\"dcap\">" (substring html end)))
-         (t
-          (concat (substring html 0 start) "<p class=\"dcap\">" (substring html end)))))
-    html))
+(defun org-static-blog--add-dropcap-to-first-p (html)
+  "Return HTML with the first <p> element (not inside a div.intro) having class \"dcap\".
+If the <p> already has a class attribute, append \"dcap\" to it unless it's already present.
+If the first <p> is inside a <div ... class=\"...intro...\">, skip it and apply to the next <p>."
+  (let ((pos 0)
+        found-start found-end found-attrs)
+    ;; Find the first <p> that is not inside an open <div class="...intro...">
+    (while (and (not found-start)
+                (string-match "<p\\(\\s-+[^>]*\\)?>" html pos))
+      (let* ((p-attrs (match-string 1 html))
+             (p-start (match-beginning 0))
+             (p-end (match-end 0))
+             (div-open-pos nil) (div-open-attrs nil)
+             (last-close-pos nil))
+        ;; find last opening <div ...> before this <p>
+        (let ((search 0))
+          (while (string-match "<div\\([^>]*\\)>" html search)
+            (when (< (match-beginning 0) p-start)
+              (setq div-open-pos (match-beginning 0))
+              (setq div-open-attrs (match-string 1 html))
+              (setq search (match-end 0)))
+            (when (>= (match-beginning 0) p-start)
+              (setq search (length html)))))
+        ;; find last closing </div> before this <p>
+        (let ((search 0))
+          (while (string-match "</div>" html search)
+            (when (< (match-beginning 0) p-start)
+              (setq last-close-pos (match-beginning 0))
+              (setq search (match-end 0)))
+            (when (>= (match-beginning 0) p-start)
+              (setq search (length html)))))
+        ;; if there is an opening <div> after the last </div>, we're inside that div
+        (if (and div-open-pos (or (not last-close-pos) (> div-open-pos last-close-pos)))
+            (if (and div-open-attrs
+                     (string-match "class=[\"']\\([^\"']*\\)[\"']" div-open-attrs)
+                     (string-match-p "\\bintro\\b" (match-string 1 div-open-attrs)))
+                ;; this <p> is inside a div.intro -> skip it
+                (setq pos p-end)
+              ;; inside a div but not intro -> we can use this <p>
+              (setq found-start p-start found-end p-end found-attrs p-attrs))
+          ;; not inside any open div -> use this <p>
+          (setq found-start p-start found-end p-end found-attrs p-attrs))))
+    ;; If we found a target <p>, add/append class dcap as before
+    (if found-start
+        (let ((attrs found-attrs)
+              (start found-start)
+              (end found-end))
+          (cond
+           ;; attrs present and contains a class attribute -> append dcap if needed
+           ((and attrs (string-match "class=[\"']\\([^\"']*\\)[\"']" attrs))
+            (let* ((class-val (match-string 1 attrs))
+                   (new-class (if (string-match-p "\\bdcap\\b" class-val)
+                                  class-val
+                                (concat class-val " dcap")))
+                   (new-attrs (replace-regexp-in-string
+                               "class=[\"'][^\"']*[\"']"
+                               (format "class=\"%s\"" new-class)
+                               attrs)))
+              (concat (substring html 0 start) "<p" new-attrs ">" (substring html end))))
+           (attrs
+            (concat (substring html 0 start) "<p" attrs " class=\"dcap\">" (substring html end)))
+           (t
+            (concat (substring html 0 start) "<p class=\"dcap\">" (substring html end)))))
+      ;; nothing to do
+      html)))
 
 (defun org-static-blog-render-post-content (post-filename)
   "Render blog content as bare HTML without header."
@@ -783,7 +823,7 @@ unless it's already present."
            org-static-blog-no-post-tag)
           (setq result
                 (org-export-as 'org-static-blog-post-bare nil nil nil nil))
-          (setq result (org-static-blog--add-dcap-to-first-p result))
+          (setq result (org-static-blog--add-dropcap-to-first-p result))
           (switch-to-buffer current-buffer)
           result)))))
 
