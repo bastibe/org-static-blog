@@ -736,6 +736,31 @@ The index, archive, tags, and RSS feed are not updated."
     (org-static-blog-get-image post-filename)
     (org-static-blog-get-post-url post-filename))))
 
+(defun org-static-blog--add-dcap-to-first-p (html)
+  "Return HTML with the first <p> element having class \"dcap\".
+If the first <p> already has a class attribute, append \"dcap\" to it
+unless it's already present."
+  (if (string-match "<p\\(\\s-+[^>]*\\)?>" html)
+      (let* ((attrs (match-string 1 html))
+             (start (match-beginning 0))
+             (end (match-end 0)))
+        (cond
+         ;; attrs present and contains a class attribute -> append dcap if needed
+         ((and attrs (string-match "class=[\"']\\([^\"']*\\)[\"']" attrs))
+          (let* ((class-val (match-string 1 attrs))
+                 (new-class (if (string-match-p "\\bdcap\\b" class-val)
+                                class-val
+                              (concat class-val " dcap")))
+                 (new-attrs (replace-regexp-in-string
+                             "class=[\"'][^\"']*[\"']"
+                             (format "class=\"%s\"" new-class)
+                             attrs)))
+            (concat (substring html 0 start) "<p" new-attrs ">" (substring html end))))
+         (attrs
+          (concat (substring html 0 start) "<p" attrs " class=\"dcap\">" (substring html end)))
+         (t
+          (concat (substring html 0 start) "<p class=\"dcap\">" (substring html end)))))
+    html))
 
 (defun org-static-blog-render-post-content (post-filename)
   "Render blog content as bare HTML without header."
@@ -758,6 +783,7 @@ The index, archive, tags, and RSS feed are not updated."
            org-static-blog-no-post-tag)
           (setq result
                 (org-export-as 'org-static-blog-post-bare nil nil nil nil))
+          (setq result (org-static-blog--add-dcap-to-first-p result))
           (switch-to-buffer current-buffer)
           result)))))
 
