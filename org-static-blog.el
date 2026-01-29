@@ -624,7 +624,7 @@ Preamble and Postamble are excluded, too."
           (post-date (org-static-blog-get-date-string post-filename))
           (post-taglist (org-static-blog-post-taglist post-filename))
           (post-ellipsis "")
-          (preview-region (org-static-blog--preview-region)))
+          (preview-region (org-static-blog--remove-dropcap-class (org-static-blog--preview-region))))
       (when (and preview-region (search-forward "<p>" nil t))
         (setq post-ellipsis
               (concat (when org-static-blog-preview-link-p
@@ -801,6 +801,23 @@ If the first <p> is inside a <div ... class=\"...intro...\">, skip it and apply 
             (concat (substring html 0 start) "<p class=\"dcap\">" (substring html end)))))
       ;; nothing to do
       html)))
+
+(defun org-static-blog--remove-dropcap-class (html)
+  "Remove the \"dcap\" class from all class attributes in HTML.
+If a class attribute becomes empty after removal, remove the attribute entirely."
+  (require 'cl-lib)
+  (replace-regexp-in-string
+   "\\bclass=\\([\"']\\)\\([^\"']*\\)\\1"
+   (lambda (_match)
+     (let* ((quote (match-string 1))
+            (classes (match-string 2))
+            (parts (split-string classes "[[:space:]]+" t))
+            (remaining (cl-remove "dcap" parts :test #'string=))
+            (new (mapconcat #'identity remaining " ")))
+       (if (string= new "")
+           ""
+         (format "class=%s%s%s" quote new quote))))
+   html t t))
 
 (defun org-static-blog-render-post-content (post-filename)
   "Render blog content as bare HTML without header."
