@@ -196,6 +196,35 @@ your problem right now/. Please be civil.
    [[https://github.com/bastibe/bastibe.github.com][repository]] for my blog ([[http://bastibe.de/][bastibe.de]]) itself to see an example of how to
    use =org-static-blog= in practice.
 
+** Customizing HTML Filenames
+   By default, org-static-blog generates HTML filenames by simply changing
+   the file extension from =.org= to =.html= (e.g., =my-post.org= becomes
+   =my-post.html=).
+
+   You can customize this behavior by setting =org-static-blog-post-filename-function=
+   to your own function. This allows you to generate filenames based on post
+   metadata like date, title, tags, etc.
+
+   The function receives two arguments:
+   - =post-filename=: The full path to the org file
+   - =metadata=: An alist with keys: =filename=, =title=, =date=, =tags=, =description=
+
+   Example: <title>-YYYY-MM-DD.html
+   #+begin_src elisp
+     (defun my/org-blog-title-date-filename (post-filename metadata)
+       "Generate filename like: my-post-title-2024-01-15.html
+     Converts title to lowercase, spaces to dashes, and removes unsafe filename characters."
+       (let-alist metadata
+         (let* ((date-str (format-time-string "-%Y-%m-%d" .date))
+                ;; Remove unsafe filename characters: : / \ ? * < > | "
+                (title-safe (replace-regexp-in-string "[:\\/\\\\?*<>|\"]" "" .title))
+                (title-lower (downcase title-safe))
+                (title-with-dashes (replace-regexp-in-string " " "-" title-lower)))
+           (concat title-with-dashes date-str ".html"))))
+
+     (setq org-static-blog-post-filename-function #'my/org-blog-title-date-filename)
+   #+end_src
+
 *** Other org-static-blog blogs:
     - [[https://zngguvnf.org/][zngguvnf.org]] ---see the [[https://zngguvnf.org/2017-07-13--blogging-with-org-static-blog.html][writeup]]
     - [[https://matthewbauer.us/blog/][matthewbauer.us/blog/]]
@@ -347,4 +376,3 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
