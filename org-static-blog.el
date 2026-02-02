@@ -1,10 +1,10 @@
-;;; org-static-blog.el --- a simple org-mode based static blog generator
+;;; org-static-blog.el --- a simple org-mode based static blog generator  -*- lexical-binding: t; -*-
 
 ;; Author: Bastian Bechtold
 ;; Contrib: Shmavon Gazanchyan, Rafał -rsm- Marek, neeasade,
 ;; Michael Cardell Widerkrantz, Matthew Bauer, Winny, Yauhen Makei,
 ;; luhuaei, zngguvnf, Qiantan Hong, Jonas Bernoulli, Théo Jacquin,
-;; K. Scarlet, zsxh
+;; K. Scarlet, zsxh, Gal Buki
 ;; URL: https://github.com/bastibe/org-static-blog
 ;; Version: 1.7.0
 ;; Package-Requires: ((emacs "24.3"))
