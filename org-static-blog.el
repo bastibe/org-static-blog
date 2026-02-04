@@ -1,10 +1,10 @@
-;;; org-static-blog.el --- a simple org-mode based static blog generator
+;;; org-static-blog.el --- a simple org-mode based static blog generator  -*- lexical-binding: t; -*-
 
 ;; Author: Bastian Bechtold
 ;; Contrib: Shmavon Gazanchyan, Rafał -rsm- Marek, neeasade,
 ;; Michael Cardell Widerkrantz, Matthew Bauer, Winny, Yauhen Makei,
 ;; luhuaei, zngguvnf, Qiantan Hong, Jonas Bernoulli, Théo Jacquin,
-;; K. Scarlet, zsxh
+;; K. Scarlet, zsxh, Gal Buki
 ;; URL: https://github.com/bastibe/org-static-blog
 ;; Version: 1.7.0
 ;; Package-Requires: ((emacs "24.3"))
@@ -775,19 +775,25 @@ Modify this function if you want to change a posts headline."
   "Returns the tag list of the post.
 This part will be attached at the end of the post, after
 the taglist, in a <div id=\"taglist\">...</div> block."
-  (let ((taglist-content "")
-        (tags (remove org-static-blog-no-comments-tag
+  (let ((tags (remove org-static-blog-no-comments-tag
                       (remove org-static-blog-rss-excluded-tag
                               (org-static-blog-get-tags post-filename)))))
     (when (and tags org-static-blog-enable-tags)
-      (setq taglist-content (concat "<a href=\""
-                                    (org-static-blog-get-absolute-url org-static-blog-tags-file)
-                                    "\">" (org-static-blog-gettext 'tags) "</a>: "))
-      (dolist (tag tags)
-        (setq taglist-content (concat taglist-content "<a href=\""
-                                      (org-static-blog-get-absolute-url (concat "tag-" (downcase tag) ".html"))
-                                      "\">" tag "</a> "))))
-    taglist-content))
+      (concat
+       "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-tags-file)
+       "\"><span class=\"tag-label\">" (org-static-blog-gettext 'tags)
+       "</span></a><span class=\"tag-separator\">: </span>"
+       "<span class=\"taglist__tags\">"
+       (let ((tag-htmls '()))
+         (dotimes (i (length tags))
+           (let ((tag (nth i tags)))
+             (push (concat "<a href=\""
+                           (org-static-blog-get-absolute-url (concat "tag-" (downcase tag) ".html"))
+                           "\" class=\"tag\" data-tag=\"" (downcase tag)
+                           "\" data-index=\"" (number-to-string i) "\">" tag "</a> ")
+                   tag-htmls)))
+         (apply #'concat (nreverse tag-htmls)))
+       "</span>"))))
 
 (defun org-static-blog-post-postamble (post-filename)
   "Returns the tag list and comment box at the end of a post.
