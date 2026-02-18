@@ -281,6 +281,11 @@ Only if og tags are enabled. It can be overridden with the
   :type '(boolean)
   :safe t)
 
+(defcustom org-static-blog-title-link t
+  "Make the titles of posts into links on their respective pages."
+  :type '(boolean)
+  :safe t)
+
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
@@ -897,9 +902,10 @@ Modify this function if you want to change a posts headline."
    "</div>" (when org-static-blog-display-git-date
               (concat "<div class=\"edited-text\">Last Edited: </div>" "<div class=\"post-git-date\">" (org-static-blog-get-edit-date post-filename) "</div>"))
    "<h1 class=\"post-title\">"
-   "<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>"
+   (if org-static-blog-title-link
+       ("<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>")
+     (org-static-blog-get-title post-filename))
    "</h1>\n"))
-
 
 (defun org-static-blog-post-taglist (post-filename)
   "Returns the tag list of the post.
