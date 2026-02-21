@@ -17,5 +17,4 @@ Defaults to today's date if DATE is not given."
          "%d %s %d"
          d
          (aref calendar-french-month-name-array (1- m))
-         y
-         )))))
+         y)))))
