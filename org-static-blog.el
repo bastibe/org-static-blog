@@ -546,16 +546,19 @@ existed before)."
         (french-date (org-static-blog-get-french-date post-filename)))
     (concat gregorian-date " / " french-date)))
 
-(defun org-static-blog-get-title (post-filename)
+(defun org-static-blog-get-title (post-filename &optional public)
   "Extract the `#+title:` from POST-FILENAME."
   (let ((case-fold-search t))
     (with-temp-buffer
       (insert-file-contents post-filename)
       (goto-char (point-min))
-      (filter-tags-from-title (if (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$" nil t)
-                                  (match-string 1)
-                                (warn "%s file does not have a title, using %s as the title" post-filename post-filename)
-                                post-filename)))))
+      (setq post-filename (if (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$" nil t)
+                              (match-string 1)
+                            (warn "%s file does not have a title, using %s as the title" post-filename post-filename)
+                            post-filename))
+      (if public
+          (filter-tags-from-title post-filename)
+        post-filename))))
 
 (defun org-static-blog-get-description (post-filename)
   "Extract the `#+description:` from POST-FILENAME."
@@ -732,7 +735,7 @@ The index, archive, tags, and RSS feed are not updated."
   (org-static-blog-with-find-file
    (org-static-blog-matching-publish-filename post-filename)
    (org-static-blog-template
-    (org-static-blog-get-title post-filename)
+    (org-static-blog-get-title post-filename t)
     (concat
      (org-static-blog-post-preamble post-filename)
      (org-static-blog-render-post-content post-filename)
@@ -1008,7 +1011,7 @@ machine-readable format."
 The HTML content is taken from the rendered HTML post."
   (concat
    "<item>\n"
-   "  <title><![CDATA[" (org-static-blog-get-title post-filename) "]]></title>\n"
+   "  <title><![CDATA[" (org-static-blog-get-title post-filename t) "]]></title>\n"
    "  <description><![CDATA["
    (org-static-blog-get-post-content post-filename t) ; exclude headline!
    "]]></description>\n"
