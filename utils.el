@@ -21,6 +21,6 @@ Defaults to today's date if DATE is not given."
 
 (defun filter-tags-from-title (title)
   "Remove any <i> tags from TITLE."
-  (replace-regexp-in-string "<[^>]*>" "" "<i>Pluribus &</i> Alienation"))
+  (replace-regexp-in-string "<[^>]*>" "" title))
 
 ;;; utils.el ends here
