@@ -552,10 +552,10 @@ existed before)."
     (with-temp-buffer
       (insert-file-contents post-filename)
       (goto-char (point-min))
-      (if (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$" nil t)
-          (match-string 1)
-        (warn "%s file does not have a title, using %s as the title" post-filename post-filename)
-        post-filename))))
+      (filter-tags-from-title (if (search-forward-regexp "^\\#\\+title:[ ]*\\(.+\\)$" nil t)
+                                  (match-string 1)
+                                (warn "%s file does not have a title, using %s as the title" post-filename post-filename)
+                                post-filename)))))
 
 (defun org-static-blog-get-description (post-filename)
   "Extract the `#+description:` from POST-FILENAME."
