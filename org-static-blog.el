@@ -893,7 +893,7 @@ Posts are sorted in descending time."
   (let ((default-directory (locate-dominating-file post-filename ".git"))
         (date-string
          (shell-command-to-string
-          (concat "git log -1 --format=\"%ad\" --date=format:'%d %b %Y' -- "
+          (concat "git log -1 --format=\"%ad\" --date=format:'%d %B %Y' -- "
                   post-filename))))
     (if (string-equal date-string "")
         "n/a"
