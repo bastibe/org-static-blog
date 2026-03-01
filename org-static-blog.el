@@ -896,7 +896,8 @@ Posts are sorted in descending time."
            (concat "git log -1 --format=\"%ad\" --date=format:'%d %B %Y' -- "
                    post-filename)))
          (french-date (calendar-french-date-string
-                       (string-to-cal-date-format gregorian-date))))
+                       (unless (string-equal gregorian-date "")
+                         (string-to-cal-date-format gregorian-date)))))
     (if (string-equal gregorian-date "")
         "n/a"
       (concat gregorian-date " / " french-date))))
