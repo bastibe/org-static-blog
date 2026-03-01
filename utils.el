@@ -1,6 +1,13 @@
 
 (require 'calendar)
 
+(defun string-to-cal-date-format (date-string)
+  "Return (month day year) for date string DATE-STRING like \"01 March 2026\"."
+  (let ((parts (parse-time-string s)))
+    (list (nth 4 parts)
+          (nth 3 parts)
+          (nth 5 parts))))
+
 (defun calendar-french-date-string (&optional date)
   "String of French Revolutionary date of Gregorian DATE.
 Returns the empty string if DATE is pre-French Revolutionary.
