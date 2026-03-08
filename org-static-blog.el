@@ -636,7 +636,7 @@ Preamble and Postamble are excluded, too."
       (when (and preview-region (search-forward "<p>" nil t))
         (setq post-ellipsis
               (concat (when org-static-blog-preview-link-p
-                        (format "<a href=\"%s\">"
+                        (format "<a class=ellipsis-link href=\"%s\">"
                                 (org-static-blog-get-post-url post-filename)))
                       org-static-blog-preview-ellipsis
                       (when org-static-blog-preview-link-p "</a>\n"))))
