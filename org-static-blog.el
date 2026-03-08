@@ -879,11 +879,13 @@ Posts are sorted in descending time."
     org-static-blog-publish-title
     (concat
      (when front-matter front-matter)
+     "</div>"
+     "<div class=\"post-list\">\n"
      (apply 'concat (mapcar
                      (if org-static-blog-use-preview
                          'org-static-blog-get-preview
                        'org-static-blog-get-post-content) post-filenames))
-     "</div>\n"))))
+     "</div>"))))
 
 (defun org-static-blog-get-edit-date (post-filename)
   "Gets the date for the last revision of POST-FILENAME."
