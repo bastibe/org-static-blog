@@ -883,9 +883,6 @@ Posts are sorted in descending time."
                      (if org-static-blog-use-preview
                          'org-static-blog-get-preview
                        'org-static-blog-get-post-content) post-filenames))
-     "<div id=\"archive\">\n"
-     "<a href=\"" (org-static-blog-get-absolute-url org-static-blog-archive-file) "\">"
-     (org-static-blog-gettext 'other-posts) "</a>\n"
      "</div>\n"))))
 
 (defun org-static-blog-get-edit-date (post-filename)
