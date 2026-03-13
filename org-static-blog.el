@@ -560,6 +560,18 @@ existed before)."
           (filter-tags-from-title post-filename)
         post-filename))))
 
+(defun org-static-blog-get-subtitle (post-filename)
+  "Extract the `#+title:` from POST-FILENAME."
+  (let ((case-fold-search t))
+    (with-temp-buffer
+      (insert-file-contents post-filename)
+      (goto-char (point-min))
+      (setq post-filename (if (search-forward-regexp "^\\#\\+subtitle:[ ]*\\(.+\\)$" nil t)
+                              (match-string 1)
+                            ""))
+      (unless (zerop (length post-filename))
+        post-filename))))
+
 (defun org-static-blog-get-description (post-filename)
   "Extract the `#+description:` from POST-FILENAME."
   (let ((case-fold-search t))
@@ -735,7 +747,9 @@ The index, archive, tags, and RSS feed are not updated."
   (org-static-blog-with-find-file
    (org-static-blog-matching-publish-filename post-filename)
    (org-static-blog-template
-    (org-static-blog-get-title post-filename t)
+    (concat (org-static-blog-get-title post-filename t)
+            (if (org-static-blog-get-subtitle post-filename)
+                (concat ": " (org-static-blog-get-subtitle post-filename))))
     (concat
      (org-static-blog-post-preamble post-filename)
      (org-static-blog-render-post-content post-filename)
@@ -914,7 +928,9 @@ Modify this function if you want to change a posts headline."
    (if org-static-blog-title-link
        ("<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>")
      (org-static-blog-get-title post-filename))
-   "</h1>\n"))
+   "</h1>\n <h2 class=\"post-subtitle\">"
+   (org-static-blog-get-subtitle post-filename)
+   "</h2>\n"))
 
 (defun org-static-blog-post-taglist (post-filename)
   "Returns the tag list of the post.
