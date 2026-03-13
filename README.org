@@ -7,10 +7,11 @@ not necessarily have to be very polished or easy to customise. So far
 these are some of the changes:
 
 - Adds "edit dates" for when an ~.org~-file was most recently changed in ~git~.
-- Adds support for listing publishing dates using the french republican calendar
+- Adds support for listing publishing dates using the french republican calendar.
 - Typographical changes that uses proper curly quotes (~“”~) instead of
   blocky ones (~""~) — like in the tag pages.
 - Adds the ~dcap~ class to the first paragraphs to enable dropcaps.
+- Supports the ~#+subtitle~ header.
 
 For how I integrate this fork into website generation see the
 [[https://joarvarndt.se/website][colophon]].
