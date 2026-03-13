@@ -1034,7 +1034,11 @@ machine-readable format."
 The HTML content is taken from the rendered HTML post."
   (concat
    "<item>\n"
-   "  <title><![CDATA[" (org-static-blog-get-title post-filename t) "]]></title>\n"
+   "  <title><![CDATA[" (if (org-static-blog-get-subtitle post-filename)
+                            (concat (org-static-blog-get-title post-filename t) ": "
+                                    (org-static-blog-get-subtitle post-filename))
+                          (org-static-blog-get-title post-filename t))
+   "]]></title>\n"
    "  <description><![CDATA["
    (org-static-blog-get-post-content post-filename t) ; exclude headline!
    "]]></description>\n"
