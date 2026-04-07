@@ -561,16 +561,24 @@ existed before)."
         post-filename))))
 
 (defun org-static-blog-get-subtitle (post-filename)
-  "Extract the `#+title:` from POST-FILENAME."
+  "Extract the `#+subtitle:` from POST-FILENAME, searching within the first 25 lines."
   (let ((case-fold-search t))
     (with-temp-buffer
       (insert-file-contents post-filename)
+      ;; Narrow the buffer to the first 25 lines
       (goto-char (point-min))
-      (setq post-filename (if (search-forward-regexp "^\\#\\+subtitle:[ ]*\\(.+\\)$" nil t)
-                              (match-string 1)
-                            ""))
-      (unless (zerop (length post-filename))
-        post-filename))))
+      (let ((end-pos (progn
+                       (forward-line 25)
+                       (point))))
+        (goto-char (point-min))
+        (narrow-to-region (point-min) end-pos))
+      (goto-char (point-min))
+      (let ((subtitle (if (search-forward-regexp "^\\#\\+subtitle:[ ]*\\(.+\\)$" nil t)
+                          (match-string 1)
+                        "")))
+        (widen)
+        (unless (zerop (length subtitle))
+          subtitle)))))
 
 (defun org-static-blog-get-description (post-filename)
   "Extract the `#+description:` from POST-FILENAME."
