@@ -929,9 +929,11 @@ This function is called for every post and prepended to the post body.
 Modify this function if you want to change a posts headline."
   (concat
    org-static-blog-post-preamble-text
+   "<div class=\"date-cell\">"
    "<div class=\"edited-text\">Published: </div>" "<div class=\"post-date\">" (org-static-blog-get-date-string post-filename)
    "</div>" (when org-static-blog-display-git-date
               (concat "<div class=\"edited-text\">Last Edited: </div>" "<div class=\"post-git-date\">" (org-static-blog-get-edit-date post-filename) "</div>"))
+   "</div>"
    "<h1 class=\"post-title\">"
    (if org-static-blog-title-link
        ("<a href=\"" (org-static-blog-get-post-url post-filename) "\">" (org-static-blog-get-title post-filename) "</a>")
