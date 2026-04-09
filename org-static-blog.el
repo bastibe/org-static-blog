@@ -855,13 +855,40 @@ If a class attribute becomes empty after removal, remove the attribute entirely.
    html t t))
 
 (defun org-static-blog--wrap-acronyms (html)
-  "Wrap acronyms from `org-static-blog-acronyms' in <span class=\"small-caps\"> tags."
-  (let ((result html))
+  "Wrap acronyms from `org-static-blog-acronyms' in <span class=\"small-caps\"> tags.
+Does not wrap acronyms inside href attributes."
+  (let ((result html)
+        (href-values '())
+        (href-counter 0))
+    ;; Protect href values by replacing with placeholders
+    (setq result (replace-regexp-in-string
+                  "href=\"\\([^\"]*\\)\""
+                  (lambda (match)
+                    (let ((href-content (match-string 1 match))
+                          (placeholder (format "href=\"__HREF_PROTECTED_%d__\"" href-counter)))
+                      (push href-content href-values)
+                      (setq href-counter (1+ href-counter))
+                      placeholder))
+                  result))
+    (setq href-values (nreverse href-values))
+
+    ;; Wrap acronyms in the modified HTML
     (dolist (acronym org-static-blog-acronyms)
       (setq result (replace-regexp-in-string
-                    (concat "\\b" (regexp-quote acronym) "\\b")
-                    (format "<span class=\"small-caps\">%s</span>" (downcase acronym))
+                    (concat "\\b" (regexp-quote acronym) "\\(['']?s\\)?\\b")
+                    (lambda (match)
+                      (concat "<span class=\"small-caps\">" (downcase match) "</span>"))
                     result t)))
+
+    ;; Restore href values
+    (let ((counter 0))
+      (dolist (href-val href-values)
+        (setq result (replace-regexp-in-string
+                      (format "__HREF_PROTECTED_%d__" counter)
+                      (lambda (_match) href-val)
+                      result t))
+        (setq counter (1+ counter))))
+
     result))
 
 (defun org-static-blog-render-post-content (post-filename)
