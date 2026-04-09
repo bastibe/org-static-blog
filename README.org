@@ -12,6 +12,8 @@ these are some of the changes:
   blocky ones (~""~) — like in the tag pages.
 - Adds the ~dcap~ class to the first paragraphs to enable dropcaps.
 - Supports the ~#+subtitle~ header.
+- Automatically wraps elements of org-static-blog-acronyms in a
+  small-caps class.
 
 For how I integrate this fork into website generation see the
 [[https://joarvarndt.se/website][colophon]].
