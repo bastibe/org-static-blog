@@ -286,6 +286,11 @@ Only if og tags are enabled. It can be overridden with the
   :type '(boolean)
   :safe t)
 
+(defcustom org-static-blog-acronyms nil
+  "List of acronyms to wrap in <span class=\"small-caps\"> tags."
+  :type '(repeat string)
+  :safe t)
+
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
@@ -849,6 +854,16 @@ If a class attribute becomes empty after removal, remove the attribute entirely.
          (format "class=%s%s%s" quote new quote))))
    html t t))
 
+(defun org-static-blog--wrap-acronyms (html)
+  "Wrap acronyms from `org-static-blog-acronyms' in <span class=\"small-caps\"> tags."
+  (let ((result html))
+    (dolist (acronym org-static-blog-acronyms)
+      (setq result (replace-regexp-in-string
+                    (concat "\\b" (regexp-quote acronym) "\\b")
+                    (format "<span class=\"small-caps\">%s</span>" (downcase acronym))
+                    result t)))
+    result))
+
 (defun org-static-blog-render-post-content (post-filename)
   "Render blog content as bare HTML without header."
   (let ((org-html-doctype "html5")
@@ -871,6 +886,7 @@ If a class attribute becomes empty after removal, remove the attribute entirely.
           (setq result
                 (org-export-as 'org-static-blog-post-bare nil nil nil nil))
           (setq result (org-static-blog--add-dropcap-to-first-p result))
+          (setq result (org-static-blog--wrap-acronyms result))
           (switch-to-buffer current-buffer)
           result)))))
 
