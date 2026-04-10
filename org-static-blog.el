@@ -286,11 +286,6 @@ Only if og tags are enabled. It can be overridden with the
   :type '(boolean)
   :safe t)
 
-(defcustom org-static-blog-acronyms nil
-  "List of acronyms to wrap in <span class=\"small-caps\"> tags."
-  :type '(repeat string)
-  :safe t)
-
 ;; localization support
 (defconst org-static-blog-texts
   '((other-posts
