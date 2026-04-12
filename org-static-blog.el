@@ -835,6 +835,7 @@ followed by the HTML code for comments."
 	     "<title><![CDATA[" title "]]></title>\n"
 	     "<description><![CDATA[" title "]]></description>\n"
 	     "<link>" url "</link>\n"
+	     "<atom:link href=\"" (org-static-blog-get-absolute-url (file-name-nondirectory (org-static-blog--rss-filename tag))) "\" rel=\"self\" type=\"application/rss+xml\" />\n"
 	     "<lastBuildDate>" (let ((system-time-locale "C")) ; force dates to render as per RSS spec
 				 (format-time-string "%a, %d %b %Y %H:%M:%S %z" (current-time)))
              "</lastBuildDate>\n"
