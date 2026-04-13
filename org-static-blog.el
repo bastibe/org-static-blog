@@ -163,28 +163,33 @@ the full article."
 
 (defcustom org-static-blog-social-file "social.org"
   "File name of the generated Org Social feed."
+  :group 'org-static-blog
   :type '(string)
   :safe t)
 
 (defcustom org-static-blog-social-nick ""
   "Nick for the Org Social feed.
 Must not contain spaces."
+  :group 'org-static-blog
   :type '(string)
   :safe t)
 
 (defcustom org-static-blog-social-description ""
   "Description for the Org Social feed."
+  :group 'org-static-blog
   :type '(string)
   :safe t)
 
 (defcustom org-static-blog-social-avatar ""
   "Avatar URL for the Org Social feed (JPG or PNG, 128x128+)."
+  :group 'org-static-blog
   :type '(string)
   :safe t)
 
 (defcustom org-static-blog-social-max-entries nil
   "Maximum number of entries in the Org Social feed.
 If nil (the default), all existing posts are included."
+  :group 'org-static-blog
   :type '(choice (const nil) integer)
   :safe t)
 
