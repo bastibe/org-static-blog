@@ -151,6 +151,48 @@ existing tag.  The options `org-static-blog-rss-extra',
 per-tag RSS feeds."
   :type '(boolean))
 
+(defcustom org-static-blog-enable-social nil
+  "Whether to generate an Org Social file.
+When enabled, a `social.org' file is generated following the Org
+Social protocol (see URL `https://github.com/tanrax/org-social').
+Each blog post becomes a social post with a preview and a link to
+the full article."
+  :group 'org-static-blog
+  :type '(boolean)
+  :safe t)
+
+(defcustom org-static-blog-social-file "social.org"
+  "File name of the generated Org Social feed."
+  :group 'org-static-blog
+  :type '(string)
+  :safe t)
+
+(defcustom org-static-blog-social-nick ""
+  "Nick for the Org Social feed.
+Must not contain spaces."
+  :group 'org-static-blog
+  :type '(string)
+  :safe t)
+
+(defcustom org-static-blog-social-description ""
+  "Description for the Org Social feed."
+  :group 'org-static-blog
+  :type '(string)
+  :safe t)
+
+(defcustom org-static-blog-social-avatar ""
+  "Avatar URL for the Org Social feed (JPG or PNG, 128x128+)."
+  :group 'org-static-blog
+  :type '(string)
+  :safe t)
+
+(defcustom org-static-blog-social-max-entries nil
+  "Maximum number of entries in the Org Social feed.
+If nil (the default), all existing posts are included."
+  :group 'org-static-blog
+  :type '(choice (const nil) integer)
+  :safe t)
+
 (defcustom org-static-blog-page-header ""
   "HTML to put in the <head> of each page."
   :type '(string)
@@ -437,7 +479,9 @@ unconditionally."
     (org-static-blog-assemble-rss)
     (org-static-blog-assemble-archive)
     (if org-static-blog-enable-tags
-        (org-static-blog-assemble-tags))))
+        (org-static-blog-assemble-tags))
+    (if org-static-blog-enable-social
+        (org-static-blog-assemble-social))))
 
 (defun org-static-blog-needs-publishing-p (post-filename)
   "Check whether POST-FILENAME was changed since last render."
@@ -958,6 +1002,67 @@ blog post, sorted by tags, but no post body."
       (concat
        "<h1 class=\"title\">" (org-static-blog-gettext 'tags) "</h1>\n"
        (apply 'concat (mapcar 'org-static-blog-assemble-tags-archive-tag tag-tree)))))))
+
+(defun org-static-blog--date-to-rfc3339 (date)
+  "Convert an Emacs time value DATE to an RFC 3339 timestamp.
+Returns a string like 2025-01-08T13:58:00+0100."
+  (format-time-string "%Y-%m-%dT%H:%M:%S%z" date))
+
+(defun org-static-blog-get-social-item (post-filename)
+  "Generate an Org Social post entry for POST-FILENAME.
+Returns a string with the post heading, properties and body."
+  (let ((date (org-static-blog-get-date post-filename))
+        (title (org-static-blog-get-title post-filename))
+        (tags (org-static-blog-get-tags post-filename))
+        (description (org-static-blog-get-description post-filename))
+        (url (org-static-blog-get-post-url post-filename)))
+    (concat
+     "** " (org-static-blog--date-to-rfc3339 date) "\n"
+     ":PROPERTIES:\n"
+     (when (and org-static-blog-langcode
+                (not (string-empty-p org-static-blog-langcode)))
+       (concat ":LANG: " org-static-blog-langcode "\n"))
+     (when tags
+       (concat ":TAGS: " (mapconcat #'identity tags " ") "\n"))
+     ":CLIENT: org-static-blog\n"
+     ":END:\n"
+     "\n"
+     (if description
+         (concat description "\n")
+       (concat title "\n"))
+     "\n"
+     "[[" url "][" title "]]\n")))
+
+(defun org-static-blog-assemble-social ()
+  "Assemble the Org Social feed file.
+The social.org file follows the Org Social protocol and contains
+every blog post as a social entry with a preview and link."
+  (let ((social-filename (concat-to-dir org-static-blog-publish-directory
+                                        org-static-blog-social-file))
+        (post-filenames (sort (org-static-blog-get-post-filenames)
+                              (lambda (x y)
+                                (time-less-p (org-static-blog-get-date y)
+                                             (org-static-blog-get-date x))))))
+    (when org-static-blog-social-max-entries
+      (setq post-filenames (seq-take post-filenames
+                                     org-static-blog-social-max-entries)))
+    (org-static-blog-with-find-file
+     social-filename
+     (concat
+      "#+TITLE: " org-static-blog-publish-title "\n"
+      "#+NICK: " org-static-blog-social-nick "\n"
+      (unless (string-empty-p org-static-blog-social-description)
+        (concat "#+DESCRIPTION: " org-static-blog-social-description "\n"))
+      (unless (string-empty-p org-static-blog-social-avatar)
+        (concat "#+AVATAR: " org-static-blog-social-avatar "\n"))
+      "#+LINK: " org-static-blog-publish-url "\n"
+      (when (and org-static-blog-langcode
+                 (not (string-empty-p org-static-blog-langcode)))
+        (concat "#+LANGUAGE: " org-static-blog-langcode "\n"))
+      "\n"
+      "* Posts\n"
+      (apply #'concat (mapcar #'org-static-blog-get-social-item
+                              post-filenames))))))
 
 (defun org-static-blog-open-previous-post ()
   "Opens previous blog post."
